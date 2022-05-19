@@ -4,8 +4,8 @@
 library(tidyverse)
 
 ##Load data
-sample.data <- read.csv("data/sample_data_infb_Exp005.csv")
-exp.des <- read.csv("data/Inf1b_Exp005.DESIGN.csv")
+sample.data <- read.csv("/SAN/Susanas_den/gitProj/Eimeria_Quant/data/sample_data_infb_Exp005.csv")
+exp.des <- read.csv("/SAN/Susanas_den/gitProj/Eimeria_Quant/data/Inf1b_Exp005.DESIGN.csv")
 exp.des$InfectionStrain <- NULL
 exp.des$Departure <- NULL
 exp.des$NOTE <- NULL
