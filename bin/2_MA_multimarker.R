@@ -14,9 +14,9 @@ library(parallel)
 devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 ## re-run or use pre-computed results for different parts of the pipeline:
-doFilter <- TRUE
-doMultiAmp <- TRUE
-doTax <- TRUE
+doFilter <- FALSE
+doMultiAmp <- FALSE
+doTax <- FALSE
 
 ###################Test run Microbiome######################
 #Preparation of files
@@ -31,16 +31,8 @@ samples <- gsub("_S\\d+_L001_R1_001.fastq\\.gz", "\\1", basename(fastqF))
 samples<- gsub("S\\d+-", "\\1", basename(samples))
 samples<-gsub("-", "_", basename(samples))
 
-#Extra step in the pipeline: quality plots of the reads 
-## plotQualityProfile(fastqF[[1]])
-## plotQualityProfile(fastqF[[2]])
-## plotQualityProfile(fastqR[[1]])
-## plotQualityProfile(fastqR[[2]])
-
 #Creation of a folder for filtrated reads 
 
-#filt_path <- "/SAN/Victors_playground/Eimeria_microbiome/Multimarker/filtered_TestRun/"
-#filt_path <- "/SAN/Victors_playground/Eimeria_microbiome/Multimarker/filtered_FullRun_1/"
 filt_path <- "/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/TestRun/filtered_TestRun_1/"
 #Pipeline filtration 
 if(!file_test("-d", filt_path)) dir.create(filt_path)
@@ -98,7 +90,6 @@ if(doMultiAmp){
                        verbose=0, multithread = 90)
   errR <- learnErrors(unlist(getStratifiedFilesR(MA)), nbase=1e8,
                       verbose=0, multithread = 90)
-  MA <- derepMulti(MA, mc.cores=90) 
   MA <- dadaMulti(MA, Ferr=errF, Rerr=errR,  pool=FALSE,
                   verbose=0, mc.cores=12)
   MA <- mergeMulti(MA, mc.cores=90) 
@@ -226,8 +217,6 @@ primer <- PrimerPairsSet(primerF, primerR)
 ##Multi amplicon pipeline
 if(doMultiAmp){
   MA <- MultiAmplicon(primer, files)
-  #filedir <- "/SAN/Victors_playground/Eimeria_microbiome/Multimarker/Stratified_files_TestRun"
-  #filedir <- "/SAN/Victors_playground/Eimeria_microbiome/Multimarker/Stratified_files_FullRun_1"
   filedir <- "/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/FullRun/stratified_files_full_run_1"
   if(dir.exists(filedir)) unlink(filedir, recursive=TRUE)
   MA <- sortAmplicons(MA, n=1e+05, filedir=filedir) ## This step sort the reads into amplicons based on the number of primer pairs
@@ -235,7 +224,6 @@ if(doMultiAmp){
                        verbose=0, multithread = 90)
   errR <- learnErrors(unlist(getStratifiedFilesR(MA)), nbase=1e8,
                       verbose=0, multithread = 90)
-  MA <- derepMulti(MA, mc.cores=90) 
   MA <- dadaMulti(MA, Ferr=errF, Rerr=errR,  pool=FALSE,
                   verbose=0, mc.cores=12)
   MA <- mergeMulti(MA, mc.cores=90) 
@@ -293,24 +281,33 @@ PS1 <- toPhyloseq(MA1, colnames(MA1))
 PS2<- toPhyloseq(MA2, colnames(MA2))
 
 PS <- merge_phyloseq(PS1, PS2) ###Works!
+
 PS@sam_data <- sample_data(sample.data)
 
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
-   
+
+
 ##Primer data
 ## just sorting out primers whithout any taxannot
 
-#MA1 <- MA1[which( !unlist(lapply(MA1@taxonTable, is.null))), ] ##Make the next function work 
-#PS1.l <- toPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE) 
-#    saveRDS(PS1.l, file="/SAN/Susanas_den/EimeriaMicrobiome/R/results/PhyloSeqList_FullRun_1.Rds")
-#MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ] ##Make the next function work 
-#PS2.l <- toPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
-#    saveRDS(PS1.l, file="/SAN/Susanas_den/EimeriaMicrobiome/R/results/PhyloSeqList_TestRun.Rds")
-#along<- names(PS2.l) ## Run with less primers working
-#PS.l <- lapply(along, function(i) merge_phyloseq(PS1.l[[i]], PS2.l[[i]])) ##Merge all the information from both experiments
-#names(PS.l) <- names(PS2.l) ###Use the names from test list
-#    saveRDS(PS.l, file="/SAN/Susanas_den/EimeriaMicrobiome/R/results/PhyloSeqList_All.Rds") ###For primer analysis
-#saveRDS(PS2, file="/SAN/Susanas_den/EimeriaMicrobiome/R/results/PhyloSeqData_TestRun.Rds") ###For Sample analysis (Susana and Victor)
-#saveRDS(PS1, file="/SAN/Susanas_den/EimeriaMicrobiome/R/results/PhyloSeqData_FullRun_1.Rds") ###For Sample analysis (Susana and Victor)
-#rm(along,PS1.l, PS2.l)
+##Makethe next function work 
+MA1 <- MA1[which(!unlist(lapply(MA1@taxonTable, is.null))), ] 
+PS1.l <- toPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
+
+
+MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ]
+PS2.l <- toPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
+
+along<- names(PS2.l)
+
+PS.l <- lapply(along, function(i) merge_phyloseq(PS1.l[[i]], PS2.l[[i]])) ##Merge all the information from both experiments
+names(PS.l) <- names(PS2.l) ###Use the names from test list
+
+# adding sample data
+for (i in 1:38)
+{
+    sam_data(PS.l[[i]]) <- sample.data
+}
+
+saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList_All.Rds") ###For primer analysis
 
