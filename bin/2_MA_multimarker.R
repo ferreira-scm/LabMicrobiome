@@ -276,13 +276,21 @@ if(!exists("sample.data")){
     source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_Data_preparation.R")
 }
 
+if(!exists("sdt")){
+    source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/2_qPCR_data_preparation.R")
+}
+
+#little fix
+rownames(sdt) <- sdt$labels
+rownames(sdt)==rownames(sample.data)
+
 ##To phyloseq
 PS1 <- toPhyloseq(MA1, colnames(MA1))
 PS2<- toPhyloseq(MA2, colnames(MA2))
 
 PS <- merge_phyloseq(PS1, PS2) ###Works!
 
-PS@sam_data <- sample_data(sample.data)
+PS@sam_data <- sample_data(sdt)
 
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
 
