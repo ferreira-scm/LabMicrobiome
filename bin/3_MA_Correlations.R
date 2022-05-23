@@ -49,6 +49,12 @@ cor.test(sdt$Genome_copies_gFaeces, sdt$EimeriaSums)
 cor.test(sdt$Genome_copies_gFaeces, sdt$TotalSums)
 cor.test(sdt$OPG, sdt$EimeriaSums)
 
+# Linear models
+Alm <- lm(Genome_copies_gFaeces ~ EimeriaSums + TotalSums, sdt)
+
+summary(Alm)
+
+
 # plotting no filter correlation
 a <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), log(1+EimeriaSums)))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
@@ -167,6 +173,18 @@ dsdt <- merge(ddf,sam, by="labels")
 cor.test(dsdt$Genome_copies_gFaeces, dsdt$EimeriaSums)
 cor.test(dsdt$Genome_copies_gFaeces, dsdt$TotalSums)
 cor.test(dsdt$OPG, dsdt$EimeriaSums)
+
+
+# Linear models
+Dlm <- lm(Genome_copies_gFaeces ~ EimeriaSums, dsdt)
+
+summary(Dlm)
+
+library(lmtest)
+
+coxtest(Alm, Dlm)
+
+jtest(Alm, Dlm)
 
 # plotting no filter correlation
 d <-ggplot(dsdt, aes(Genome_copies_gFaeces, EimeriaSums))+
