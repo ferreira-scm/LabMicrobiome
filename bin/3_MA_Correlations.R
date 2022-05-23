@@ -203,3 +203,32 @@ d
 plot_grid(a,b,c,d) -> fCor
 
 ggplot2::ggsave(file="fig/FirstCOrrs.pdf", fCor, width = 10, height = 10, dpi = 600)
+
+########### we start with our "biological" normalization
+
+# what is the most abundant taxa?
+
+#remotes::install_github("gmteunisse/Fantaxtic")
+
+library("fantaxtic")
+
+top <- get_top_taxa(PS, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
+
+ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
+
+fantaxtic_bar(ps_tmp, color_by="Phylum", label_by="family", other_label="Other")
+
+get_taxa_unique(top, "family")
+
+most_abundant_taxa <- sort(taxa_sums(PS), TRUE)[1:20]
+
+PS10 <- prune_taxa(names(most_abundant_taxa), PS)
+
+get_taxa_unique(PS10, "superkingdom")
+
+eukPS <- subset_taxa(PS, superkingdom=="Eukaryota")
+
+eukPS
+
+get_taxa_unique(PS10, "family")
+
