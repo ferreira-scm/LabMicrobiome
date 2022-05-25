@@ -125,7 +125,7 @@ if(!exists("sample.data")){
  }
 
 if(!exists("sdt")){
-    source("bin/2_qPCR_data_preparation.R")
+    source("bin/1_qPCR_data_preparation.R")
 }
 
 #little fix

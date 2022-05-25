@@ -277,7 +277,7 @@ if(!exists("sample.data")){
 }
 
 if(!exists("sdt")){
-    source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/2_qPCR_data_preparation.R")
+    source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_qPCR_data_preparation.R")
 }
 
 #little fix
