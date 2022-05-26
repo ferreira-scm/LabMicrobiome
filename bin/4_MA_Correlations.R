@@ -11,8 +11,9 @@ require(grid)
 require(grid_extra)
 require(cowplot)
 library(microbiome)
+library(DESeq2)
 ## using the devel
-#devtools::load <- all("/SAN/Susanas_den/MultiAmplicon/")
+#devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 PS <- readRDS("tmp/PhyloSeqData_All.Rds")
 PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
@@ -120,33 +121,35 @@ b <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), log(1+FilEimeriaSums)))+
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
 cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
+
 #create total sums and Eimeria sums data frame
-cdf <- data.frame(sample_sums(otu_table(PSTSS)))
-cdf$labels <- rownames(cdf)
-ceimf <-as.data.frame(sample_sums(cPSeimf))
-ceimf$labels <- rownames(ceimf)
-names(ceimf) <- c("EimeriaSums", "labels")
-names(cdf) <- c("TotalSums", "labels")
+bdf <- data.frame(sample_sums(otu_table(ppPS)))
+bdf$labels <- rownames(bdf)
+bdf$eim <-(sample_sums(otu_table(bPSeimf)))
+names(bdf) <- c("Fil_TotalSums", "labels", "FilEimeriaSums")
+
+
+df <-data.frame(sample_sums(otu_table(cPSeimf)))
+df$labels <- rownames(df)
+names(df) <- c("TSS_Eim", "labels")
+
 #merge
-cdf <- merge(cdf,ceimf, by="labels", all=FALSE) 
-csdt <- merge(cdf,sam, by="labels") 
+sdt <- merge(df, sdt, by="labels", all=TRUE) 
 
 #correlation tests
-cor.test(csdt$Genome_copies_gFaeces, csdt$EimeriaSums, method="spearman")
-cor.test(csdt$OPG, csdt$EimeriaSums, method="spearman")
+cor.test(sdt$Genome_copies_gFaeces, sdt$TSS_Eim, method="spearman")
+cor.test(sdt$OPG, sdt$TSS_Eim, method="spearman")
 
 # Linear models
-Clm <- lm(Genome_copies_gFaeces ~ EimeriaSums, csdt)
+Clm <- lm(Genome_copies_gFaeces ~ TSS_Eims, sdt)
 summary(Clm)
 
-library(lmtest)
-
-coxtest(Alm, Blm)
-
-jtest(Alm, Blm)
+#library(lmtest)
+#coxtest(Alm, Blm)
+#jtest(Alm, Blm)
 
 # plotting TSS correlation
-c <-ggplot(csdt, aes(log(1+Genome_copies_gFaeces), log(1+EimeriaSums)))+
+c <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), log(1+TSS_Eim)))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
         xlab("Genome copies gFaeces log(1+)")+
     ylab("SA Eimeriidae log(1+)")+
@@ -158,82 +161,73 @@ c <-ggplot(csdt, aes(log(1+Genome_copies_gFaeces), log(1+EimeriaSums)))+
 
 c
 
+Sys.setenv("DISPLAY"=":10.0")
+
 #### using Relative log expression
 library(edgeR)
-
-bPSeimf
-
 edgePS <- phyloseq_to_edgeR(bPSeimf)
+edgePS$samples$labels <- rownames(edgePS$samples)
+df <- (edgePS$samples)
 
-head(edgePS$samples)
+head(df)
 
-edgePS$samples$norm.factors
+df$group <- NULL
+df$lib.size <- NULL
 
-head(sample_sums(bPSeimf))
+names(df) <- c("REL_Eim", "labels")
 
-edgePS$samples
-
-RELdf <- edgePS$samples
-
-summary(RELdf$norm.factors)
-
-rownames(RELdf)
-
-cdf
-
-bPSeimf
-
-rownames(edgePS)
+#merge
+sdt <- merge(df, sdt, by="labels", all=TRUE) 
 
 #hist(log10(apply(otu_table(edgePS),1,var)),
 #     breaks=87,
 #     xlab="log10(variance)")
 
-
-cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
-#create total sums and Eimeria sums data frame
-cdf <- data.frame(sample_sums(otu_table(PSTSS)))
-cdf$labels <- rownames(cdf)
-ceimf <-as.data.frame(sample_sums(cPSeimf))
-ceimf$labels <- rownames(ceimf)
-names(ceimf) <- c("EimeriaSums", "labels")
-names(cdf) <- c("TotalSums", "labels")
-#merge
-cdf <- merge(cdf,ceimf, by="labels", all=FALSE) 
-csdt <- merge(cdf,sam, by="labels") 
-
 #correlation tests
-cor.test(csdt$Genome_copies_gFaeces, csdt$EimeriaSums, method="spearman")
-cor.test(csdt$OPG, csdt$EimeriaSums, method="spearman")
+cor.test(sdt$Genome_copies_gFaeces, sdt$REL_Eim, method="spearman")
+cor.test(sdt$OPG, sdt$REL_Eim, method="spearman")
 
 # Linear models
-Clm <- lm(Genome_copies_gFaeces ~ EimeriaSums, csdt)
+Dlm <- lm(Genome_copies_gFaeces ~ REL_Eim, sdt)
+summary(Dlm)
 
-summary(Clm)
-
-library(lmtest)
-
-coxtest(Alm, Blm)
-
-jtest(Alm, Blm)
-
-# plotting TSS correlation
-c <-ggplot(csdt, aes(log(1+Genome_copies_gFaeces), log(1+EimeriaSums)))+
+# plotting REL correlation
+d <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), REL_Eim))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
         xlab("Genome copies gFaeces log(1+)")+
-    ylab("SA Eimeriidae log(1+)")+
-    ggtitle("TSS")+
+    ylab("SA Eimeriidae")+
+    ggtitle("REL")+
         labs(tag= "c)")+
-        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
+        annotate(geom="text", x=20, y=5, label="Spearman rho=-0.90, p<0.001")+
         theme_bw()+
     theme(text = element_text(size=16))
 
-c
+d
 
+# plotting VST correlation
+# I think this is not correct. Come back to this later
+DPS <- bPSeimf
+otu_table(DPS) <- otu_table(DPS)+1
+deseq <- phyloseq_to_deseq2(DPS, ~Strain)
+deseq <- estimateSizeFactors(deseq)
+deseq <- estimateDispersions(deseq)
+deseq.vst <- getVarianceStabilizedData(deseq)
+deseq.vst <- data.frame(deseq.vst)
+deseq <- t(deseq.vst)
+deseq.vst$vst_Eim <- rowSums(deseq.vst)
 
+# save plots of what we have so far
 plot_grid(a,b,c,d) -> fCor
 
-ggplot2::ggsave(file="fig/FirstCOrrs.pdf", fCor, width = 10, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/SACOrrs.pdf", fCor, width = 10, height = 10, dpi = 600)
+
+fCor
+
+png(filename="fig/SA_cor.png",
+    width =10, height = 10, units = "in", res= 300)
+fCor
+dev.off()
+
 
 ########### we start with our "biological" normalization
 
@@ -243,7 +237,7 @@ ggplot2::ggsave(file="fig/FirstCOrrs.pdf", fCor, width = 10, height = 10, dpi = 
 
 library("fantaxtic")
 
-top <- get_top_taxa(PS, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
+top <- get_top_taxa(ppPS, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
 
 ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
 
@@ -251,15 +245,14 @@ fantaxtic_bar(ps_tmp, color_by="Phylum", label_by="family", other_label="Other")
 
 get_taxa_unique(top, "family")
 
-most_abundant_taxa <- sort(taxa_sums(PS), TRUE)[1:20]
+most_abundant_taxa <- sort(taxa_sums(ppPS), TRUE)[1:20]
 
-PS10 <- prune_taxa(names(most_abundant_taxa), PS)
+PS20 <- prune_taxa(names(most_abundant_taxa), ppPS)
 
-get_taxa_unique(PS10, "superkingdom")
+PS20
 
-eukPS <- subset_taxa(PS, superkingdom=="Eukaryota")
+get_taxa_unique(PS20, "family")
 
-eukPS
 
-get_taxa_unique(PS10, "family")
+library(MASS)
 
