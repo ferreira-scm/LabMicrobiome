@@ -50,3 +50,4 @@ png(filename="fig/abundance_wang.png",
     width =7, height = 5, units = "in", res= 300)
 wang
 dev.off()
+

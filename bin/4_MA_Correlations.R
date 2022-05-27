@@ -64,9 +64,6 @@ a <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), log(1+EimeriaSums)))+
     theme(text = element_text(size=16))
 
 ## Now we filter for abundance 0.01% and prevalence 1%
-#PS <- prune_samples(sample_sums(PS)>0, PS)
-#PS.l <- lapply(PS.l, function(x){
-
 # abundance filtering to 0.001%?
 x = taxa_sums(PSwang)
 keepTaxa = (x / sum(x) > 0.00001)
@@ -205,54 +202,86 @@ d <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), REL_Eim))+
 d
 
 # plotting VST correlation
-# I think this is not correct. Come back to this later
+#Come back to this later
 DPS <- bPSeimf
 otu_table(DPS) <- otu_table(DPS)+1
+
 deseq <- phyloseq_to_deseq2(DPS, ~Strain)
-deseq <- estimateSizeFactors(deseq)
-deseq <- estimateDispersions(deseq)
-deseq.vst <- getVarianceStabilizedData(deseq)
-deseq.vst <- data.frame(deseq.vst)
-deseq <- t(deseq.vst)
-deseq.vst$vst_Eim <- rowSums(deseq.vst)
+deseq <- varianceStabilizingTransformation(deseq)
+
+#deseq <- estimateSizeFactors(deseq)
+#deseq <- estimateDispersions(deseq)
+#deseq.vst <- getVarianceStabilizedData(deseq)
+#deseq.vst <- data.frame(deseq.vst)
+#deseq <- t(deseq.vst)
+#deseq.vst$vst_Eim <- rowSums(deseq.vst)
+
+
+#### experimental quantification
+#ABsolute Count Scaling: scaled to DNA/g/faeces
+
+sdt$ACS_Eim <- sdt$TSS_Eim*sdt$DNA_g_feces
+
+#correlation tests
+cor.test(sdt$Genome_copies_gFaeces, sdt$ACS_Eim, method="spearman")
+cor.test(sdt$OPG, sdt$ACS_Eim, method="spearman")
+
+# Linear models
+Elm <- lm(Genome_copies_gFaeces ~ ACS_Eim, sdt)
+summary(Elm)
+
+# plotting REL correlation
+e <-ggplot(sdt, aes(log(1+Genome_copies_gFaeces), log(1+ACS_Eim)))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+        xlab("Genome copies gFaeces log(1+)")+
+    ylab("SA Eimeriidae log(1+)")+
+    ggtitle("ACS")+
+        labs(tag= "c)")+
+        annotate(geom="text", x=20, y=5, label="Spearman rho=-0.94, p<0.001")+
+        theme_bw()+
+    theme(text = element_text(size=16))
+
+e
 
 # save plots of what we have so far
-plot_grid(a,b,c,d) -> fCor
+plot_grid(a,b,c,d,e) -> fCor
 
-ggplot2::ggsave(file="fig/SACOrrs.pdf", fCor, width = 10, height = 10, dpi = 600)
-
-fCor
+ggplot2::ggsave(file="fig/SACOrrs.pdf", fCor, width = 14, height = 14, dpi = 600)
 
 png(filename="fig/SA_cor.png",
-    width =10, height = 10, units = "in", res= 300)
+    width =14, height = 14, units = "in", res= 300)
 fCor
 dev.off()
 
+########### let's do some exploration before our "biological" normalization
+# within individual variation
 
-########### we start with our "biological" normalization
+library(microbiome)
 
-# what is the most abundant taxa?
+sdt$EH_ID <- as.factor(sdt$EH_ID)
 
-#remotes::install_github("gmteunisse/Fantaxtic")
+summary(sdt$EH_ID)
 
-library("fantaxtic")
+## Now we filter for abundance 0.01% and prevalence 1%
+# abundance filtering to 0.001%?
+x = taxa_sums(PS)
+keepTaxa = (x / sum(x) > 0.00001)
+summary(keepTaxa)
+fPS = prune_taxa(keepTaxa, PS)
 
-top <- get_top_taxa(ppPS, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
+# plus prevalnce filter at 1%
+fPS <- phyloseq_filter_prevalence(fPS, prev.trh=0.01)
 
-ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
+KeepTaxap <- prevalence(fPS)>0.01
+fPS <- prune_taxa(KeepTaxap, fPS)
+# subset samples based on total read count (500 reads)
+fPS <- phyloseq::subset_samples(fPS, phyloseq::sample_sums(fPS) > 500)
+fPS <- prune_samples(sample_sums(fPS)>0, fPS)
+fPS
 
-fantaxtic_bar(ps_tmp, color_by="Phylum", label_by="family", other_label="Other")
+TSSfPS <- microbiome::transform(fPS, "compositional")
 
-get_taxa_unique(top, "family")
+plot_core(TSSfPS,
+          plot.type="heatmap")
 
-most_abundant_taxa <- sort(taxa_sums(ppPS), TRUE)[1:20]
-
-PS20 <- prune_taxa(names(most_abundant_taxa), ppPS)
-
-PS20
-
-get_taxa_unique(PS20, "family")
-
-
-library(MASS)
 
