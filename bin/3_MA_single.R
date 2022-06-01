@@ -19,9 +19,9 @@ devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 ## re-run or use pre-computed results for different parts of the pipeline:
 ## Set to FALSE to use pre-computed and saved results, TRUE to redo analyses.
-doFilter <- TRUE
-doMultiAmp <- TRUE
-doTax <- TRUE
+doFilter <- FALSE
+doMultiAmp <- FALSE
+doTax <- FALSE
 
 ###################Full run Microbiome#######################
 #Preparation of files
