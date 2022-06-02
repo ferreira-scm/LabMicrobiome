@@ -23,6 +23,23 @@ PSfil <- filter(PS=PS, abund=0.00001, prev=0.01, reads=500)
 PSwangfil <- filter(PS=PSwang, abund=0.00001, prev=0.01, reads=500)
 
 
+names(sam_data(PS))
+names(sam_data(PSwang))
+
+plot_ordination(PSwang, ordinate(PSwang, "MDS"), color=
+
+
+    sd <- sam_data(PS)
+
+
+    sam$Strain <- as.factor(sam$Strain)
+
+    summary(sam$)
+
+sam
+    
+#df <- data.frame(sample_sums(otu_table(PS)))
+
 library("fantaxtic")
 
 top <- get_top_taxa(PSfil, 10, relative=TRUE, discard_other=FALSE, other_label="Other")

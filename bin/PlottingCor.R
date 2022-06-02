@@ -1,7 +1,25 @@
+
+filter <- function(PS, abund, prev, reads){
+x = taxa_sums(PS)
+keepTaxa = (x / sum(x) > abund)
+summary(keepTaxa)
+PS = prune_taxa(keepTaxa, PS)
+
+# plus prevalnce filter at 1%
+KeepTaxap <- prevalence(PS)>prev
+PS <- prune_taxa(KeepTaxap, PS)
+# subset samples based on total read count (500 reads)
+PS <- phyloseq::subset_samples(PS, phyloseq::sample_sums(PS) > reads)
+PS <- prune_samples(sample_sums(PS)>0, PS)
+}
+
+
+
 Plotting_cor <- function(PS, name, dir){
 #No filters
 library("ggpmisc")
 
+sam <- data.frame(sample_data(PS))
 PSeimf <- subset_taxa(PS, family%in%"Eimeriidae")
 
 #create total sums and Eimeria sums data frame
@@ -43,23 +61,8 @@ a <-ggplot(sdt, aes(y=logGC, x=logEimeriaSums))+
     theme_bw()+
     theme(text = element_text(size=16))
 
-## Now we filter for abundance 0.01% and prevalence 1%
-# abundance filtering to 0.001%?
-x = taxa_sums(PS)
-keepTaxa = (x / sum(x) > 0.00001)
-summary(keepTaxa)
-pPS = prune_taxa(keepTaxa, PS)
-
-# plus prevalnce filter at 1%
-#ppPS <- phyloseq_filter_prevalence(pPS, prev.trh=0.01)
-
-KeepTaxap <- prevalence(pPS)>0.01
-ppPS <- prune_taxa(KeepTaxap, pPS)
-ppPS <- prune_samples(sample_sums(ppPS)>0, ppPS)
-# subset samples based on total read count (500 reads)
-ppPS <- phyloseq::subset_samples(ppPS, phyloseq::sample_sums(ppPS) > 500)
-ppPS <- prune_samples(sample_sums(ppPS)>0, ppPS)
-ppPS
+#now we filter
+ppPS <- filter(PS, 0.00001, 0.01, 500)
 
 #now we make the data frame
 bPSeimf <- subset_taxa(ppPS, family%in%"Eimeriidae")

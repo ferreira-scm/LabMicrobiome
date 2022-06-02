@@ -18,7 +18,7 @@ library(DESeq2)
 PS <- readRDS("tmp/PhyloSeqData_All.Rds")
 PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PhyloSeqData18S.Rds")
-PSwang <- readRDS("tmp/PS_wang.Rds")
+PSwang <- PS.l[[31]]
 
 sam <- data.frame(sample_data(PS))
 
@@ -29,7 +29,8 @@ PSwang <- prune_samples(sample_sums(PSwang)>0, PSwang)
 source("bin/PlottingCor.R")
 
 Plotting_cor(PS, "MA", dir="fig/MA/")
-Plotting_cor(PSwang, "SA", dir="fig/SA/")
+
+Plotting_cor(PS18S, "SA", dir="fig/SA/")
 
 for (i in 1:38) {
     nm <- names(PS.l)[i]
@@ -55,3 +56,4 @@ for (i in 1:38) {
     rm(p)
 }
 
+#######################
