@@ -18,9 +18,6 @@ library(DESeq2)
 source("bin/4_MA_Correlations.R")
 source("bin/PlottingCor.R")
 
-#plot_heatmap(Tps, sample.label="dpi", sample.order="dpi")
-
-#plot_heatmap(Tps18S, sample.label="dpi", sample.order="dpi", taxa.label="family")
 
 ps.ord <- ordinate(Tps, "NMDS", "bray")
 
@@ -38,6 +35,39 @@ p2 <- plot_ordination(Tps18S, ps18S.ord, type="samples", color="dpi")
 print(p2)
 
 
+#test <- summarize_taxa(Tps, "phylum")
+dpiPS <- merge_samples(Tps, "dpi")
+
+dpiPS
+
+plot_bar(dpiPS, fill="phylum", x="dpi")
+
+
+dpi.melt <- psmelt(dpiPS)
+
+
+str(dpi.melt$phylum)
+
+names(dpi.melt)
+
+head(dpi.melt)
+
+#    theme(legend.position="none")
+
+library(viridis)
+
+library(forcats)
+
+ggplot(dpi.melt, aes(x=dpi, y=Abundance, fill=phylum))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack")+
+    scale_fill_viridis(discrete = T) +
+    theme_minimal()
+
+
+
+names(prevalencedf)
 
 sample_data(Tps18S)$dpi <- as.factor(sample_data(Tps18S)$dpi)
 
@@ -49,7 +79,7 @@ all <- fantaxtic_bar(ps_tmp, color_by="phylum", label_by="family", other_label="
 
 all
 
-top <- get_top_taxa(fPS18S, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
+top <- get_top_taxa(fPS18S, 10, relative=FALSE, discard_other=FALSE, other_label="Other")
 ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
 wang <- fantaxtic_bar(ps_tmp, color_by="family", label_by="genus", other_label="Other")
 
@@ -61,4 +91,16 @@ png(filename="fig/abundance_wang.png",
     width =7, height = 5, units = "in", res= 300)
 wang
 dev.off()
+
+##########################################
+Tps18S
+
+plot_bar(Tps18S, fill="phylum", x="dpi")
+
+plot_bar(Tps, fill="phylum", x="dpi")
+
+
+#plot_heatmap(Tps, sample.label="dpi", sample.order="dpi")
+
+#plot_heatmap(Tps18S, sample.label="dpi", sample.order="dpi", taxa.label="family")
 
