@@ -285,8 +285,11 @@ rownames(sdt) <- sdt$labels
 rownames(sdt)==rownames(sample.data)
 
 ##To phyloseq
-PS1 <- toPhyloseq(MA1, colnames(MA1))
-PS2<- toPhyloseq(MA2, colnames(MA2))
+
+source("bin/toPhyloseq.R")
+
+PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
+PS2<- TMPtoPhyloseq(MA2, colnames(MA2))
 
 PS <- merge_phyloseq(PS1, PS2) ###Works!
 
@@ -299,23 +302,32 @@ saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rd
 ## just sorting out primers whithout any taxannot
 
 ##Makethe next function work 
-MA1 <- MA1[which(!unlist(lapply(MA1@taxonTable, is.null))), ] 
-PS1.l <- toPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
+#MA1 <- MA1[which(!unlist(lapply(MA1@taxonTable, is.null))), ] 
+PS1.l <- TMPtoPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
+#MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ]
+PS2.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
 
 
-MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ]
-PS2.l <- toPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
+names(PS1.l)== names(PS2.l)
+# 7 amplicons are empty.
+PS.l <- lapply(along, function(i) try(merge_phyloseq(PS1.l[[i]], PS2.l[[i]]))) ##Merge all the information from both experiments
 
-along<- names(PS2.l)
-
-PS.l <- lapply(along, function(i) merge_phyloseq(PS1.l[[i]], PS2.l[[i]])) ##Merge all the information from both experiments
 names(PS.l) <- names(PS2.l) ###Use the names from test list
 
+
+row.names(sdt) <- sdt$labels
+
+row.names(sdt)==row.names(sample.data)
+
+length(PS.l)
+
 # adding sample data
-for (i in 1:38)
+for (i in 1:48)
 {
-    sam_data(PS.l[[i]]) <- sample.data
+    try(sam_data(PS.l[[i]]) <- sdt)
 }
+
+head(sam_data(PS.l[[1]]))
 
 saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList_All.Rds") ###For primer analysis
 

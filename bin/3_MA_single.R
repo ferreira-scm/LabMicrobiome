@@ -153,18 +153,21 @@ PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
 # adding sample data
 for (i in 1:3)
 {
-    sam_data(PS.l[[i]]) <- sample.data
+    sample_data(PS.l[[i]]) <- sdt
 }
 
 
 saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S.Rds")
 
 ###For Microbiome analysis (Victor)
-PS.18S <- phyloseq(
-    otu_table(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
-    sample_data(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
-    tax_table(PS.l$wang1141_13_F.Nem_0425_6_3_R))
+
+PS.18S <- PS.l[[2]]
+
+#PS18S <- phyloseq(
+#    otu_table(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
+#    sample_data(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
+#    tax_table(PS.l$wang1141_13_F.Nem_0425_6_3_R))
 
 #sum(otu_table(PS.18S)) ##Total denoised reads = 853,134
-saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_wang.Rds") ###Information from 18S
+saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang.Rds") ###Information from 18S
 

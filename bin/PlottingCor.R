@@ -1,29 +1,30 @@
+######
 
-filter <- function(PS, abund, prev, reads){
-x = taxa_sums(PS)
-keepTaxa = (x / sum(x) > abund)
+
+fil <- function(ps){
+x = taxa_sums(ps)
+keepTaxa = (x / sum(x) > 0.00001)
 summary(keepTaxa)
-PS = prune_taxa(keepTaxa, PS)
+ps = prune_taxa(keepTaxa, ps)
 
 # plus prevalnce filter at 1%
-KeepTaxap <- prevalence(PS)>prev
-PS <- prune_taxa(KeepTaxap, PS)
+KeepTaxap <- prevalence(ps)>0.01
+ps <- prune_taxa(KeepTaxap, ps)
 # subset samples based on total read count (500 reads)
-PS <- phyloseq::subset_samples(PS, phyloseq::sample_sums(PS) > reads)
-PS <- prune_samples(sample_sums(PS)>0, PS)
+ps <- phyloseq::subset_samples(ps, phyloseq::sample_sums(ps) > 500)
+ps <- prune_samples(sample_sums(ps)>0, ps)
 }
 
 
-
-Plotting_cor <- function(PS, name, dir){
+Plotting_cor <- function(ps, name, dir){
 #No filters
 library("ggpmisc")
 
-sam <- data.frame(sample_data(PS))
-PSeimf <- subset_taxa(PS, family%in%"Eimeriidae")
+sam <- data.frame(sample_data(ps))
+PSeimf <- subset_taxa(ps, family%in%"Eimeriidae")
 
 #create total sums and Eimeria sums data frame
-df <- data.frame(sample_sums(otu_table(PS)))
+df <- data.frame(sample_sums(otu_table(ps)))
 df$labels <- rownames(df)
 eimf <-as.data.frame(sample_sums(PSeimf))
 eimf$labels <- rownames(eimf)
@@ -62,7 +63,7 @@ a <-ggplot(sdt, aes(y=logGC, x=logEimeriaSums))+
     theme(text = element_text(size=16))
 
 #now we filter
-ppPS <- filter(PS, 0.00001, 0.01, 500)
+ppPS <- fil(ps)
 
 #now we make the data frame
 bPSeimf <- subset_taxa(ppPS, family%in%"Eimeriidae")
