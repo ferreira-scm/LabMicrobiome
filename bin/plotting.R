@@ -27,7 +27,6 @@ print(p1)
 p3 <- plot_ordination(Tps, ps.ord, type="taxa", color="phylum")
 print(p3)
 
-
 plot(sample_data(Tps)$DNA_g_feces ~ as.numeric(sample_data(Tps)$dpi))
 
 ps18S.ord <- ordinate(Tps18S, "NMDS", "bray")
@@ -35,28 +34,12 @@ p2 <- plot_ordination(Tps18S, ps18S.ord, type="samples", color="dpi")
 print(p2)
 
 
-#test <- summarize_taxa(Tps, "phylum")
 dpiPS <- merge_samples(Tps, "dpi")
-
-dpiPS
-
-plot_bar(dpiPS, fill="phylum", x="dpi")
-
 
 phyDPI <- aggregate_taxa(dpiPS, level = "phylum")
 
 phy.melt <- psmelt(phyDPI)
-
 dpi.melt <- psmelt(dpiPS)
-
-
-str(dpi.melt$phylum)
-
-names(dpi.melt)
-
-head(dpi.melt)
-
-#    theme(legend.position="none")
 
 library(forcats)
 
@@ -67,20 +50,13 @@ ggplot(dpi.melt, aes(x=dpi, y=Abundance, fill=phylum))+
     scale_color_brewer(palette="Dark2")+
     theme_minimal()
 
-
 phy.melt$phylum <- factor(phy.melt$phylum)
 
 library(RColorBrewer)
 
-
-
-
 nb.c <-length(levels(phy.melt$phylum))
 
-mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
-
-
-
+mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(nb.c)
 
 PHYdpi <- ggplot(phy.melt, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
 #    coord_flip()+
@@ -90,12 +66,43 @@ PHYdpi <- ggplot(phy.melt, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abun
 #    scale_color_brewer(palette="Set2")+
     theme_minimal()
 
+PHYdpi
 
+
+sample_data(Tps18S)$dpi <- factor(sample_data(Tps18S)$dpi)
+
+#quick dirty fix
+sample_data(Tps18S) <- sample_data(Tps)
+
+dpi18 <- merge_samples(Tps18S, "dpi")
+
+phyDPI18 <- aggregate_taxa(dpi18, level = "phylum")
+
+dpi.melt18 <- psmelt(phyDPI18)
+
+dpi.melt18$phylum <- factor(dpi.melt18$phylum)
+
+nb.c <-length(levels(dpi.melt18$phylum))
+
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
+
+PHYdpi18 <- ggplot(dpi.melt18, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="gray")+
+    scale_fill_manual(values=mycolors)+
+#    scale_color_brewer(palette="Set2")+
+    theme_minimal()
+
+PHYdpi18
+
+# save
 
 ggplot2::ggsave(file="fig/phylum_abundance_DPI.pdf", PHYdpi, width = 5, height = 5, dpi = 300)
-
-
 ggplot2::ggsave(file="fig/phylum_abundance_DPI.png", PHYdpi, width = 5, height = 5, dpi = 300)
+
+ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.pdf", PHYdpi18, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.png", PHYdpi18, width = 5, height = 5, dpi = 300)
 
 
 names(prevalencedf)
