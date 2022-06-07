@@ -43,6 +43,10 @@ dpiPS
 plot_bar(dpiPS, fill="phylum", x="dpi")
 
 
+phyDPI <- aggregate_taxa(dpiPS, level = "phylum")
+
+phy.melt <- psmelt(phyDPI)
+
 dpi.melt <- psmelt(dpiPS)
 
 
@@ -54,17 +58,44 @@ head(dpi.melt)
 
 #    theme(legend.position="none")
 
-library(viridis)
-
 library(forcats)
 
 ggplot(dpi.melt, aes(x=dpi, y=Abundance, fill=phylum))+
 #    coord_flip()+
 #    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
     geom_bar(stat="identity", position="stack")+
-    scale_fill_viridis(discrete = T) +
+    scale_color_brewer(palette="Dark2")+
     theme_minimal()
 
+
+phy.melt$phylum <- factor(phy.melt$phylum)
+
+library(RColorBrewer)
+
+
+
+
+nb.c <-length(levels(phy.melt$phylum))
+
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
+
+
+
+
+PHYdpi <- ggplot(phy.melt, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="gray")+
+    scale_fill_manual(values=mycolors)+
+#    scale_color_brewer(palette="Set2")+
+    theme_minimal()
+
+
+
+ggplot2::ggsave(file="fig/phylum_abundance_DPI.pdf", PHYdpi, width = 5, height = 5, dpi = 300)
+
+
+ggplot2::ggsave(file="fig/phylum_abundance_DPI.png", PHYdpi, width = 5, height = 5, dpi = 300)
 
 
 names(prevalencedf)
