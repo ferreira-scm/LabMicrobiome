@@ -61,15 +61,13 @@ mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(nb.c)
 PHYdpi <- ggplot(phy.melt, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
 #    coord_flip()+
 #    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
-    geom_bar(stat="identity", position="stack", color="gray")+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
 #    scale_color_brewer(palette="Set2")+
     theme_minimal()
 
 PHYdpi
-
-
-sample_data(Tps18S)$dpi <- factor(sample_data(Tps18S)$dpi)
 
 #quick dirty fix
 sample_data(Tps18S) <- sample_data(Tps)
@@ -89,8 +87,9 @@ mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
 PHYdpi18 <- ggplot(dpi.melt18, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
 #    coord_flip()+
 #    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
-    geom_bar(stat="identity", position="stack", color="gray")+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
 #    scale_color_brewer(palette="Set2")+
     theme_minimal()
 
@@ -105,40 +104,97 @@ ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.pdf", PHYdpi18, width = 5, hei
 ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.png", PHYdpi18, width = 5, height = 5, dpi = 300)
 
 
-names(prevalencedf)
+##### intra individual abundance
 
-sample_data(Tps18S)$dpi <- as.factor(sample_data(Tps18S)$dpi)
+sample_data(Tps)$EH_ID <- as.factor(sample_data(Tps)$EH_ID)
+sample_data(Tps18S)$EH_ID <- as.factor(sample_data(Tps18S)$EH_ID)
 
-library("fantaxtic")
+ID <- merge_samples(Tps, "EH_ID")
+ID18 <- merge_samples(Tps18S, "EH_ID")
 
-top <- get_top_taxa(fPS, 10, relative=TRUE, discard_other=FALSE, other_label="Other")
-ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
-all <- fantaxtic_bar(ps_tmp, color_by="phylum", label_by="family", other_label="Other")
+phyID <- aggregate_taxa(ID, level = "phylum")
+phyID18 <- aggregate_taxa(ID18, level = "phylum")
 
-all
+IDmelt18 <- psmelt(phyID18)
+IDmelt <- psmelt(phyID)
 
-top <- get_top_taxa(fPS18S, 10, relative=FALSE, discard_other=FALSE, other_label="Other")
-ps_tmp <- name_taxa(top, label="Unknown", species = T, other_label="Other")
-wang <- fantaxtic_bar(ps_tmp, color_by="family", label_by="genus", other_label="Other")
+IDmelt18$phylum <- factor(IDmelt18$phylum)
+IDmelt$phylum <- factor(IDmelt$phylum)
 
-png(filename="fig/abundance_all.png",
-    width =7, height = 5, units = "in", res= 300)
-all
-dev.off()
-png(filename="fig/abundance_wang.png",
-    width =7, height = 5, units = "in", res= 300)
-wang
-dev.off()
-
-##########################################
-Tps18S
-
-plot_bar(Tps18S, fill="phylum", x="dpi")
-
-plot_bar(Tps, fill="phylum", x="dpi")
+nb.c <-length(levels(IDmelt$phylum))
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
+ID <- ggplot(IDmelt, aes(x=EH_ID, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
+#    scale_color_brewer(palette="Set2")+
+    theme_minimal()
 
 
-#plot_heatmap(Tps, sample.label="dpi", sample.order="dpi")
+nb.c <-length(levels(IDmelt18$phylum))
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
+ID18 <- ggplot(IDmelt18, aes(x=EH_ID, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
+#    scale_color_brewer(palette="Set2")+
+    theme_minimal()
 
-#plot_heatmap(Tps18S, sample.label="dpi", sample.order="dpi", taxa.label="family")
+ID18
 
+pTps <- aggregate_taxa(Tps, level = "phylum")
+pTps.mel <- psmelt(pTps)
+
+pTps.mel$phylum <- as.factor(pTps.mel$phylum)
+nb.c <-length(levels(pTps.mel$phylum))
+mycolors <- colorRampPalette(brewer.pal(8, "Set3"))(nb.c)
+
+abps <- ggplot(pTps.mel, aes(x=labels, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum", x="Samples", y="Abundance (per g of faeces)")+
+    theme_bw()+
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+#          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+#          axis.line = element_line(colour = "black"))
+
+
+pTps18 <- aggregate_taxa(Tps18S, level = "phylum")
+pTps18.mel <- psmelt(pTps18)
+
+pTps18.mel$phylum <- as.factor(pTps18.mel$phylum)
+nb.c <-length(levels(pTps18.mel$phylum))
+mycolors <- colorRampPalette(brewer.pal(8, "Set3"))(nb.c)
+
+abps18 <- ggplot(pTps18.mel, aes(x=labels, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum", x="Samples", y="Abundance (per g of faeces)")+
+    theme_bw()+
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+#          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+#          axis.line = element_line(colour = "black"))
+
+
+abps18
+
+ggplot2::ggsave(file="fig/phylum_abundance_18S.pdf", abps18, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/phylum_abundance_all.png", abps, width = 5, height = 5, dpi = 300)

@@ -117,7 +117,7 @@ PlantMusWorms <-  subset_taxa(PS, !(phylum%in%"Streptophyta"| phylum%in%"Nematod
 
 PlantMusWorms
 
-Plotting_cor(ps=PlantMusWorms, "MA_no_plants_Mus_Nematodes", dir="fig/MA/")
+Plotting_cor(psb=PlantMusWorms, "MA_no_plants_Mus_Nematodes", dir="fig/MA/")
 
 
 
