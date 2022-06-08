@@ -63,31 +63,42 @@ for (i in 1:48) {
 }
 
 #######################
-# how does DNA g/faeces change with infection
-sdt <- data.frame(sample_data(Tps))
-
-ggplot(sdt, aes(y=DNA_g_feces, x=dpi, colour=EH_ID))+
-    geom_point()+
-    geom_line(aes(group=EH_ID))
-
-
 # how does host DNA change with infection
-
 Mus <- subset_taxa(Tps, genus%in%"Mus")
+Mus <-aggregate_taxa(Mus, level="genus")
 
 # no Mus reads in SA
 #Mus18S <- subset_taxa(Tps18S, genus%in%"Mus")
-m <-as.data.frame(sample_sums(Mus))
-m$labels <- rownames(m)
-names(m) <- c("MusSums", "labels")
-sdt <- merge(m, sdt, by="labels")
+m <- psmelt(Mus)
 
-ggplot(sdt, aes(dpi, MusSums))+
+mp <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
     geom_point()+
-    geom_line(aes(group=EH_ID))
+    geom_line(aes(group=EH_ID))+
+    labs(x="Days post infection", y="Host reads (per g of faeces)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "none")
+#          axis.line = element_line(colour = "black"))
+
+
+# how does DNA g/faeces change with infection
+dnap <- ggplot(m, aes(y=DNA_g_feces, x=dpi, color=EH_ID))+
+    geom_point()+
+    geom_line(aes(group=EH_ID))+
+    labs(x="Days post infection", y="DNA (per g of faeces)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "none")
+
+ggplot2::ggsave(file="fig/Mus_abundance.pdf", mp, width = 7, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/DNA_abundance_all.pdf", dnap, width = 7, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/Mus_abundance.png", mp, width = 7, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/DNA_abundance_all.png", dnap, width = 7, height = 5, dpi = 300)
 
 # and does it correlate with weight loss?
-cor.test(sdt$MusSums, sdt$weightloss, method="pearson")
+cor.test(m$Abundance, m$weightloss, method="pearson")
 
 ### OK, so let's remove food
 

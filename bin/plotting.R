@@ -196,5 +196,8 @@ abps18 <- ggplot(pTps18.mel, aes(x=labels, y=Abundance, fill=fct_reorder(phylum,
 
 abps18
 
-ggplot2::ggsave(file="fig/phylum_abundance_18S.pdf", abps18, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/phylum_abundance_all.png", abps, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/phylum_abundance_18S.pdf", abps18, width = 7, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/phylum_abundance_all.pdf", abps, width = 7, height = 5, dpi = 300)
+
+ggplot2::ggsave(file="fig/phylum_abundance_18S.png", abps18, width = 7, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/phylum_abundance_all.png", abps, width = 7, height = 5, dpi = 300)
