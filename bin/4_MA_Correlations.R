@@ -92,10 +92,29 @@ dnap <- ggplot(m, aes(y=DNA_g_feces, x=dpi, color=EH_ID))+
           panel.grid.minor = element_blank(),
           legend.position = "none")
 
+
+names(m)
+
+wl <- ggplot(m, aes(y=weightloss, x=dpi, color=EH_ID))+
+    geom_point()+
+    geom_line(aes(group=EH_ID))+
+    labs(x="Days post infection", y="DNA (per g of faeces)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "none")
+
 ggplot2::ggsave(file="fig/Mus_abundance.pdf", mp, width = 7, height = 5, dpi = 300)
 ggplot2::ggsave(file="fig/DNA_abundance_all.pdf", dnap, width = 7, height = 5, dpi = 300)
 ggplot2::ggsave(file="fig/Mus_abundance.png", mp, width = 7, height = 5, dpi = 300)
 ggplot2::ggsave(file="fig/DNA_abundance_all.png", dnap, width = 7, height = 5, dpi = 300)
+
+plot_grid(mp, dnap, wl, nrow=3) -> mplot
+
+ggplot2::ggsave(file="fig/Mus_WeighLoss.png", mplot, width = 7, height = 15, dpi = 300)
+
+ggplot2::ggsave(file="fig/Mus_WeighLoss.pdf", mplot, width = 7, height = 15, dpi = 300)
+
 
 # and does it correlate with weight loss?
 cor.test(m$Abundance, m$weightloss, method="pearson")
