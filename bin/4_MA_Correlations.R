@@ -14,7 +14,7 @@ library(microbiome)
 library(DESeq2)
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
-
+set.seed(500)
 source("bin/PlottingCor.R")
 
 PS <- readRDS("tmp/PhyloSeqData_All.Rds")
@@ -24,16 +24,19 @@ PSwang <- PS.l[[37]]
 
 
 # let's filter
-fPS18S <-fil(PS18S)
+fPS18S <- fil(PS18S)
 fPS <- fil(PS)
-
+fPSwang <- fil(PSwang)
 # and transform
 Tps18S <- fPS18S
 Tps <- fPS
 otu_table(Tps18S) <- otu_table(fPS18S)*sample_data(fPS18S)$DNA_g_feces
 otu_table(Tps) <- otu_table(fPS)*sample_data(fPS)$DNA_g_feces
 
+
+# now plotting
 Plotting_cor(ps=PS, "MA", dir="fig/MA/")
+
 Plotting_cor(ps=PS18S, "SA", dir="fig/SA/")
 
 #Plotting_cor(ps=PSwang, name="wang1141_13_F.Nem_0425_6_3_R", dir="fig/MA/")
@@ -41,15 +44,17 @@ Plotting_cor(ps=PS18S, "SA", dir="fig/SA/")
 for (i in 1:48) {
     nm <- names(PS.l)[i]
     ps <- PS.l[[i]]
+    print(nm)
     try(Plotting_cor(ps, name=nm, dir="fig/MA/"))
 }
 
 for (i in 1:48) {
     nm <- names(PS.l)[i]
     ps <- PS.l[[i]]
-    try(NoFilPlotting_cor(PS=ps, name=nm, dir="fig/MA/NoFil/"))
+    try(NoFilPlotting_cor(ps, name=nm, dir="fig/MA/NoFil/"))
 }
 
+#how many primers amplify Apicomplexa and which families?
 for (i in 1:48) {
 #    print(names(PS.l)[i])
     try(p <- subset_taxa(PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
@@ -62,13 +67,48 @@ for (i in 1:48) {
     rm(p)
 }
 
+# a little single amplicon digging
+p14 <- PS.l[[14]]
+p34 <- PS.l[[34]]
+p45 <- PS.l[[45]]
+PSwang <- PS.l[[37]]
+p14
+p34
+p45
+PSwang
+
+sample_sums(p14)
+sample_sums(p34)
+sample_sums(p45)
+sample_sums(PSwang)
+
+# now subset only Eimerridae reads
+ep14 <- subset_taxa(p14, family%in%"Eimeriidae")
+
+#how many reads?
+ep14
+sample_sums(ep14)
+
+# there's only one read in here
+ep34 <- subset_taxa(p34, family%in%"Eimeriidae")
+ep34
+sample_sums(ep34)
+ep45 <- subset_taxa(p45, family%in%"Eimeriidae")
+ep45
+sample_sums(ep45)
+epwang <- subset_taxa(PSwang, family%in%"Eimeriidae")
+epwang
+sample_sums(epwang)
+
+
 #######################
 # how does host DNA change with infection
 Mus <- subset_taxa(Tps, genus%in%"Mus")
 Mus <-aggregate_taxa(Mus, level="genus")
 
 # no Mus reads in SA
-#Mus18S <- subset_taxa(Tps18S, genus%in%"Mus")
+#Mus18S <- subset_taxa(Tps18S, phylum%in%"Chordata")
+
 m <- psmelt(Mus)
 
 mp <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
@@ -119,35 +159,110 @@ ggplot2::ggsave(file="fig/Mus_WeighLoss.pdf", mplot, width = 7, height = 15, dpi
 # and does it correlate with weight loss?
 cor.test(m$Abundance, m$weightloss, method="pearson")
 
+
+##################################################################
 ### OK, so let's remove food
+plant <- subset_taxa(fPS, !phylum%in%"Streptophyta")
+plant <- subPS(plant)
 
-rank_names(fPS)
+Mus <- subset_taxa(fPS, !phylum%in%"Chordata")
+Mus <- subPS(Mus)
 
-get_taxa_unique(PS18S, "phylum")
+worms <- subset_taxa(fPS, !phylum%in%"Nematoda")
+worms <- subPS(worms)
+
+plant18 <- subset_taxa(fPS18S, !phylum%in%"Streptophyta")
+plant18 <- subPS(plant18)
+
+#no Mus in fPS18S
+worms18 <- subset_taxa(fPS18S, !phylum%in%"Nematoda")
+worms18 <- subPS(worms18)
+
+TSS <- subPS(fPS)
+TSS18 <- subPS(fPS18S)
+
+PlantMusWorms <-  subset_taxa(fPS, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
+PlantMusWorms <- subPS(PlantMusWorms)
+
+PlantMus <-  subset_taxa(fPS, !(phylum%in%"Streptophyta"|phylum%in%"Chordata"))
+PlantMus <- subPS(PlantMus)
+
+PlantMusWorms18 <-  subset_taxa(fPS18S, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
+PlantMusWorms18 <- subPS(PlantMusWorms18)
+
+plantw <- subset_taxa(fPSwang, !phylum%in%"Streptophyta")
+plantw <- subPS(plantw)
+
+wormsw <- subset_taxa(fPSwang, !phylum%in%"Nematoda")
+wormsw <- subPS(wormsw)
+
+TSSwang <- subPS(fPSwang)
+
+PlantWormsw <-  subset_taxa(fPSwang, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda"))
+PlantWormsw <- subPS(PlantWormsw)
 
 
-get_taxa_unique(fPS, "phylum")
+cor.test(TSS$logGC, TSS$logA, method="pearson")
 
-plant18S <- subset_taxa(PS18S, !phylum%in%"Streptophyta")
+cor.test(plant$logGC, plant$logA, method="pearson")
 
-plant <-  subset_taxa(PS, !phylum%in%"Streptophyta")
+cor.test(worms$logGC, worms$logA, method="pearson")
 
-Plotting_cor(ps=plant18S, "SA_no_plants", dir="fig/SA/")
+cor.test(Mus$logGC, Mus$logA, method="pearson")
 
-Plotting_cor(ps=plant, "MA_no_plants", dir="fig/MA/")
+cor.test(PlantMusWorms$logGC, PlantMusWorms$logA, method="pearson")
 
-
-plant
-
-PS
-
-PlantMusWorms
-
-PlantMusWorms <-  subset_taxa(PS, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
-
-PlantMusWorms
-
-Plotting_cor(psb=PlantMusWorms, "MA_no_plants_Mus_Nematodes", dir="fig/MA/")
+cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
 
 
+cor.test(TSS18$logGC, TSS18$logA, method="pearson")
 
+cor.test(plant18$logGC, plant18$logA, method="pearson")
+
+cor.test(worms18$logGC, worms18$logA, method="pearson")
+
+cor.test(PlantMusWorms18$logGC, PlantMusWorms18$logA, method="pearson")
+
+
+cor.test(TSSwang$logGC, TSSwang$logA, method="pearson")
+
+cor.test(plantw$logGC, plantw$logA, method="pearson")
+
+cor.test(wormsw$logGC, wormsw$logA, method="pearson")
+
+cor.test(PlantWormsw$logGC, PlantWormsw$logA, method="pearson")
+
+
+
+# plotting TSS correlation
+a <- p_tss(TSS, "a)", "MA")
+b <- p_tss(plant, "b)", "MA no plant")
+c <- p_tss(Mus, "c)", "MA no host")
+d <- p_tss(worms, "d)", "MA no nematodes")
+e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
+
+plot_grid(a,b,c,d,e) -> p_cor
+
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA.pdf", p_cor, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA.png", p_cor, width = 15, height = 10, dpi = 600)
+
+a1 <- p_tss(TSS18, "a)", "SA")
+b1 <- p_tss(plant18, "b)", "SA no plant")
+#c1 <- p_tss(Mus18, "c)", "SA no host")
+d1 <- p_tss(worms18, "c)", "SA no nematodes")
+e1 <- p_tss(PlantMusWorms18, "d)", "SA no plants or nematodes")
+
+
+plot_grid(a1,b1,d1,e1) -> p_cor1
+ggplot2::ggsave(file="fig/SA/Biological_rem_SA.pdf", p_cor1, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/SA/Biological_rem_SA.png", p_cor1, width = 15, height = 10, dpi = 600)
+
+a2 <- p_tss(TSSwang, "a)", "MA wang")
+b2 <- p_tss(plantw, "b)", "MA wang no plant")
+#c1 <- p_tss(Mus18, "c)", "SA no host")
+d2 <- p_tss(wormsw, "c)", "MA wang no nematodes")
+e2 <- p_tss(PlantWormsw, "d)", "MA wang no plants or nematodes")
+
+plot_grid(a2,b2,d2,e2) -> p_cor2
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)

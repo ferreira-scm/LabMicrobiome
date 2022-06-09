@@ -309,7 +309,11 @@ PS2.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE)
 
 
 names(PS1.l)== names(PS2.l)
-# 7 amplicons are empty.
+
+
+along<- names(PS2.l) ## Run with less primers working
+
+                                        # 7 amplicons are empty.
 PS.l <- lapply(along, function(i) try(merge_phyloseq(PS1.l[[i]], PS2.l[[i]]))) ##Merge all the information from both experiments
 
 names(PS.l) <- names(PS2.l) ###Use the names from test list
