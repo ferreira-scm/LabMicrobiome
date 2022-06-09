@@ -240,8 +240,9 @@ b <- p_tss(plant, "b)", "MA no plant")
 c <- p_tss(Mus, "c)", "MA no host")
 d <- p_tss(worms, "d)", "MA no nematodes")
 e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
+f <- p_tss(PlantMus, "f)", "MA no plants or host")
 
-plot_grid(a,b,c,d,e) -> p_cor
+plot_grid(a,b,c,d,e, f) -> p_cor
 
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA.pdf", p_cor, width = 15, height = 10, dpi = 600)
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA.png", p_cor, width = 15, height = 10, dpi = 600)
