@@ -1,0 +1,74 @@
+#!/usr/bin/Rscript
+
+library(ggplot2)
+library(dada2)
+#library(MultiAmplicon, lib.loc="/usr/local/lib/R/site-library/")
+library(reshape)
+library(phyloseq)
+
+library(DECIPHER)
+
+#remotes::install_github("vmikk/metagMisc")
+## using the devel
+devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
+
+PS <- readRDS("tmp/PhyloSeqData_All.Rds")
+PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
+PS18S <- readRDS("tmp/PS_18Swang.Rds")
+PSwang <- PS.l[[37]]
+
+source("bin/PlottingCor.R")
+# let's filter
+fPS18S <- fil(PS18S)
+fPS <- fil(PS)
+fPSwang <- fil(PSwang)
+
+## OK, now we want all the Eimeria sequences
+
+Eim <- subset_taxa(fPS, family%in%"Eimeriidae")
+
+Eim2 <- subset_taxa(fPS18S, family%in%"Eimeriidae")
+
+Eim
+
+EimDNA <- colnames(Eim@otu_table)
+
+seqs <- DNAStringSet(getSequences(colnames(Eim@otu_table)))
+
+seqs
+
+
+names(primer)
+
+primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
+
+
+primerL <- primerL[primerL$Primer_name%in%names(primer),]
+
+summary(as.factor(primerL$Gen))
+
+alignment <- AlignSeqs(DNAStringSet(seqs), anchor=NA, verbose=FALSE)
+
+DNAStringSet(seqs)
+
+BrowseSeqs(alignment, highlight=0)
+
+alignment
+
+library(phangorn)
+
+PhanAlign <- phyDat(as(alignment, "matrix"), type="DNA")
+
+dm <- dist.ml(PhanAlign)
+
+treeNJ <- NJ(dm)
+
+fit <- pml(treeNJ, data=PhanAlign)
+
+#plot(fit$tree)
+
+library(ggtree)
+
+Sys.setenv("DISPLAY"=":13.0")
+
+plot(fit$tree)

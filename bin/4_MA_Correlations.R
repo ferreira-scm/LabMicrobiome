@@ -14,6 +14,7 @@ library(microbiome)
 library(DESeq2)
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
+
 set.seed(500)
 source("bin/PlottingCor.R")
 
@@ -36,7 +37,6 @@ otu_table(Tps) <- otu_table(fPS)*sample_data(fPS)$DNA_g_feces
 
 # now plotting
 Plotting_cor(ps=PS, "MA", dir="fig/MA/")
-
 Plotting_cor(ps=PS18S, "SA", dir="fig/SA/")
 
 #Plotting_cor(ps=PSwang, name="wang1141_13_F.Nem_0425_6_3_R", dir="fig/MA/")
@@ -67,43 +67,12 @@ for (i in 1:48) {
     rm(p)
 }
 
-# a little single amplicon digging
-p14 <- PS.l[[14]]
-p34 <- PS.l[[34]]
-p45 <- PS.l[[45]]
-PSwang <- PS.l[[37]]
-p14
-p34
-p45
-PSwang
-
-sample_sums(p14)
-sample_sums(p34)
-sample_sums(p45)
-sample_sums(PSwang)
-
-# now subset only Eimerridae reads
-ep14 <- subset_taxa(p14, family%in%"Eimeriidae")
-
-#how many reads?
-ep14
-sample_sums(ep14)
-
-# there's only one read in here
-ep34 <- subset_taxa(p34, family%in%"Eimeriidae")
-ep34
-sample_sums(ep34)
-ep45 <- subset_taxa(p45, family%in%"Eimeriidae")
-ep45
-sample_sums(ep45)
-epwang <- subset_taxa(PSwang, family%in%"Eimeriidae")
-epwang
-sample_sums(epwang)
-
-
 #######################
 # how does host DNA change with infection
-Mus <- subset_taxa(Tps, genus%in%"Mus")
+psTSS <- transform_sample_counts(fPS, function(x) x / sum(x))
+
+Mus <- subset_taxa(psTSS, genus%in%"Mus")
+
 Mus <-aggregate_taxa(Mus, level="genus")
 
 # no Mus reads in SA
@@ -121,6 +90,70 @@ mp <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
           legend.position = "none")
 #          axis.line = element_line(colour = "black"))
 
+m$logA <- log10(1+m$Abundance)
+
+m$logGC <- log10(1+m$Genome_copies_gFaeces)
+
+m$logDNA <- log10(1+m$DNA_g_feces)
+
+m1 <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces, data=m)
+
+library(lme4)
+
+#m2 <- lmer(weightloss~logA*logGC+ logDNA +(1|EH_ID), data=m)
+
+m2 <- lmer(weightloss~logA+logGC +EH_ID+(1|dpi), data=m)
+
+summary(m2)
+
+Sdem <- with(m, data.frame(
+                             weightloss=weightloss- ave(weightloss, EH_ID),
+                             logGC=logGC-ave(logGC, EH_ID, FUN=function(x) mean(x, na.rm=T)),
+                             logA=logA-ave(logA, EH_ID, FUN=function(x) mean(x, na.rm=T)),
+                             dpi=dpi,
+                             EH_ID=EH_ID))
+
+
+STdem <- with(Sdem, data.frame(
+                            weightloss=weightloss- ave(weightloss, dpi),
+                            logGC=logGC-ave(logGC, dpi, FUN=function(x) mean(x, na.rm=T)),
+                            logA=logA-ave(logA, dpi, FUN=function(x) mean(x, na.rm=T)),
+                            dpi=dpi,
+                            EH_ID=EH_ID))
+
+head(m)
+
+## analysing at peak
+# it isn't working so well here...
+library(dplyr)
+
+MaxDNA <- m %>% dplyr::group_by(EH_ID) %>%
+    dplyr::filter(logGC==max(logGC, na.rm=T))%>%
+    dplyr::select(EH_ID, logDNA, logA, logGC)%>% data.frame()
+
+Maxwl <- m %>% dplyr::group_by(EH_ID) %>%
+    dplyr::filter(weightloss==max(weightloss, na.rm=T))%>%
+    dplyr::select(EH_ID, dpi, weightloss)%>% data.frame()
+
+Maxdf <- merge(Maxwl, MaxDNA, by="EH_ID")
+
+mdem <- lm(weightloss~logA*logGC, data=m)
+
+summary(mdem)
+
+maxm <- lm(weightloss~logA*logGC, data=Maxdf)
+
+summary(maxm)
+
+calc.relimp(mdem)
+
+calc.relimp(maxm)
+
+ggplot(m, aes(Abundance, DNA_g_feces))+
+          geom_point()
+
+ggplot(m, aes(Abundance, Genome_copies_gFaeces))+
+          geom_point()
 
 # how does DNA g/faeces change with infection
 dnap <- ggplot(m, aes(y=DNA_g_feces, x=dpi, color=EH_ID))+
@@ -132,8 +165,6 @@ dnap <- ggplot(m, aes(y=DNA_g_feces, x=dpi, color=EH_ID))+
           panel.grid.minor = element_blank(),
           legend.position = "none")
 
-
-names(m)
 
 wl <- ggplot(m, aes(y=weightloss, x=dpi, color=EH_ID))+
     geom_point()+
@@ -267,3 +298,4 @@ e2 <- p_tss(PlantWormsw, "d)", "MA wang no plants or nematodes")
 plot_grid(a2,b2,d2,e2) -> p_cor2
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)
+
