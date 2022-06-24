@@ -11,6 +11,8 @@ library("taxonomizr")
 library("taxize")
 library("parallel")
 
+library(dada2)
+library(DECIPHER)
 #library("MultiAmplicon", lib.loc="/usr/local/lib/R/site-library") 
 
 ## using the devel
@@ -262,7 +264,6 @@ PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
 
 # adding sample data
 for (i in 1:3)
-{
     sample_data(PS.l[[i]]) <- sdt
 }
 
@@ -282,3 +283,24 @@ get_taxa_unique(PS.18S, "phylum")
 
 #sum(otu_table(PS.18S)) ##Total denoised reads = 853,134
 saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang_SILVA.Rds") ###Information from 18S
+
+taxa <- list()
+
+# we try with dada2 (naive bayesian classifier)
+for (i in 1:3){
+    if (target$Gen[i] == "16S") {
+        taxa[[i]] <- assignTaxonomy(seqs[[i]],
+                                    "/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)}
+    else if (target$Gen[i]=="18S"){
+               taxa[[i]] <- assignTaxonomy(seqs[[i]],
+                                   "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+        }
+}
+
+head(taxa)

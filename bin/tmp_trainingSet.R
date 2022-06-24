@@ -2,31 +2,29 @@ library(DECIPHER)
 
 library(taxonomizr)
 
+## for ITS
+seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/UNITE_ITS.fasta")
 
-#Make our training sets 16S
-
-seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz")
-
-
-
-# specific name for the classifier
-head(names(seqs))
-names(seqs) <- paste("Root;", names(seqs))
-names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 
-
-TrainingDB <- function(seqs){
-# if they exist, remove any gaps in the sequences:
 seqs <- RemoveGaps(seqs)
+
 taxid <- NULL
 
-# ensure that all sequences are in the same orientation:
+                                        # ensure that all sequences are in the same orientation:
 seqs <- OrientNucleotides(seqs)
+
+# specific name for the classifier
+names(seqs) <- gsub("(.*)(k__)", "\\1 Root; k__", names(seqs))
+
 groups <- names(seqs)
+
+groups <- gsub("(.*)(Root;)", "\\2", groups)
+
+groups
+
 groupCounts <- table(groups)
 u_groups <- names(groupCounts)
 length(u_groups)
 taxid <- NULL
-
 #subset sequences in large groups
 maxGroupSize <- 10
 remove <- logical(length(seqs))
@@ -37,7 +35,8 @@ for (i in which(groupCounts>maxGroupSize)) {
                    maxGroupSize)
     remove[index[-keep]] <- TRUE
 }
-sum(remove) 
+
+print(sum(remove))
 
 ## the actual training of the database
 maxIterations <- 3
@@ -76,37 +75,8 @@ for (i in seq_len(maxIterations)) {
         }
     }
 }
-}
 
-sum(remove) # total number of sequences eliminated
-length(probSeqs) # number of remaining problem sequences
-
-traningSet16S <- TrainingDB(seqs)
-
-saveRDS(trainingSet16, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
-
-###################### for 18S
-
-seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")
-
-# specific name for the classifier
-names(seqs) <- paste("Root;", names(seqs))
-names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 
-
-trainingSet18S <- TrainingDB(seqs)
-saveRDS(trainingSet18S, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
-
-
-## for ITS
-seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/UNITE_ITS.fasta")
-
-# specific name for the classifier
-names(seqs) <- gsub("(.*)(k__)", "\\1 Root; k__", names(seqs))
-names(seqs) <- gsub("(.*)(Root;)", "\\2", names(seqs))
-
-traningSetITS <- TrainingDB(seqs)
-
-saveRDS(trainingSetITS, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
+saveRDS(trainingSet, "/SAN/Susanas_den/AmpMarkers/ITSTrainingSet.RDS")
 
 head(names(seqs))
 

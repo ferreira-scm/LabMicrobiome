@@ -23,11 +23,15 @@ PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PS_18Swang.Rds")
 PSwang <- PS.l[[37]]
 
+#new taxonomic annotation
+PS18SS <- readRDS("tmp/PS_18Swang_SILVA.Rds")
 
 # let's filter
 fPS18S <- fil(PS18S)
 fPS <- fil(PS)
 fPSwang <- fil(PSwang)
+fPS18SS <- fil(PS18SS)
+
 # and transform
 Tps18S <- fPS18S
 Tps <- fPS

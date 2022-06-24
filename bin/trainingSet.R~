@@ -1,0 +1,334 @@
+library(DECIPHER)
+
+library(taxonomizr)
+
+
+
+
+################ New taxonomic annotation
+# first we need to know which genes are we targeting
+primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
+#quick fix here
+primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
+
+target <- primerL[primerL$Primer_name%in%names(MA@PrimerPairsSet),]
+
+target$Gen
+
+# ok now we make our sequences into DECIPHER format
+#seqs <- getSequencesFromTable(MA)
+#seqs <- lapply(seq_along(seqs), function(x){
+#    DNAStringSet(seqs[[x]])
+#    })
+
+#Make our training sets 16S
+
+seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz")
+#trainingSet18S <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")
+
+#trainingSetITS <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/UNITE_ITS.fasta")
+
+fa16 <- read.table("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz")
+
+
+# attepting to create my own taxID
+ranks <- strsplit(names(seqs), ";", fix=T)
+count <- 1L
+groups <- "Root"
+index <- -1L
+level <- 0L
+rank <- "rootrank"
+pBar <- txtProgressBar(style=3)
+taxa <- setNames(c("domain", "phylum", "order", "family", "genus", "species"),
+                 c("d__", "p__", "o__", "f__", "g__","s__"))
+
+for (i in seq_along(ranks)) {
+      for (j in seq_along(ranks[[i]])) {
+          rank_level <- taxa[substring(ranks[[i]][j], 1, 3)]
+          group <- substring(ranks[[i]][j], 4)
+          w <- which(groups==group & rank==rank_level)
+          if (length(w) > 0) {
+              parent <- match(substring(ranks[[i]][j - 1], 4),
+                              groups)
+              if (j==1 || any((parent - 1L)==index[w]))
+                  next # already included
+          }
+          count <- count + 1L
+          groups <- c(groups, group)
+          if (j==1) {
+              index <- c(index, 0)
+          } else {
+              parent <- match(substring(ranks[[i]][j - 1], 4),
+                              groups)
+              index <- c(index,
+                         parent - 1L)
+          }
+          level <- c(level, j)
+          rank <- c(rank, taxa[j])
+      }
+      setTxtProgressBar(pBar, i/length(ranks))
+      }
+
+
+
+              
+#taxonomy <- taxonomizr::getTaxonomy("/SAN/db/taxonomy/taxonomizr.sql")
+
+# if they exist, remove any gaps in the sequences:
+seqs <- RemoveGaps(seqs)
+
+taxid <- NULL
+
+# ensure that all sequences are in the same orientation:
+seqs <- OrientNucleotides(seqs)
+
+groups <- names(seqs)
+
+groupCounts <- table(groups)
+
+u_groups <- names(groupsCounts)
+
+length(u_groups)
+
+taxid <- NULL
+
+#subset sequences in large groups
+maxGroupSize <- 10
+
+remove <- logical(length(seqs))
+
+
+for (i in which(groupCounts>maxGroupSize)) {
+    index <- which(groups==u_groups[i])
+    keep <- sample(length(index),
+                   maxGroupSize)
+    remove[index[-keep]] <- TRUE
+}
+
+sum(remove) 
+
+
+## the actual training of the database
+
+maxIterations <- 3
+allowGroupRemoval <- FALSE
+probSeqsPrev <- integer()
+
+
+head(names(seqs))
+
+
+# specific format for LearnTaxa
+
+names(seqs) <- paste("Root", names(seqs), sep=";")
+
+
+for (i in seq_len(maxIterations)) {
+    cat("Training iteration: ", i, "\n", sep="")
+# train the classifier
+    trainingSet <- LearnTaxa(seqs[!remove],
+                             names(seqs)[!remove],
+                             taxid)
+# look for problem sequences
+    probSeqs <- trainingSet$problemSequences$Index
+    if (length(probSeqs)==0) {
+        cat("No problem sequences remaining.\n")
+        break
+    } else if (length(probSeqs)==length(probSeqsPrev) &&
+               all(probSeqsPrev==probSeqs)) {
+        cat("Iterations converged.\n")
+        break
+    }
+    if (i==maxIterations)
+        break
+    probSeqsPrev <- probSeqs
+# remove any problem sequences
+    index <- which(!remove)[probSeqs]
+    remove[index] <- TRUE # remove all problem sequences
+    if (!allowGroupRemoval) {
+# replace any removed groups
+        missing <- !(u_groups %in% groups[!remove])
+        missing <- u_groups[missing]
+        if (length(missing) > 0) {
+            index <- index[groups[index] %in% missing]
+            remove[index] <- FALSE # don't remove
+        }
+    }
+}
+
+
+saveRDS(trainingSet, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
+
+
+sum(remove) # total number of sequences eliminated
+
+length(probSeqs) # number of remaining problem sequences
+
+###################### for 18S
+
+
+
+seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")
+
+
+TrainingDB <- function(seqs){
+seqs <- RemoveGaps(seqs)
+taxid <- NULL
+# ensure that all sequences are in the same orientation:
+seqs <- OrientNucleotides(seqs)
+groups <- names(seqs)
+groupCounts <- table(groups)
+u_groups <- names(groupsCounts)
+length(u_groups)
+taxid <- NULL
+#subset sequences in large groups
+maxGroupSize <- 10
+remove <- logical(length(seqs))
+
+for (i in which(groupCounts>maxGroupSize)) {
+    index <- which(groups==u_groups[i])
+    keep <- sample(length(index),
+                   maxGroupSize)
+    remove[index[-keep]] <- TRUE
+}
+print(sum(remove))
+
+## the actual training of the database
+maxIterations <- 3
+allowGroupRemoval <- FALSE
+probSeqsPrev <- integer()
+
+head(names(seqs))
+# specific format for LearnTaxa
+
+names(seqs) <- paste("Root", names(seqs), sep=";")
+
+for (i in seq_len(maxIterations)) {
+    cat("Training iteration: ", i, "\n", sep="")
+# train the classifier
+    trainingSet <- LearnTaxa(seqs[!remove],
+                             names(seqs)[!remove],
+                             taxid)
+# look for problem sequences
+    probSeqs <- trainingSet$problemSequences$Index
+    if (length(probSeqs)==0) {
+        cat("No problem sequences remaining.\n")
+        break
+    } else if (length(probSeqs)==length(probSeqsPrev) &&
+               all(probSeqsPrev==probSeqs)) {
+        cat("Iterations converged.\n")
+        break
+    }
+    if (i==maxIterations)
+        break
+    probSeqsPrev <- probSeqs
+# remove any problem sequences
+    index <- which(!remove)[probSeqs]
+    remove[index] <- TRUE # remove all problem sequences
+    if (!allowGroupRemoval) {
+# replace any removed groups
+        missing <- !(u_groups %in% groups[!remove])
+        missing <- u_groups[missing]
+        if (length(missing) > 0) {
+            index <- index[groups[index] %in% missing]
+            remove[index] <- FALSE # don't remove
+        }
+    }
+}
+
+
+print(sum(remove)) # total number of sequences eliminated
+
+print(length(probSeqs)) # number of remaining problem sequences
+
+trainingSet
+}
+
+
+
+trainingSet18S <- TrainingDB(seqs)
+
+saveRDS(trainingSet18S, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
+
+
+## for ITS
+seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/UNITE_ITS.fasta")
+
+seqs <- RemoveGaps(seqs)
+
+taxid <- NULL
+
+                                        # ensure that all sequences are in the same orientation:
+seqs <- OrientNucleotides(seqs)
+
+# specific name for the classifier
+names(seqs) <- gsub("(.*)(k__)", "\\1 Root; k__", names(seqs))
+
+groups <- names(seqs)
+
+groups <- gsub("(.*)(Root;)", "\\2", groups)
+
+groups
+
+groupCounts <- table(groups)
+u_groups <- names(groupCounts)
+length(u_groups)
+taxid <- NULL
+#subset sequences in large groups
+maxGroupSize <- 10
+remove <- logical(length(seqs))
+
+for (i in which(groupCounts>maxGroupSize)) {
+    index <- which(groups==u_groups[i])
+    keep <- sample(length(index),
+                   maxGroupSize)
+    remove[index[-keep]] <- TRUE
+}
+
+print(sum(remove))
+
+## the actual training of the database
+maxIterations <- 3
+allowGroupRemoval <- FALSE
+probSeqsPrev <- integer()
+
+for (i in seq_len(maxIterations)) {
+    cat("Training iteration: ", i, "\n", sep="")
+# train the classifier
+    trainingSet <- LearnTaxa(seqs[!remove],
+                             names(seqs)[!remove],
+                             taxid)
+# look for problem sequences
+    probSeqs <- trainingSet$problemSequences$Index
+    if (length(probSeqs)==0) {
+        cat("No problem sequences remaining.\n")
+        break
+    } else if (length(probSeqs)==length(probSeqsPrev) &&
+               all(probSeqsPrev==probSeqs)) {
+        cat("Iterations converged.\n")
+        break
+    }
+    if (i==maxIterations)
+        break
+    probSeqsPrev <- probSeqs
+# remove any problem sequences
+    index <- which(!remove)[probSeqs]
+    remove[index] <- TRUE # remove all problem sequences
+    if (!allowGroupRemoval) {
+# replace any removed groups
+        missing <- !(u_groups %in% groups[!remove])
+        missing <- u_groups[missing]
+        if (length(missing) > 0) {
+            index <- index[groups[index] %in% missing]
+            remove[index] <- FALSE # don't remove
+        }
+    }
+
+
+
+
+
+saveRDS(trainingSetITS, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
+
+head(names(seqs))
+

@@ -1,0 +1,10 @@
+
+require(devtools)
+setwd("taxAnyEukAmp/")
+
+devtools::load_all("/SAN/Susanas_den/taxAnyEukAmp/")
+
+
+
+
+
