@@ -10,7 +10,8 @@ library("data.table")
 library("taxonomizr")
 library("taxize")
 library("parallel")
-
+library(dada2)
+library(DECIPHER)
 #library("MultiAmplicon", lib.loc="/usr/local/lib/R/site-library") 
 
 ## using the devel
@@ -66,17 +67,13 @@ names(filtFs) <- names(filtRs) <- samples
 files <- PairedReadFileSet(filtFs, filtRs)
 
 #Preparation of primer file ### Here stats the Multiamplicon pipeline from Emanuel
-
 #Primers used in the arrays 
 ptable <- read.csv(file = "/SAN/Victors_playground/Eimeria_microbiome/primer.file.csv", sep=",", header=TRUE, stringsAsFactors=FALSE)
 primerF <- ptable[, "TS.SequenceF"]
 primerR <- ptable[, "TS.SequenceR"]
 names(primerF) <- as.character(ptable[, "corrected.NameF"])
 names(primerR) <- as.character(ptable[, "corrected.NameR"])
-
 primer <- PrimerPairsSet(primerF, primerR)
-
-primer
 
 ##Multi amplicon pipeline
 if(doMultiAmp){
@@ -133,17 +130,11 @@ rownames(sdt)==rownames(sample.data)
 
 ##To phyloseq
 ##Sample data
-
 # temporary fix
 source("bin/toPhyloseq.R")
-
 PS <- TMPtoPhyloseq(MA, colnames(MA))
 
-PS
-
-
 PS@sam_data <- sample_data(sdt)
-
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S.Rds")
 
 ##Primer data
@@ -154,57 +145,52 @@ for (i in 1:3)
 {
     sample_data(PS.l[[i]]) <- sdt
 }
-
-
 saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S.Rds")
 
 ###For Microbiome analysis (Victor)
-
 PS.18S <- PS.l[[2]]
-
 #PS18S <- phyloseq(
 #    otu_table(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
 #    sample_data(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
 #    tax_table(PS.l$wang1141_13_F.Nem_0425_6_3_R))
-
 #sum(otu_table(PS.18S)) ##Total denoised reads = 853,134
 saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang.Rds") ###Information from 18S
 
+
+################################################################################################
 ################ New taxonomic annotation
+
 # first we need to know which genes are we targeting
 primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
 #quick fix here
 primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
-
 target <- primerL[primerL$Primer_name%in%names(MA@PrimerPairsSet),]
 
-target$Gen
-
-# ok now we make our sequences into DECIPHER format
+##### ok now we make our sequences into DECIPHER format
 seqs <- getSequencesFromTable(MA)
-seqs <- lapply(seq_along(seqs), function(x){
-    DNAStringSet(seqs[[x]])
-    })
+#quick sanity check
+seqs2 <- getSequenceTableNoChime(MA)
+seqs2 <- lapply(seqs2, colnames)
+seqs[[3]]==seqs2[[3]]
+#reads into DNAstring format
+seqs <- lapply(seqs, DNAStringSet)
 
 #Load our training sets
 trainingSet16S <- readRDS("/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
-
 trainingSet18S <- readRDS("/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
 
 #little fix
-trainingSet16S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species")
-trainingSet18S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species")
+trainingSet16S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
 
-tail(trainingSet18S$taxonomy)
+trainingSet18S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
 
-library(DECIPHER)
+ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain") # ranks of interest
 
-target$Gen[1]
 
-ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species") # ranks of interest
+#ranks2 <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
 
 newTax <- list()
-
+idtaxa <- list()
 for (i in 1:3){
     if (target$Gen[i] == "16S") {
 idtaxa <- IdTaxa(seqs[[i]],
@@ -243,8 +229,121 @@ newTax[[i]] <- t(sapply(idtaxa, function(x) {
         }
 }
 
+# sanity check
+rownames(MA@taxonTable[[3]])==rownames(newTax[[3]])
 
-MA@taxonTable <- newTax
+MA1 <- MA
+
+for (i in (1:3)) {
+    MA1@taxonTable[[i]] <- newTax[[i]]
+    }
+
+# temporary fix
+source("bin/toPhyloseq.R")
+
+# not working
+PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
+
+get_taxa_unique(PS1, "species")
+
+
+
+newTax[[1]][,2]
+
+# sanity check
+a <- lapply(newTax, rownames)
+a <- unlist(a)
+a==rownames(PS@tax_table)
+
+
+## broken here, continue here
+head(tax)
+
+PS@tax_table <- tax
+
+head(PS@tax_table)
+
+PS@sam_data <- sample_data(sdt)
+
+saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA.Rds")
+
+##Primer data
+PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
+# adding sample data
+for (i in 1:3)
+    sample_data(PS.l[[i]]) <- sdt
+}
+saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA.Rds")
+
+###For Microbiome analysis (Victor)
+PS.18S <- PS.l[[2]]
+get_taxa_unique(PS.18S, "phylum")
+
+saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang_SILVA.Rds") ###Information from 18S
+
+
+###################### # we try with dada2 (naive bayesian classifier)
+######################################################################
+taxa <- list()
+
+for (i in 1:3){
+    if (target$Gen[i] == "16S") {
+        taxa[[i]] <- assignTaxonomy(seqs[[i]],
+                                    "/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)}
+    else if (target$Gen[i]=="18S"){
+               taxa[[i]] <- assignTaxonomy(seqs[[i]],
+                                   "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+        }
+}
+
+colnames(taxa[[2]]) <- c("superkingdom", "clade_1","clade_2","kingdom", "class", "family", "species", "strain")
+
+#("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species")
+
+colnames(taxa[[2]])
+
+## Little inspection
+taxa.print <- taxa[[2]]
+rownames(taxa.print) <- NULL
+
+
+##########################################
+########################################
+#we need to change taxonomy
+
+silva18 <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")  
+
+accession <- gsub("(.*)(;.*;$)","\\2",names(silva18))
+accession <- (gsub("(^;)(.*)(\\..*\\..*)","\\2", accession))
+
+ID <- taxonomizr::accessionToTaxa(accession, version="base", "/SAN/db/taxonomy/taxonomizr.sql")
+
+taxonomy <- taxonomizr::getTaxonomy(ID,
+                                    "/SAN/db/taxonomy/taxonomizr.sql",
+                                    desiredTaxa = c("superkingdom", "phylum", "class", "order", "family", "genus", "species"))
+
+tail(names(silva18))
+
+tail(taxonomy)
+
+ID
+
+taxa.print[1:10,]
+
+newTax.print <- newTax[[2]]
+rownames(newTax.print) <- NULL
+
+(newTax.print)
+
+#let's save this
+MA@taxonTable <- taxa
+
 
 # temporary fix
 source("bin/toPhyloseq.R")
@@ -255,30 +354,23 @@ head(PS@tax_table)
 
 PS@sam_data <- sample_data(sdt)
 
-saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA.Rds")
+saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA_DADA2.Rds")
 
 ##Primer data
 PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
 
 # adding sample data
-for (i in 1:3)
-{
+for (i in 1:3){
     sample_data(PS.l[[i]]) <- sdt
 }
 
 
-saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA.Rds")
+saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA_DADA2.Rds")
 
 ###For Microbiome analysis (Victor)
 
 PS.18S <- PS.l[[2]]
 
-get_taxa_unique(PS.18S, "phylum")
+PS.18S@tax_table
 
-#PS18S <- phyloseq(
-#    otu_table(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
-#    sample_data(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
-#    tax_table(PS.l$wang1141_13_F.Nem_0425_6_3_R))
-
-#sum(otu_table(PS.18S)) ##Total denoised reads = 853,134
-saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang_SILVA.Rds") ###Information from 18S
+get_taxa_unique(PS,"phylum")

@@ -16,12 +16,12 @@ taxid <- NULL
 
 # specific name for the classifier
 head(names(seqs))
+
 names(seqs) <- (gsub("(.*?)( .*)", "Root;\\2", names(seqs)))
 names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 
 
 # ensure that all sequences are in the same orientation:
 seqs <- OrientNucleotides(seqs)
-
 
 groups <- names(seqs)
 groupCounts <- table(groups)
