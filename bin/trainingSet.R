@@ -1,18 +1,14 @@
 library(DECIPHER)
-
 library(taxonomizr)
 
 
 #Make our training sets 16S
-
-seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz")
-
-
+seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz", format="fasta")
 
 # specific name for the classifier
 head(names(seqs))
-names(seqs) <- paste("Root;", names(seqs))
-names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 
+
+names(seqs) <- paste("Root;", names(seqs), sep="")
 
 TrainingDB <- function(seqs){
 # if they exist, remove any gaps in the sequences:
@@ -25,11 +21,9 @@ groupCounts <- table(groups)
 u_groups <- names(groupCounts)
 length(u_groups)
 taxid <- NULL
-
 #subset sequences in large groups
 maxGroupSize <- 10
 remove <- logical(length(seqs))
-
 for (i in which(groupCounts>maxGroupSize)) {
     index <- which(groups==u_groups[i])
     keep <- sample(length(index),
@@ -37,12 +31,10 @@ for (i in which(groupCounts>maxGroupSize)) {
     remove[index[-keep]] <- TRUE
 }
 sum(remove) 
-
 ## the actual training of the database
 maxIterations <- 3
 allowGroupRemoval <- FALSE
 probSeqsPrev <- integer()
-
 for (i in seq_len(maxIterations)) {
     cat("Training iteration: ", i, "\n", sep="")
 # train the classifier
@@ -79,19 +71,16 @@ for (i in seq_len(maxIterations)) {
 
 sum(remove) # total number of sequences eliminated
 length(probSeqs) # number of remaining problem sequences
-
 traningSet16S <- TrainingDB(seqs)
-
 saveRDS(trainingSet16, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
 
 ###################### for 18S
 
 seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")
-
+head(names(seqs))
 # specific name for the classifier
-names(seqs) <- paste("Root;", names(seqs))
-names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 
-
+names(seqs)<- gsub("([A-Z0-9]*\\.[0-9]*\\.[0-9]*;$)", "", names(seqs))
+names(seqs) <- paste("Root;", names(seqs), sep="")
 trainingSet18S <- TrainingDB(seqs)
 saveRDS(trainingSet18S, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
 

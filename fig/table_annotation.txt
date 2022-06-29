@@ -1,0 +1,72 @@
+>MA_dada2Sp <- dada2::assignSpecies(seqs2, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_ref.fa")
+> SA_dada2Sp <- dada2::assignSpecies(seqs, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_ref.fa", allowMultiple=TRUE)
+SA_dada2Tx <- dada2::assignTaxonomy(seqs2, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_refAssignTaxonomy.fa")
+> > MA_dada2Tx <- dada2::assignTaxonomy(seqs, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_refAssignTaxonomy.fa")
+> MA_IDtax <- IdTaxa(seqs,
++                  trainingSet,
++                  strand = "both",
++                  threshold = 40,
++                  bootstraps = 100,
++                  processors = NULL,
++                  verbose = TRUE,
++                  type = "extended")
+  |======================================================================| 100%
+
+Time difference of 0.05 secs
+
+> SA_IDtax <- IdTaxa(seqs2,
++                  trainingSet,
++                  strand = "both",
++                  threshold = 40,
++                  bootstraps = 100,
++                  processors = NULL,
++                  verbose = TRUE,
++                  type = "extended")
+  |======================================================================| 100%
+
+Time difference of 0.08 secs
+
+> 
+rownames(SA_dada2Tx) <- NULL
+> MA_dada2Sp
+     Genus     Species  
+[1,] "Eimeria" "ferrisi"
+[2,] NA        NA       
+[3,] NA        NA       
+[4,] NA        NA       
+[5,] NA        NA       
+> SA_dada2Sp
+     Genus     Species  
+[1,] "Eimeria" "ferrisi"
+[2,] NA        NA       
+[3,] NA        NA       
+> MA_dada2Tx
+     Kingdom     Phylum        Class         Order            Family      
+[1,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[2,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[3,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+     Genus     Species              
+[1,] "Eimeria" "Eimeria ferrisi"    
+[2,] "Eimeria" "Eimeria vermiformis"
+[3,] "Eimeria" "Eimeria vermiformis"
+> SA_dada2Tx
+     Kingdom     Phylum        Class         Order            Family      
+[1,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[2,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[3,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[4,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+[5,] "Eukaryota" "Apicomplexa" "Conoidasida" "Eucoccidiorida" "Eimeriidae"
+     Genus     Species              
+[1,] "Eimeria" "Eimeria ferrisi"    
+[2,] "Eimeria" "Eimeria vermiformis"
+[3,] "Eimeria" "Eimeria vermiformis"
+[4,] "Eimeria" "Eimeria vermiformis"
+[5,] "Eimeria" "Eimeria ferrisi"    
+> sapply(SA_IDtax, function(x) {
++     x$taxon[8]})
+[1] "Eimeria ferrisi" NA                NA                NA               
+[5] "Eimeria ferrisi"
+> sapply(MA_IDtax, function(x) {
++     x$taxon[8]})
+[1] "Eimeria ferrisi" NA                NA               
+> 

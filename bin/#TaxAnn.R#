@@ -20,7 +20,8 @@ MA <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax18S.Rds")
 doPrepDB <- FALSE
 
 if(doPrepDB){
-# first our databases need the ENA taxonomy
+
+                                        # first our databases need the ENA taxonomy
 #dadasilva16 <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz")
 silva16 <- DNAStringSet(readRNAStringSet("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_ssu138.1/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz"))
 tax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_ssu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", stringsAsFactors=FALSE, head=T)
@@ -35,9 +36,17 @@ tax$primaryAccession <- sort(tax$primaryAccession)
 #sanity check
 summary((tax$primaryAccession)==(accessions))
 #done
-names(silva16) <- tax$path
+
+    names(silva16) <- tax$path
     saveRDS(silva16, "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.rds")
-    writeFasta(silva138, "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.fa")
+    writeFasta(silva16, "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.fa")
+
+#no species
+    names(silva16) <- tax$submitted_path
+    saveRDS(silva16, "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA_nosp.rds")
+    writeFasta(silva16, "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA_nosp.fa")
+
+
 ### now same for 18S 132 silva
 silva18 <- DNAStringSet(readRNAStringSet("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_ssu132/SILVA_132_SSURef_Nr99_tax_silva.fasta.gz"))
 tax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_ssu132/taxmap_embl_ssu_ref_nr99_132.txt.gz", sep="\t", stringsAsFactors=FALSE, head=F)

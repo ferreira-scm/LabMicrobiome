@@ -161,146 +161,144 @@ saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang.Rds"
 ################ New taxonomic annotation
 
 # first we need to know which genes are we targeting
+#primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
+#quick fix here
+#primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
+#target <- primerL[primerL$Primer_name%in%names(MA@PrimerPairsSet),]
+
+##### ok now we make our sequences into DECIPHER format
+#seqs <- getSequencesFromTable(MA)
+#quick sanity check
+#seqs2 <- getSequenceTableNoChime(MA)
+#seqs2 <- lapply(seqs2, colnames)
+#seqs[[3]]==seqs2[[3]]
+#reads into DNAstring format
+#seqs <- lapply(seqs, DNAStringSet)
+
+#Load our training sets
+#trainingSet16S <- readRDS("/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
+#trainingSet18S <- readRDS("/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
+
+#little fix
+#trainingSet16S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
+
+#trainingSet18S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
+
+#ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain") # ranks of interest
+
+
+#ranks2 <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
+
+#newTax <- list()
+#idtaxa <- list()
+#for (i in 1:3){
+#    if (target$Gen[i] == "16S") {
+#idtaxa <- IdTaxa(seqs[[i]],
+#                 trainingSet16S,
+#                 strand = "both",
+#                 threshold = 40,
+#                 bootstraps = 100,
+#                 processors = NULL,
+#                 verbose = TRUE,
+#                 type = "extended")
+#newTax[[i]] <- t(sapply(idtaxa, function(x) {
+#    m <- match(ranks, x$rank)
+#    taxa <- x$taxon[m]
+#    taxa[startsWith(taxa, "unclassified_")] <- NA
+#    taxa
+#}))
+#        colnames(newTax[[i]]) <- ranks
+#        rownames(newTax[[i]]) <- getSequencesFromTable(MA)[[i]]
+#    } else if (target$Gen[i]=="18S"){
+#idtaxa <- IdTaxa(seqs[[i]],
+#                 trainingSet18S,
+#                 strand = "both",
+#                 threshold = 40,
+#                 bootstraps = 100,
+#                 processors = NULL,
+#                 verbose = TRUE,
+#                 type = "extended")
+#newTax[[i]] <- t(sapply(idtaxa, function(x) {
+#    m <- match(ranks, x$rank)
+#    taxa <- x$taxon[m]
+#    taxa[startsWith(taxa, "unclassified_")] <- NA
+#    taxa
+#}))
+#        colnames(newTax[[i]]) <- ranks
+#        rownames(newTax[[i]]) <- getSequencesFromTable(MA)[[i]]
+#        }
+#}
+
+# sanity check
+#rownames(MA@taxonTable[[3]])==rownames(newTax[[3]])
+
+#MA1 <- MA
+
+#for (i in (1:3)) {
+#    MA1@taxonTable[[i]] <- newTax[[i]]
+#    }
+
+# not working
+#PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
+
+#get_taxa_unique(PS1, "species")
+# sanity check
+#a <- lapply(newTax, rownames)
+#a <- unlist(a)
+#a==rownames(PS@tax_table)
+###################### # we try with dada2 (naive bayesian classifier)
+######################################################################
+
+seqs <- getSequencesFromTable(MA)
+seqs <- lapply(seqs, DNAStringSet)
+
+silva138 <- readRDS("/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.rds")
+
+taxa <- list()
+
+# using ena taxonomy screws assignTaxonomy...No 
+
+for (i in 1:3){
+        taxa[[i]] <- assignTaxonomy(seqs[[i]],
+                                    "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+}
+
 primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
 #quick fix here
 primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
 target <- primerL[primerL$Primer_name%in%names(MA@PrimerPairsSet),]
 
-##### ok now we make our sequences into DECIPHER format
-seqs <- getSequencesFromTable(MA)
-#quick sanity check
-seqs2 <- getSequenceTableNoChime(MA)
-seqs2 <- lapply(seqs2, colnames)
-seqs[[3]]==seqs2[[3]]
-#reads into DNAstring format
-seqs <- lapply(seqs, DNAStringSet)
+target$Gen
 
-#Load our training sets
-trainingSet16S <- readRDS("/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
-trainingSet18S <- readRDS("/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS")
-
-#little fix
-trainingSet16S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
-
-trainingSet18S$ranks <-  c("root", "superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain")
-
-ranks <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species", "strain") # ranks of interest
-
-
-#ranks2 <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
-
-newTax <- list()
-idtaxa <- list()
-for (i in 1:3){
-    if (target$Gen[i] == "16S") {
-idtaxa <- IdTaxa(seqs[[i]],
-                 trainingSet16S,
-                 strand = "both",
-                 threshold = 40,
-                 bootstraps = 100,
-                 processors = NULL,
-                 verbose = TRUE,
-                 type = "extended")
-newTax[[i]] <- t(sapply(idtaxa, function(x) {
-    m <- match(ranks, x$rank)
-    taxa <- x$taxon[m]
-    taxa[startsWith(taxa, "unclassified_")] <- NA
-    taxa
-}))
-        colnames(newTax[[i]]) <- ranks
-        rownames(newTax[[i]]) <- getSequencesFromTable(MA)[[i]]
-    } else if (target$Gen[i]=="18S"){
-idtaxa <- IdTaxa(seqs[[i]],
-                 trainingSet18S,
-                 strand = "both",
-                 threshold = 40,
-                 bootstraps = 100,
-                 processors = NULL,
-                 verbose = TRUE,
-                 type = "extended")
-newTax[[i]] <- t(sapply(idtaxa, function(x) {
-    m <- match(ranks, x$rank)
-    taxa <- x$taxon[m]
-    taxa[startsWith(taxa, "unclassified_")] <- NA
-    taxa
-}))
-        colnames(newTax[[i]]) <- ranks
-        rownames(newTax[[i]]) <- getSequencesFromTable(MA)[[i]]
-        }
-}
-
-# sanity check
-rownames(MA@taxonTable[[3]])==rownames(newTax[[3]])
-
-MA1 <- MA
-
-for (i in (1:3)) {
-    MA1@taxonTable[[i]] <- newTax[[i]]
-    }
-
-# temporary fix
-source("bin/toPhyloseq.R")
-
-# not working
-PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
-
-get_taxa_unique(PS1, "species")
-
-
-
-newTax[[1]][,2]
-
-# sanity check
-a <- lapply(newTax, rownames)
-a <- unlist(a)
-a==rownames(PS@tax_table)
-
-
-## broken here, continue here
-head(tax)
-
-PS@tax_table <- tax
-
-head(PS@tax_table)
-
-PS@sam_data <- sample_data(sdt)
-
-saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA.Rds")
-
-##Primer data
-PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
-# adding sample data
-for (i in 1:3)
-    sample_data(PS.l[[i]]) <- sdt
-}
-saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA.Rds")
-
-###For Microbiome analysis (Victor)
-PS.18S <- PS.l[[2]]
-get_taxa_unique(PS.18S, "phylum")
-
-saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang_SILVA.Rds") ###Information from 18S
-
-
-###################### # we try with dada2 (naive bayesian classifier)
-######################################################################
-taxa <- list()
+taxa2 <- list()
 
 for (i in 1:3){
-    if (target$Gen[i] == "16S") {
-        taxa[[i]] <- assignTaxonomy(seqs[[i]],
-                                    "/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz",
-                                    multithread=90,
-                                    tryRC = TRUE,
-                                    verbose=TRUE)}
-    else if (target$Gen[i]=="18S"){
-               taxa[[i]] <- assignTaxonomy(seqs[[i]],
-                                   "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz",
+    if (target$Gen[i]=="16S"){
+        taxa2[[i]] <- assignTaxonomy(seqs[[i]],
+                                     "/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE)
-        }
+    }
+    else if (target$Gen[i]=="18S"){
+     taxa2[[i]] <- assignTaxonomy(seqs[[i]],
+                                  "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }   
 }
+
+taxa2
+
+taxa2.print <- taxa2[[2]]
+
+
+
+head(taxa[[2]])[1:3,]
 
 colnames(taxa[[2]]) <- c("superkingdom", "clade_1","clade_2","kingdom", "class", "family", "species", "strain")
 
@@ -312,6 +310,7 @@ colnames(taxa[[2]])
 taxa.print <- taxa[[2]]
 rownames(taxa.print) <- NULL
 
+taxa.print[222:240,]
 
 ##########################################
 ########################################
