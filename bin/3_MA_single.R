@@ -252,20 +252,6 @@ saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang.Rds"
 seqs <- getSequencesFromTable(MA)
 seqs <- lapply(seqs, DNAStringSet)
 
-silva138 <- readRDS("/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.rds")
-
-taxa <- list()
-
-# using ena taxonomy screws assignTaxonomy...No 
-
-for (i in 1:3){
-        taxa[[i]] <- assignTaxonomy(seqs[[i]],
-                                    "/SAN/Susanas_den/AmpMarkers/SILVAdb/silva138_ENA.fa",
-                                    multithread=90,
-                                    tryRC = TRUE,
-                                    verbose=TRUE)
-}
-
 primerL <- read.csv("/SAN/Susanas_den/HMHZ/data/primerInputUnique.csv")
 #quick fix here
 primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
@@ -285,91 +271,85 @@ for (i in 1:3){
     }
     else if (target$Gen[i]=="18S"){
      taxa2[[i]] <- assignTaxonomy(seqs[[i]],
-                                  "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz",
+                                  "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_mod.fa.gz",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE)
     }   
 }
 
-taxa2
-
-taxa2.print <- taxa2[[2]]
-
-
-
-head(taxa[[2]])[1:3,]
-
-colnames(taxa[[2]]) <- c("superkingdom", "clade_1","clade_2","kingdom", "class", "family", "species", "strain")
-
-#("Kingdom","Supergroup","Division","Class","Order","Family","Genus","Species")
-
-colnames(taxa[[2]])
-
 ## Little inspection
-taxa.print <- taxa[[2]]
+taxa.print <- taxa2[[2]]
 rownames(taxa.print) <- NULL
 
 taxa.print[222:240,]
 
-##########################################
-########################################
-#we need to change taxonomy
+## assign species to 16S
 
-silva18 <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")  
+spec <- list()
 
-accession <- gsub("(.*)(;.*;$)","\\2",names(silva18))
-accession <- (gsub("(^;)(.*)(\\..*\\..*)","\\2", accession))
-
-ID <- taxonomizr::accessionToTaxa(accession, version="base", "/SAN/db/taxonomy/taxonomizr.sql")
-
-taxonomy <- taxonomizr::getTaxonomy(ID,
-                                    "/SAN/db/taxonomy/taxonomizr.sql",
-                                    desiredTaxa = c("superkingdom", "phylum", "class", "order", "family", "genus", "species"))
-
-tail(names(silva18))
-
-tail(taxonomy)
-
-ID
-
-taxa.print[1:10,]
-
-newTax.print <- newTax[[2]]
-rownames(newTax.print) <- NULL
-
-(newTax.print)
-
-#let's save this
-MA@taxonTable <- taxa
+for (i in 1:3){
+    if (target$Gen[i]=="16S"){
+        spec[[i]] <- assignSpecies(seqs[[i]],
+                                   "/SAN/Susanas_den/AmpMarkers/silva_species_assignment_v138.1.fa.gz",
+                                    allowMultiple=TRUE,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }}
 
 
+s.print <- spec[[3]]
+
+
+##replacing species name
+rownames(tax_table(PS.l[[1]]))==rownames(spec[[1]])
+rownames(spec[[1]])==rownames(taxa2[[1]])
+
+taxa2[[1]][,7] <- spec[[1]][,2]
+taxa2[[3]][,7] <- spec[[3]][,2]
+
+## now saving this taxonomy
+
+MA2 <- MA
+
+MA2@taxonTable <- taxa2
+
+
+##To phyloseq
+##Sample data
 # temporary fix
 source("bin/toPhyloseq.R")
-
-PS <- TMPtoPhyloseq(MA, colnames(MA))
-
-head(PS@tax_table)
+PS <- TMPtoPhyloseq(MA2, colnames(MA2))
 
 PS@sam_data <- sample_data(sdt)
-
-saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA_DADA2.Rds")
+saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S_SILVA.Rds")
 
 ##Primer data
-PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
+PS.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE)
 
 # adding sample data
-for (i in 1:3){
+for (i in 1:3)
+{
     sample_data(PS.l[[i]]) <- sdt
 }
-
-
-saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA_DADA2.Rds")
+saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList18S_SILVA.Rds")
 
 ###For Microbiome analysis (Victor)
-
 PS.18S <- PS.l[[2]]
+#PS18S <- phyloseq(
+#    otu_table(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
+#    sample_data(PS.l$wang1141_13_F.Nem_0425_6_3_R), 
+#    tax_table(PS.l$wang1141_13_F.Nem_0425_6_3_R))
+#sum(otu_table(PS.18S)) ##Total denoised reads = 853,134
+saveRDS(PS.18S, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PS_18Swang_SILVA.Rds") ###Information from 18S
 
-PS.18S@tax_table
 
-get_taxa_unique(PS,"phylum")
+
+##########################################
+########################################
+#ID <- taxonomizr::accessionToTaxa(accession, version="base", "/SAN/db/taxonomy/taxonomizr.sql")
+#taxonomy <- taxonomizr::getTaxonomy(ID,
+#                                    "/SAN/db/taxonomy/taxonomizr.sql",
+#                                    desiredTaxa = c("superkingdom", "phylum", "class", "order", "family", "genus", "species"))
+
+

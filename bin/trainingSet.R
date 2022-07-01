@@ -6,11 +6,11 @@ library(taxonomizr)
 seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz", format="fasta")
 
 # specific name for the classifier
-head(names(seqs))
+names(seqs)[500:510]
 
 names(seqs) <- paste("Root;", names(seqs), sep="")
 
-TrainingDB <- function(seqs){
+#TrainingDB <- function(seqs){
 # if they exist, remove any gaps in the sequences:
 seqs <- RemoveGaps(seqs)
 taxid <- NULL
@@ -67,15 +67,13 @@ for (i in seq_len(maxIterations)) {
         }
     }
 }
-}
-
+#}
 sum(remove) # total number of sequences eliminated
 length(probSeqs) # number of remaining problem sequences
-traningSet16S <- TrainingDB(seqs)
-saveRDS(trainingSet16, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
+#traningSet16S <- TrainingDB(seqs)
+saveRDS(trainingSet, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
 
 ###################### for 18S
-
 seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2.fa.gz")
 head(names(seqs))
 # specific name for the classifier
