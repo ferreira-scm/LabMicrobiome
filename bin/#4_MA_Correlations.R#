@@ -23,16 +23,29 @@ PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PS_18Swang.Rds")
 PSwang <- PS.l[[37]]
 
+PS_SA <- readRDS("tmp/PhyloSeqData18S.Rds")
+
+# load silva taxonomic annotation
+PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
 
 # let's filter
 fPS18S <- fil(PS18S)
 fPS <- fil(PS)
 fPSwang <- fil(PSwang)
+fPS18SS <- fil(PS18SS)
+fPSslv <- fil(PSslv)
+fPS_SA <- fil(PS_SA)
+
 # and transform
 Tps18S <- fPS18S
 Tps <- fPS
 otu_table(Tps18S) <- otu_table(fPS18S)*sample_data(fPS18S)$DNA_g_feces
 otu_table(Tps) <- otu_table(fPS)*sample_data(fPS)$DNA_g_feces
+
+TPSslv <- fPSslv
+TPS_SA <- fPS_SA
+otu_table(TPSslv) <- otu_table(TPSslv)*sample_data(TPSslv)$DNA_g_feces
+otu_table(TPS_SA) <- otu_table(TPS_SA)*sample_data(TPS_SA)$DNA_g_feces
 
 
 # now plotting
@@ -298,4 +311,87 @@ e2 <- p_tss(PlantWormsw, "d)", "MA wang no plants or nematodes")
 plot_grid(a2,b2,d2,e2) -> p_cor2
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)
+
+################## comparing taxonomies
+Tslv <- psmelt(TPSslv)
+TSA <- psmelt(TPS_SA)
+
+TPSslv@sam_data$glom <- "a"
+TPS_SA@sam_data$glom <- "a"
+
+Avgslv <- merge_samples(TPSslv, "glom")
+Avgbla <- merge_samples(TPS_SA, "glom")
+
+Tslv <- psmelt(Avgslv)
+TSA <- psmelt(Avgbla)
+
+
+silva_phy <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+silva_phy
+
+blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(x="", y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+            theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+
+silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Genus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+silva_gen
+
+blast_gen <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(genus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+
+
+ggplot2::ggsave(file="fig/phy_silva_Abundace.pdf", silva_phy, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_silva_Abundace.png", silva_phy, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.pdf", blast_phy, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.png", blast_phy, width = 8, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/gen_silva_Abundace.pdf", silva_gen, width = 8, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_silva_Abundace.png", silva_gen, width = 8, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.pdf", blast_gen, width = 8, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.png", blast_gen, width = 8, height = 10, dpi = 600)
 
