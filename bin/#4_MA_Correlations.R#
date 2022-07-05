@@ -343,10 +343,10 @@ silva_phy
 
 blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
     geom_bar(stat="identity", position="stack")+
-    labs(x="", y="ASV reads (per g of faeces)")+
+    labs(y="ASV reads (per g of faeces)")+
     scale_color_brewer(palette="Dark2")+
     theme_minimal()+
-            theme(panel.grid.major = element_blank(),
+    theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
 #          legend.position = "none",
           axis.line = element_line(colour = "black"),
