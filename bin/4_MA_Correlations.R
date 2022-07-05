@@ -23,20 +23,29 @@ PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PS_18Swang.Rds")
 PSwang <- PS.l[[37]]
 
-#new taxonomic annotation
-PS18SS <- readRDS("tmp/PS_18Swang_SILVA.Rds")
+PS_SA <- readRDS("tmp/PhyloSeqData18S.Rds")
+
+# load silva taxonomic annotation
+PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
 
 # let's filter
 fPS18S <- fil(PS18S)
 fPS <- fil(PS)
 fPSwang <- fil(PSwang)
 fPS18SS <- fil(PS18SS)
+fPSslv <- fil(PSslv)
+fPS_SA <- fil(PS_SA)
 
 # and transform
 Tps18S <- fPS18S
 Tps <- fPS
 otu_table(Tps18S) <- otu_table(fPS18S)*sample_data(fPS18S)$DNA_g_feces
 otu_table(Tps) <- otu_table(fPS)*sample_data(fPS)$DNA_g_feces
+
+TPSslv <- fPSslv
+TPS_SA <- fPS_SA
+otu_table(TPSslv) <- otu_table(TPSslv)*sample_data(TPSslv)$DNA_g_feces
+otu_table(TPS_SA) <- otu_table(TPS_SA)*sample_data(TPS_SA)$DNA_g_feces
 
 
 # now plotting
@@ -303,3 +312,28 @@ plot_grid(a2,b2,d2,e2) -> p_cor2
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)
 
+################## comparing taxonomies
+# how does host DNA change with infection
+Tslv <- psmelt(TPSslv)
+TSA <- psmelt(TPS_SA)
+
+silva_dpi <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(x="Days post infection", y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()
+#    theme(panel.grid.major = element_blank(),
+#          panel.grid.minor = element_blank(),
+#          legend.position = "none")
+#          axis.line = element_line(colour = "black"))
+
+blast_dpi <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(x="Days post infection", y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()
+
+ggplot2::ggsave(file="fig/silva_Abundace_dpi.pdf", silva_dpi, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/silva_Abundace_dpi.png", silva_dpi, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/blast_Abundace_dpi.pdf", blast_dpi, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/blast_Abundace_dpi.png", blast_dpi, width = 15, height = 10, dpi = 600)

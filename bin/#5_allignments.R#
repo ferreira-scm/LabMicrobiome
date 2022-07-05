@@ -271,4 +271,4 @@ t2 <- ggtree(tree2, aes(color=group, linetype=group)) +
 
 ggplot2::ggsave(file="fig/Eimeria_NJtree.pdf", t1, width = 5, height = 5, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_NJtree.png", t1, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t1, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t2, width = 5, height = 5, dpi = 300)

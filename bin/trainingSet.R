@@ -86,21 +86,25 @@ saveRDS(trainingSet18S, "/SAN/Susanas_den/AmpMarkers/18SSilva132TrainingSet.RDS"
 ## for ITS
 seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/UNITE_ITS.fasta")
 
+head(seqs)
+
 # specific name for the classifier
 names(seqs) <- gsub("(.*)(k__)", "\\1 Root;k__", names(seqs))
 names(seqs) <- gsub("(.*)(Root;)", "\\2", names(seqs))
 names(seqs) <- gsub("(\\w__)","", names(seqs))
+names(seqs) <- paste(names(seqs), ";", sep="")
 
 # if they exist, remove any gaps in the sequences:
 seqs <- RemoveGaps(seqs)
 taxid <- NULL
+
 # ensure that all sequences are in the same orientation:
 seqs <- OrientNucleotides(seqs)
+
 groups <- names(seqs)
 groupCounts <- table(groups)
 u_groups <- names(groupCounts)
 length(u_groups)
-taxid <- NULL
 
 #subset sequences in large groups
 maxGroupSize <- 10
