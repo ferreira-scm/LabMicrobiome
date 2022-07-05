@@ -313,13 +313,22 @@ ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, he
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)
 
 ################## comparing taxonomies
-# how does host DNA change with infection
 Tslv <- psmelt(TPSslv)
 TSA <- psmelt(TPS_SA)
 
-silva_dpi <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
+TPSslv@sam_data$glom <- "a"
+TPS_SA@sam_data$glom <- "a"
+
+Avgslv <- merge_samples(TPSslv, "glom")
+Avgbla <- merge_samples(TPS_SA, "glom")
+
+Tslv <- psmelt(Avgslv)
+TSA <- psmelt(Avgbla)
+
+
+silva_phy <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
     geom_bar(stat="identity", position="stack")+
-    labs(x="Days post infection", y="ASV reads (per g of faeces)")+
+    labs(x="", y="ASV reads (per g of faeces)")+
     scale_color_brewer(palette="Dark2")+
     theme_minimal()
 #    theme(panel.grid.major = element_blank(),
@@ -327,13 +336,40 @@ silva_dpi <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance
 #          legend.position = "none")
 #          axis.line = element_line(colour = "black"))
 
-blast_dpi <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
+silva_phy
+
+blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
     geom_bar(stat="identity", position="stack")+
-    labs(x="Days post infection", y="ASV reads (per g of faeces)")+
+    labs(x="", y="ASV reads (per g of faeces)")+
     scale_color_brewer(palette="Dark2")+
     theme_minimal()
 
-ggplot2::ggsave(file="fig/silva_Abundace_dpi.pdf", silva_dpi, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/silva_Abundace_dpi.png", silva_dpi, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/blast_Abundace_dpi.pdf", blast_dpi, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/blast_Abundace_dpi.png", blast_dpi, width = 15, height = 10, dpi = 600)
+silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Genus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(x="", y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()
+#    theme(panel.grid.major = element_blank(),
+#          panel.grid.minor = element_blank(),
+#          legend.position = "none")
+#          axis.line = element_line(colour = "black"))
+
+silva_gen
+
+blast_gen <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(genus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(x="", y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()
+
+
+ggplot2::ggsave(file="fig/phy_silva_Abundace.pdf", silva_phy, width = 10, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_silva_Abundace.png", silva_phy, width = 10, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.pdf", blast_phy, width = 10, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.png", blast_phy, width = 10, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/gen_silva_Abundace.pdf", silva_gen, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_silva_Abundace.png", silva_gen, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.pdf", blast_gen, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.png", blast_gen, width = 15, height = 10, dpi = 600)
+
