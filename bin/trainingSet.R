@@ -10,7 +10,7 @@ names(seqs)[500:510]
 
 names(seqs) <- paste("Root;", names(seqs), sep="")
 
-#TrainingDB <- function(seqs){
+TrainingDB <- function(seqs){
 # if they exist, remove any gaps in the sequences:
 seqs <- RemoveGaps(seqs)
 taxid <- NULL
@@ -67,10 +67,11 @@ for (i in seq_len(maxIterations)) {
         }
     }
 }
-#}
+}
 sum(remove) # total number of sequences eliminated
 length(probSeqs) # number of remaining problem sequences
-#traningSet16S <- TrainingDB(seqs)
+
+trainingSet <- TrainingDB(seqs)
 saveRDS(trainingSet, "/SAN/Susanas_den/AmpMarkers/16SSilva138TrainingSet.RDS")
 
 ###################### for 18S
@@ -159,6 +160,21 @@ for (i in seq_len(maxIterations)) {
 
 saveRDS(trainingSet,"/SAN/Susanas_den/AmpMarkers/ITS_UNITETrainingSet.RDS")
 
+
+
+
+### For LSU
+
+seqs <- DNAStringSet(readRNAStringSet("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/SILVA_138.1_LSURef_NR99_tax_silva.fasta.gz"))
+
 head(names(seqs))
 
-tempdir()
+enaTax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
+
+
+tax <- enaTax$submitted_path
+
+(tax)[100:110]
+
+names(seqs) <- (gsub("(.*?)( .*)", "Root;\\2", names(seqs)))
+names(seqs) <- gsub("(Root; )", "Root;", names(seqs)) 

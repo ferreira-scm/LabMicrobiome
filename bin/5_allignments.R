@@ -13,10 +13,15 @@ library(phangorn)
 ## using the devel
 devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
+devtools::load_all("/SAN/Susanas_den/phangorn/")
+
+
 PS <- readRDS("tmp/PhyloSeqData_All.Rds")
 PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PS_18Swang.Rds")
 PSwang <- PS.l[[37]]
+
+PSslv <- readRDS("tmp/PhyloSeqData18S.Rds")
 
 trainingSet <- readRDS("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimrefTrainingSet.RDS")
 
@@ -86,10 +91,14 @@ rownames(MA_dada2Sp)==rownames(Eim@tax_table)
 
 Eim@tax_table[,7] <- MA_dada2Sp[,2]
 Eimp <- psmelt(Eim)
+
 Eimeria_reads <- ggplot(Eimp, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
-ggplot2::ggsave(file="fig/MA_Eimeria_reads.pdf", Eimeria_reads, width = 5, height = 5, dpi = 300)
+
+Eimeria_reads2
+
+ggplot2::ggsave(file="fig/MA_Eimeria_reads2.pdf", Eimeria_reads2, width = 5, height = 3, dpi = 300)
 
 rownames(SA_dada2Sp)==rownames(Eim2@tax_table)
 Eim2@tax_table[,7] <- SA_dada2Sp[,2]
@@ -98,6 +107,7 @@ Eimp2 <- psmelt(Eim2)
 Eimeria_reads2 <- ggplot(Eimp2, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
+
 ggplot2::ggsave(file="fig/SA_Eimeria_reads.pdf", Eimeria_reads2, width = 5, height = 5, dpi = 300)
 
 ##aligments
@@ -124,7 +134,11 @@ names(Teur) <- gsub("(.*sp.)(.*)","\\1", names(Teur))
 allal <- c(poolSeqs, refEim, Teur)
 Allal <- AlignSeqs(allal, anchor=NA)
 
+library(ShortRead)
 
+writeFasta(allal, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimreadsRef.fa")
+
+writeFasta(Allal, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimreadsRef_allign.fa")
 
 #library(msa)
 
@@ -176,30 +190,100 @@ treeNJ <- NJ(dm)
 
 plot(treeNJ)
 
+plot(treeUPGMA)
+
 fun <- function(x) upgma(dist.ml(x))
 bs_upgma <- bootstrap.phyDat(Pall, fun)
 plotBS(treeUPGMA, bs_upgma, main="UPGMA")
 
 fit <- pml(treeNJ, data=Pall)
 
+fit2 <- pml(treeUPGMA, data=Pall)
+
 fitJC  <- optim.pml(fit, rearrangement="NNI")
 
+fitJC2  <- optim.pml(fit2, rearrangement="NNI")
+
 fitGTR <- update(fit, k=4, inv=0.2)
-fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,
-                    rearrangement = "NNI", control = pml.control(trace = 0))
+fitGTR <- optim.pml(fitGTR, model="GTR", optInv=TRUE, optGamma=TRUE,optNni=TRUE,
+                    optBf=TRUE, optQ=TRUE,
+                    rearrangement = "stochastic", control = pml.control(trace = 0))
 
 
-anova(fitJC, fitGTR)
+fitGTR2 <- update(fit2, k=4, inv=0.2)
+fitGTR2 <- optim.pml(fitGTR2, model="GTR", optInv=TRUE, optGamma=TRUE,optNni=TRUE,
+                    optBf=TRUE, optQ=TRUE,
+                    rearrangement = "stochastic", control = pml.control(trace = 0))
 
-mt <- modelTest(Pall, model=c("JC", "F81", "K80", "HKY", "SYM", "GTR"))
 
-bs <- bootstrap.pml(fitJC, bs=100, optNni=TRUE,
-                    control = pml.control(trace = 0))
+#anova(fitJC, fitGTR)
+#bs1 <- bootstrap.pml(fitJC, bs=100, optNni=TRUE,
+#                    control = pml.control(trace = 0))
+#plotBS(midpoint(fitJC$tree), bs1, p = 50, type="p")
+#bs <- bootstrap.pml(fitGTR, bs=100, optNni=TRUE,
+#                    control = pml.control(trace = 0))
+#plotBS(midpoint(fitGTR$tree), bs, p = 50, type="p")
 
-plotBS(midpoint(fitJC$tree), bs, p = 50, type="p")
+library(ggtree)
 
-bs <- bootstrap.pml(fitJC, bs=100, optNni=TRUE,
-                    control = pml.control(trace = 0))
+#pat <- c("Eimeria ferrisi", "Eimeria vermiformis", "Eimeria falciformis", "SA", "MA")
 
-plotBS(midpoint(fitJC$tree), bs, p = 50, type="p")
+unloadNamespace("microbiome")
+unloadNamespace("phyloseq")
 
+group
+
+group <- fitGTR$tree$tip.label
+
+ferrisi <- group[grepl("Eimeria ferrisi", fitGTR$tree$tip.label)]
+
+falciformis <- group[grepl("Eimeria falciformis", fitGTR$tree$tip.label)]
+
+vermiformis <- group[grepl("Eimeria vermiformis", fitGTR$tree$tip.label)]
+
+Isospora <- group[grepl("Isospora", fitGTR$tree$tip.label)]
+
+#MA <- group[grepl("MA", fitGTR$tree$tip.label)]
+#SA <- group[grepl("SA", fitGTR$tree$tip.label)]
+
+
+cls <- list(ferrisi, falciformis, vermiformis, Isospora)
+
+
+mytree <- fitGTR$tree
+
+mytree2 <- fitGTR2$tree
+
+ggtree(mytree2)+geom_text2(aes(subset=!isTip, label=node), hjust=-.3)
+
+ggtree(mytree)+geom_text2(aes(subset=!isTip, label=node), hjust=-.3)
+
+###
+
+tree1 <- groupOTU(mytree, cls)
+
+tree2 <- groupOTU(mytree2, cls)
+
+tree1
+
+library("colorspace")
+
+t1 <- ggtree(tree1, aes(color=group)) +
+    scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")+
+    geom_nodepoint(aes(color=group), size=3, alpha=.8) 
+
+
+t1
+
+t2 <- ggtree(tree2, aes(color=group)) +
+    scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")+
+        geom_nodepoint(aes(color=group), size=3, alpha=.8) 
+
+t2
+
+ggplot2::ggsave(file="fig/Eimeria_NJtree.pdf", t1, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_NJtree.png", t1, width = 10, height = 10, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t2, width = 5, height = 5, dpi = 300)
+
+
+t1
