@@ -297,9 +297,21 @@ for (i in 1:3){
                                     verbose=TRUE)
     }}
 
+#for (i in 1:3){
+#    if (target$Gen[i]=="18S"){
+#        spec[[i]] <- assignSpecies(seqs[[i]],
+#                                   "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_AssignSpecies.fa",
+#                                    allowMultiple=TRUE,
+#                                    tryRC = TRUE,
+#                                    verbose=TRUE)
+#    }}
 
-s.print <- spec[[3]]
 
+s.print <- spec[[2]]
+
+rownames(s.print) <- NULL
+
+s.print
 
 ##replacing species name
 rownames(tax_table(PS.l[[1]]))==rownames(spec[[1]])

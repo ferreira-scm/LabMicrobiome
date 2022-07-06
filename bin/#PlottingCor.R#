@@ -247,9 +247,7 @@ e <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
 plot_grid(a,b,c,d,e) -> fCor
 
 ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 14, height = 8, dpi = 600)
-
 ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 14, height = 8, dpi = 600)
-
 ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, height = 5, dpi = 600)
 
     

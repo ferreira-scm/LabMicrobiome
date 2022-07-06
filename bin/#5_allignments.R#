@@ -21,6 +21,8 @@ PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 PS18S <- readRDS("tmp/PS_18Swang.Rds")
 PSwang <- PS.l[[37]]
 
+PSslv <- readRDS("tmp/PhyloSeqData18S.Rds")
+
 trainingSet <- readRDS("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimrefTrainingSet.RDS")
 
 source("bin/PlottingCor.R")
@@ -89,10 +91,14 @@ rownames(MA_dada2Sp)==rownames(Eim@tax_table)
 
 Eim@tax_table[,7] <- MA_dada2Sp[,2]
 Eimp <- psmelt(Eim)
+
 Eimeria_reads <- ggplot(Eimp, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
-ggplot2::ggsave(file="fig/MA_Eimeria_reads.pdf", Eimeria_reads, width = 5, height = 5, dpi = 300)
+
+Eimeria_reads2
+
+ggplot2::ggsave(file="fig/MA_Eimeria_reads2.pdf", Eimeria_reads2, width = 5, height = 3, dpi = 300)
 
 rownames(SA_dada2Sp)==rownames(Eim2@tax_table)
 Eim2@tax_table[,7] <- SA_dada2Sp[,2]
@@ -101,6 +107,7 @@ Eimp2 <- psmelt(Eim2)
 Eimeria_reads2 <- ggplot(Eimp2, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
+
 ggplot2::ggsave(file="fig/SA_Eimeria_reads.pdf", Eimeria_reads2, width = 5, height = 5, dpi = 300)
 
 ##aligments
@@ -236,12 +243,12 @@ vermiformis <- group[grepl("Eimeria vermiformis", fitGTR$tree$tip.label)]
 
 Isospora <- group[grepl("Isospora", fitGTR$tree$tip.label)]
 
-group[grepl("MA", fitGTR$tree$tip.label)] <- "MA read"
-group[grepl("SA", fitGTR$tree$tip.label)] <- "SA read"
+#MA <- group[grepl("MA", fitGTR$tree$tip.label)]
+#SA <- group[grepl("SA", fitGTR$tree$tip.label)]
+
 
 cls <- list(ferrisi, falciformis, vermiformis, Isospora)
 
-cls
 
 mytree <- fitGTR$tree
 
@@ -257,18 +264,26 @@ tree1 <- groupOTU(mytree, cls)
 
 tree2 <- groupOTU(mytree2, cls)
 
-str(tree1)
+tree1
 
 library("colorspace")
 
-t1 <- ggtree(tree1, aes(color=group, linetype=group)) +
-         scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")
+t1 <- ggtree(tree1, aes(color=group)) +
+    scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")+
+    geom_nodepoint(aes(color=group), size=3, alpha=.8) 
 
 
-t2 <- ggtree(tree2, aes(color=group, linetype=group)) +
-         scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")
+t1
 
+t2 <- ggtree(tree2, aes(color=group)) +
+    scale_color_manual(values=c("black", rainbow_hcl(4))) + theme(legend.position="right")+
+        geom_nodepoint(aes(color=group), size=3, alpha=.8) 
+
+t2
 
 ggplot2::ggsave(file="fig/Eimeria_NJtree.pdf", t1, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_NJtree.png", t1, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_NJtree.png", t1, width = 10, height = 10, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t2, width = 5, height = 5, dpi = 300)
+
+
+t1

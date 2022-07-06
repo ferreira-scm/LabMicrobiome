@@ -157,10 +157,7 @@ for (i in seq_len(maxIterations)) {
 }
 
 
-#traningSetITS <- TrainingDB(seqs)
-
-
-saveRDS(trainingSetITS, "/SAN/Susanas_den/AmpMarkers/ITS_UNITETrainingSet.RDS")
+saveRDS(trainingSet,"/SAN/Susanas_den/AmpMarkers/ITS_UNITETrainingSet.RDS")
 
 head(names(seqs))
 
