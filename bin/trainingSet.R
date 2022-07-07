@@ -169,8 +169,19 @@ seqs <- DNAStringSet(readRNAStringSet("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_l
 
 head(names(seqs))
 
-enaTax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
+                                        #enaTax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
 
+ACC <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/tax_slv_lsu_138.1.acc_taxid.gz", sep="\t")
+
+ENA <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
+
+head(ENA)
+
+head(names(seqs))
+
+length(unique(ENA$ncbi_taxonid))
+
+length(ENA$ncbi_taxonid)
 
 tax <- enaTax$submitted_path
 
