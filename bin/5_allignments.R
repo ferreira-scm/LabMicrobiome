@@ -7,34 +7,59 @@ library(reshape)
 library(phyloseq)
 library(DECIPHER)
 library(phangorn)
+library(ShortRead)
+
+library(RColorBrewer)
+
 #library(BiocManager, lib.loc="/usr/local/lib/R/site-library/")
 
-                                        #remotes::install_github("vmikk/metagMisc")
+#remotes::install_github("vmikk/metagMisc")
 ## using the devel
 devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
-devtools::load_all("/SAN/Susanas_den/phangorn/")
+## All runs pooled
+all.PS <- readRDS("tmp/PhyloSeqData_All.Rds")
+all.PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
+# single amplicon from MA run
+all.PSwang <- all.PS.l[[37]]
 
+## Single amplicon 18S
+sin.PS18S <- readRDS("tmp/PS_18Swang.Rds")
+sin.PS18S.slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
 
-PS <- readRDS("tmp/PhyloSeqData_All.Rds")
-PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
-PS18S <- readRDS("tmp/PS_18Swang.Rds")
-PSwang <- PS.l[[37]]
-
-PSslv <- readRDS("tmp/PhyloSeqData18S.Rds")
+## Single amplicon "pooled"
+#sin.PS <- readRDS("tmp/PhyloSeqData18S.Rds")
+#sin.PS.slv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
 
 trainingSet <- readRDS("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimrefTrainingSet.RDS")
 
 source("bin/PlottingCor.R")
 # let's filter
-fPS18S <- fil(PS18S)
-fPS <- fil(PS)
-fPSwang <- fil(PSwang)
+f.sin18 <- fil(sin.PS18S)
+f.all <- fil(all.PS)
+f.allwang <- fil(all.PSwang)
+f.sin18.slv <- fil(sin.PS18S.slv)
+# and transform
+T.sin18 <- f.sin18
+T.all <- f.all
+T.allwang <-f.allwang
+T.sin18.slv <- f.sin18.slv
+otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$DNA_g_feces
+otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$DNA_g_feces
+otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
+otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
+
+psTSS <- transform_sample_counts(fPS, function(x) x / sum(x))
 
 ## OK, now we want all the Eimeria sequences
+Eim <- subset_taxa(T.all, family%in%"Eimeriidae")
+Eim2 <- subset_taxa(T.sin18, family%in%"Eimeriidae")
+Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
 
-Eim <- subset_taxa(fPS, family%in%"Eimeriidae")
-Eim2 <- subset_taxa(fPS18S, family%in%"Eimeriidae")
+get_taxa_unique(Eim, "genus")
+
+# Do ASV match beween MA and SA?
+rownames(Eim2@tax_table) %in% rownames(Eim@tax_table)
 
 seqs <- DNAStringSet(getSequences(colnames(Eim@otu_table)))
 seqs2 <- DNAStringSet(getSequences(colnames(Eim2@otu_table)))
@@ -63,6 +88,7 @@ SA_IDtax <- IdTaxa(seqs2,
                  verbose = TRUE,
                  type = "extended")
 
+rownames(Eim.slv@tax_table)==rownames(Eim2@tax_table)
 
 ### check out all taxonomic annotations
 #rownames(MA_dada2Sp) <- NULL
@@ -74,6 +100,7 @@ MA_dada2Sp
 SA_dada2Sp
 
 MA_dada2Tx
+
 SA_dada2Tx
 
 sapply(SA_IDtax, function(x) {
@@ -83,7 +110,6 @@ sapply(MA_IDtax, function(x) {
     x$taxon[8]})
 
 SA_IDtax
-
 MA_IDtax
 
 #quick inspection here
@@ -92,36 +118,58 @@ rownames(MA_dada2Sp)==rownames(Eim@tax_table)
 Eim@tax_table[,7] <- MA_dada2Sp[,2]
 Eimp <- psmelt(Eim)
 
+
+Eim2@tax_table[,7] <- paste("sa.read", seq(1:nrow(Eim2@tax_table)), sep="")
+
+Eim2@tax_table[1,7] <- SA_dada2Sp[1,2]
+
+Eimp.sa <- psmelt(Eim2)
+
+Eimp.sa.slv <- psmelt(Eim.slv)
+
+plot_bar(Eim2, "species")
+
 Eimeria_reads <- ggplot(Eimp, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
 
-Eimeria_reads2
-
-ggplot2::ggsave(file="fig/MA_Eimeria_reads2.pdf", Eimeria_reads2, width = 5, height = 3, dpi = 300)
-
-rownames(SA_dada2Sp)==rownames(Eim2@tax_table)
-Eim2@tax_table[,7] <- SA_dada2Sp[,2]
-Eimp2 <- psmelt(Eim2)
-
-Eimeria_reads2 <- ggplot(Eimp2, aes(x=Sample, y=Abundance, fill=species))+
+Eimeria_reads.sa <- ggplot(Eimp.sa, aes(x=Sample, y=Abundance, fill=species))+
     geom_bar(stat="identity", position="stack", color="black", size=0.02)+
     theme_classic()
 
-ggplot2::ggsave(file="fig/SA_Eimeria_reads.pdf", Eimeria_reads2, width = 5, height = 5, dpi = 300)
+Eimeria_reads.sa
+
+Eimeria_reads.sa.slv <- ggplot(Eimp.sa.slv, aes(x=Sample, y=Abundance, fill=Genus))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    theme_classic()
+
+Eimeria_reads.sa.2 <- ggplot(Eimp.sa, aes(x=Sample, y=Abundance, fill=OTU))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    theme_classic()
+
+ggplot2::ggsave(file="fig/SA_Eimeria_reads.sa.pdf", Eimeria_reads.sa, width = 5, height = 3, dpi = 300)
+ggplot2::ggsave(file="fig/SA_Eimeria_reads.sa.png", Eimeria_reads.sa, width = 5, height = 3, dpi = 300)
 
 ##aligments
 #first better name reads
 names(seqs) <- MA_dada2Sp[,2]
-names(seqs) <- paste(names(seqs),c("MA1", "MA2", "MA3"))
+names(seqs) <- paste(names(seqs),c("MA1", "MA2", "MA3"),sep="")
 names(seqs2) <- SA_dada2Sp[,2]
-names(seqs2) <- paste(names(seqs2), c("SA1", "SA2", "SA3", "SA4", "SA5"))
+names(seqs2) <- paste(names(seqs2), c("SA1", "SA2", "SA3", "SA4", "SA5"), sep="")
+
 
 refEim <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_ref.fa")
 
+names(refEim) <- gsub("(\\s)", "_", names(refEim))
+
 poolSeqs <- c(seqs, seqs2)
+
+allSeqs <- c(poolSeqs, refEim)
+
 alignment <- AlignSeqs(poolSeqs, anchor=NA, verbose=FALSE)
+
 alignmentdb <- AlignSeqs(refEim, anchor=NA, verbose=FALSE)
+
 
 # we need an outgroup
 
@@ -131,14 +179,11 @@ Teur <- c(readDNAStringSet("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Teur1.fas
 
 names(Teur) <- gsub("(.*sp.)(.*)","\\1", names(Teur))
 
-allal <- c(poolSeqs, refEim, Teur)
-Allal <- AlignSeqs(allal, anchor=NA)
+alignmentAll <- AlignSeqs(c(poolSeqs, refEim, Teur), anchor=NA)
 
-library(ShortRead)
+writeFasta(alignmentAll, "tmp/Eimeria_alignment.fa")
 
-writeFasta(allal, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimreadsRef.fa")
-
-writeFasta(Allal, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimreadsRef_allign.fa")
+writeFasta(alignment, "tmp/Eimeria_reads_alignment.fa")
 
 #library(msa)
 
@@ -146,7 +191,7 @@ writeFasta(Allal, "/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimreadsRef_allign
 
 max(DistanceMatrix(alignment))
 
-alignment
+DistanceMatrix(alignment)
 
 # making a phylo tree
 PhanAlign <- phyDat(as(alignment, "matrix"), type="DNA")
@@ -287,3 +332,145 @@ ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t2, width = 5, height = 5, dpi = 3
 
 
 t1
+
+########################### Eimeria ASVs
+## Are ASV's the same between SA and MA?
+colnames(Eim@otu_table)[1] == colnames(Eim2@otu_table)[1]
+colnames(Eim@otu_table)[2] == colnames(Eim2@otu_table)[2]
+colnames(Eim@otu_table)[3] == colnames(Eim2@otu_table)[3]
+
+#plotting individual ASV's
+MA.e <- psmelt(Eim)
+SA.e <- psmelt(Eim2)
+
+Eim2.g <- tax_glom(Eim2, taxrank="family")
+SA.e.g <- psmelt(Eim2.g)
+
+SA.e$ASV <- "ASV"
+SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[5])] <- "ASV5"
+SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[4])] <- "ASV4"
+SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[3])] <- "ASV3"
+SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[2])] <- "ASV2"
+SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[1])] <- "ASV1"
+
+SA.e5 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[5]),]
+SA.e4 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[4]),]
+SA.e3 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[3]),]
+SA.e2 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[2]),]
+SA.e1 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[1]),]
+
+MA.e3 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[3]),]
+MA.e2 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[2]),]
+MA.e1 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[1]),]
+
+nb.col=length(levels(as.factor(SA.e5$EH_ID)))+1
+coul <- colorRampPalette(brewer.pal(8, "Accent"))(nb.col)
+
+### make glm qPCR~ASV1+ASV2+...
+## ASV5+ASV5 useful?
+#### Plot by EH_ID
+
+ggplot(SA.e5, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_point(shape=21, size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(SA.e4, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_point(shape=21, size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(SA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(SA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(SA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+### ASV from MA run plotted
+ggplot(MA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(MA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+ggplot(MA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+#### how does the qpcr curve looks like?
+ggplot(sdt, aes(x=dpi, y=Genome_copies_gFaeces+1))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2.5, alpha=0.7, aes(shape=Infection, fill=dpi), color="black")+
+    scale_y_log10("log10 (Genome copies/g Faeces + 1) (qPCR)",
+      breaks = scales::trans_breaks("log10", function(x) 10^x),
+      labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    scale_shape_manual(values = c(21, 24))+
+    geom_line(aes(group=EH_ID), color="gray", alpha=0.5)+
+    scale_fill_manual(values=coul)+
+    theme_bw()+
+    theme(text = element_text(size=16), axis.title.x = element_blank(), legend.position = "top")+
+    annotation_logticks(sides = "l")+
+    guides(fill=FALSE)
+
+ggplot(SA.e.g, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID))+
+    scale_fill_manual(values=coul)
+
+#################### plotting individuals by ASV
+library(cowplot) # to plot a list of plots
+
+head(SA.e5$EH_ID)
+
+SA.e4$EH_ID[
+
+cl <- colorRampPalette(brewer.pal(8, "Accent"))(5)
+
+length(levels(SA.e$EH_ID))
+
+p.ID <- function(i){
+    SA.e%>%
+    filter(EH_ID%in%SA.e$EH_ID[i])%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
+    geom_line(aes(group=ASV), color="gray", alpha=0.5)+
+    scale_fill_manual(values=cl)+
+    scale_y_log10("log10 (Eimeira /gFaeces + 1) (qPCR)",
+      breaks = scales::trans_breaks("log10", function(x) 10^x),
+      labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    theme_bw()+
+    theme(text = element_text(size=16), axis.title.x = element_blank(), legend.position = "top") -> nm
+    nm
+}
+
+name
+
+p.EH <- list()
+
+for (i in 1:22){
+    p <- p.ID(i)
+    p.EH[[i]] <- p
+}
+
+pdf("fig/SA/Eimeria_ASVs_ID.pdf")
+for (i in 1:22) {
+    print(p.EH[[i]])
+}
+dev.off()
+
+p.EH[1]
+

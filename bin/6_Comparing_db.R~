@@ -1,0 +1,162 @@
+#!/usr/bin/Rscript
+
+library(ggplot2)
+library(dada2)
+#library(MultiAmplicon, lib.loc="/usr/local/lib/R/site-library/")
+library(reshape)
+library(phyloseq)
+
+library(RColorBrewer)
+library(forcats)
+
+require(grid)
+#require(grid_extra)
+require(cowplot)
+                                        #library(DECIPHER)
+#library(phangorn)
+#library(ShortRead)
+
+#library(BiocManager, lib.loc="/usr/local/lib/R/site-library/")
+
+                                        #remotes::install_github("vmikk/metagMisc")
+## using the devel
+devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
+
+## Single amplicon 18S
+sin.PS18S <- readRDS("tmp/PS_18Swang.Rds")
+sin.PS18S.slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
+
+## Single amplicon "pooled"
+sin.PS <- readRDS("tmp/PhyloSeqData18S.Rds")
+sin.PS.slv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
+
+
+source("bin/PlottingCor.R")
+# let's filter
+f.sin18 <- fil(sin.PS18S)
+f.sin18.slv <- fil(sin.PS18S.slv)
+
+f.sin <- fil(sin.PS)
+f.sin.slv <- fil(sin.PS.slv)
+
+get_taxa_unique(f.sin.slv, "Kingdom")
+
+#dirty little fix for downstream plotting
+f.sin@sam_data$ave <- "average"
+f.sin.slv@sam_data$ave <- "average"
+
+Es <- subset_taxa(f.sin, superkingdom%in%"Eukaryota")
+Bs <- subset_taxa(f.sin, superkingdom%in%"Bacteria")
+#ps18 <-aggregate_taxa(ps18, level="family")
+#ps18 <- psmelt(ps18)
+#ps18$logA <- log(1+ps18$Abundance)
+#ps18$logGC <- log(1+ps18$Genome_copies_gFaeces)
+
+Es.slv <- subset_taxa(f.sin.slv, Kingdom%in%"Eukaryota")
+Bs.slv <- subset_taxa(f.sin.slv, Kingdom%in%"Bacteria")
+#ps18s <-aggregate_taxa(ps18s, level="Family")
+#ps18s <- psmelt(ps18s)
+#ps18s$logA <- log(1+ps18s$Abundance)
+#ps18s$logGC <- log(1+ps18s$Genome_copies_gFaeces)
+
+Esm <- psmelt(Es)
+Esm.slv <- psmelt(Es.slv)
+Bsm <- psmelt(Bs)
+Bsm.slv <- psmelt(Bs.slv)
+
+#Esm$ave <- "average"
+#Esm.slv$ave <- "average"
+
+#nb.c <-length(levels(as.factor(Esm$phylum)))
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(length(levels(as.factor(Esm$phylum))))
+
+Esm_plot <- ggplot(Esm, aes(x=ave, y=Abundance, fill=phylum))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(length(levels(as.factor(Esm.slv$Order))))
+
+Esm.slv$Order
+
+mycolors
+
+Esm.slv_plot <- ggplot(Esm.slv, aes(x=ave, y=Abundance, fill=Order))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+
+#Esm.slv_plot
+#Esm_plot
+#ggplot2::ggsave(file="fig/",, width = 7, height = 5, dpi = 300)
+
+
+################### for Nematodes
+Nem <- subset_taxa(Es, phylum%in%"Nematoda")
+
+nem <- psmelt(Nem)
+
+
+
+Nem_plot_F <- ggplot(nem, aes(x=ave, y=Abundance, fill=family))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+Nem_plot_G <-  ggplot(nem, aes(x=ave, y=Abundance, fill=genus))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+Nem_plot_S <-  ggplot(nem, aes(x=ave, y=Abundance, fill=species))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+
+Nem.slv <- subset_taxa(Es.slv, Order%in%"Metazoa_(Animalia)")
+
+nem.slv <- psmelt(Nem.slv)
+
+Nem.slv_plot_F <- ggplot(nem.slv, aes(x=ave, y=Abundance, fill=Family))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+Nem.slv_plot_G <- ggplot(nem.slv, aes(x=ave, y=Abundance, fill=Genus))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+Nem.slv_plot_S <- ggplot(nem.slv, aes(x=ave, y=Abundance, fill=Species))+
+    geom_bar(stat="identity", position="stack", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Family")+
+    theme_bw()+
+    theme(text = element_text(size=16))
+
+# save plots of what we have so far
+plot_grid(Nem.slv_plot_F, Nem.slv_plot_G, Nem.slv_plot_S) -> NemSilva
+
+plot_grid(Nem.slv_plot_F, Nem.slv_plot_G, Nem.slv_plot_S) -> NemB
+
+ggplot2::ggsave(file="fig/Tax_Comp_NemSilva.png", NemSilva, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/Tax_Comp_NemSilva.pdf", NemSilva, width = 8, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/Tax_Comp_Nem.png", NemB, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/Tax_Comp_Nem.pdf", NemB, width = 8, height = 5, dpi = 600)
