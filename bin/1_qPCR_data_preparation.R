@@ -18,7 +18,7 @@ library(rstatix)
 
 ##Load data
 if(!exists("sample.data")){
-    source("bin/1_Data_preparation.R")
+    source("R/1_Data_preparation.R")
 }
 ##Standard curves
 data.std<- read.csv("data/Eimeria_quantification_Std_Curve_data.csv")
@@ -108,8 +108,388 @@ set.seed(2020)
 ## Compute simple linear models from standards
 ## "Genome copies modeled by Ct"
 
+##Ct modeled by Oocyst counts; data from different Cyclers
+data.std.lm%>%
+  ggplot(aes(x = Oocyst_count, y = Ct, color= Cycler)) +
+  geom_smooth(method = "lm", se = T, aes(Oocyst_count, Ct, color=Cycler)) +
+  guides(color = "none", size = "none") +  # Size legend also removed
+  scale_x_log10("log 10 Eimeria Oocysts Count", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_jitter(shape=21, position=position_jitter(0.2), 
+              aes(size= 20,fill= Cycler, shape= Parasite), color= "black", alpha= 0.5)+
+  labs(tag = "A)")+
+  theme_bw() +
+  theme(text = element_text(size=20))+
+  annotation_logticks(sides = "b")
+
+##Ct modeled by Gene counts; data from different Cyclers
+data.std.lm%>%
+  ggplot(aes(x = Ct, y = Genome_copies, color= Cycler)) +
+  geom_smooth(method = "lm", se = F, size= 0.5) +
+  guides(color = "none", size = "none") +  # Size legend also removed
+  scale_y_log10("log 10 Eimeria genome copies", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_jitter(shape=21, position=position_jitter(0.2), aes(size= 15, fill= Cycler), color= "black", alpha= 0.25)+
+  stat_cor(label.x = 25, label.y = c(8,7,6), 
+           aes(label= paste(..rr.label.., ..p.label.., sep= "~`,`~")))+ # Add correlation coefficient
+  stat_regline_equation(label.x = 25, label.y = c(8.5,7.5,6.5))+ # Add Regression equation lm log10(Genome_copies)~Ct+Cycler
+  labs(tag = "A)")+
+  theme_bw() +
+  theme(text = element_text(size=20), legend.position= "none")+
+  annotation_logticks(sides = "l")-> A
+
+##Ct modeled by Oocyst_counts and extra predictors to be considered 
+##Model 1: Ct modeled by oocyst count simple without other predictor
+##considering all data 
+lm.Ct<- lm(Ct~log10(Oocyst_count), data.std.lm)
+
+##Model 2: Ct modeled by oocyst count and parasite as predictors
+lm.CtPar<- lm(Ct~log10(Oocyst_count)+Parasite, data.std.lm)
+
+##Model 3: Ct modeled by oocyst count and cycler as predictors
+lm.CtCyc<- lm(Ct~log10(Oocyst_count)+Cycler, data.std.lm)
+
+##Model 4: Ct modeled by oocysts counts, parasite and cycler used as predictors
+lm.CtAll<- lm(Ct~log10(Oocyst_count)+Parasite+Cycler, data.std.lm)
+
+##Model 5: Ct modeled by oocysts counts and parasite/cycle interaction (Check with Alice and Susi)
+lm.CtInt<- lm(Ct~log10(Oocyst_count)+Parasite*Cycler, data.std.lm)
+
+##Comparison of models 
+compareLM(lm.CtAll, lm.CtPar, lm.CtCyc, lm.Ct, lm.CtInt)
+rm(lm.Ct, lm.CtPar, lm.CtCyc, lm.CtInt, lm.CtAll)
+##Model 3 fit better the data... Cycler has major impact (confirm somehow our expectations)!
+
+##Real standard curve##
+##Genome copies modeled by Ct and extra predictors to be considered 
+##Model 6: Genome copies modeled by Ct simple without other predictor
+##considering all data 
+lm.SC<- lm(log10(Genome_copies)~Ct, data.std.lm, na.action = na.exclude)
+
+##Model 7: Genome copies modeled by Ct and parasite as predictors
+lm.SCPar<- lm(log10(Genome_copies)~Ct+Parasite, data.std.lm, na.action = na.exclude)
+
 ##Model 8: Genome copies modeled by Ct and cycler as predictors
 lm.SCCyc<- lm(log10(Genome_copies)~Ct+Cycler, data.std.lm, na.action = na.exclude)
+
+##Model 9: Genome copies modeled by Ct, parasite and cycler used as predictors
+lm.SCAll<- lm(log10(Genome_copies)~Ct+Parasite+Cycler, data.std.lm, na.action = na.exclude)
+
+##Model 10: Genome copies modeled by Ct and parasite/cycle interaction (Check with Alice and Susi)
+lm.SCInt<- lm(log10(Genome_copies)~Ct+Parasite*Cycler, data.std.lm, na.action = na.exclude)
+
+##Comparison of models 
+compareLM(lm.SC, lm.SCPar, lm.SCCyc, lm.SCAll, lm.SCInt)
+anova(lm.SC, lm.SCCyc) ##Significantly different from simplest model  
+anova(lm.SC, lm.SCAll) ##Significantly different from simplest model
+anova(lm.SCInt, lm.SCAll) ##No difference 
+anova(lm.SCCyc, lm.SCAll) ##No difference but Model with just Cycler has higher R.sq
+
+##Model 8 fit better the data... Cycler has major impact (again confirm expectations)!
+##Linear model (Standard curve for the rest of experiments)
+data.std.lm%>%
+  ggplot(aes(x = Ct, y = Genome_copies)) +
+  geom_smooth(method = "lm", se = T, color="black") +
+  guides(color = "none", size = "none") +  # Size legend also removed
+  scale_y_log10("log 10 Eimeria genome copies", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_jitter(shape=21, position=position_jitter(0.2), aes(size= 20, fill= Cycler), color= "black", alpha= 0.5)+
+  labs(tag = "B)")+
+  theme_bw() +
+  theme(text = element_text(size=20), legend.position= "none")+
+  annotation_logticks(sides = "l")
+
+A+
+  geom_smooth(method = "lm", se = T, color="black", size= 1.5)+
+  geom_text (x = 12, y = 3, show.legend = F,
+             label = paste ("y = 10.08 - 0.26 x \n R-squared= 0.94, p < 2.2e-16"), color="black") -> A
+
+##Predicted genome copies
+### Using MODEL 8 to predict using different levels of the factor cycler
+data.std.lm$predicted<- 10^predict(lm.SCCyc)
+data.std.lm$residuals<- 10^residuals(lm.SCCyc)
+
+data.std.lm%>%
+  dplyr::select(predicted, Cycler)%>%
+  group_by(Cycler) %>%
+  get_summary_stats(predicted, type = "mean_sd")
+
+data.std.lm%>%
+  dplyr::select(predicted, Cycler)%>%
+  anova_test(predicted ~ Cycler)-> cycler.aov 
+
+data.std.lm%>%
+  dplyr::select(predicted, Cycler)%>%
+  pairwise_t_test(predicted ~ Cycler, p.adjust.method = "bonferroni")-> cycler.pwc
+
+# Show adjusted p-values
+cycler.pwc%>%
+  add_xy_position(x = "Cycler")%>%
+  mutate(y.position= log10(y.position))-> cycler.pwc
+
+data.std.lm%>%
+  dplyr::select(predicted, Cycler)%>%
+  ggboxplot(x = "Cycler", y = "predicted", color = "black", 
+            fill = "Cycler", palette =c("#00BA38", "#F8766D", "#619CFF"), ylab = "log10 Predicted Eimeria Genome copies") +
+  yscale("log10")+
+  stat_pvalue_manual(cycler.pwc, label = "p.adj", tip.length = 0, step.increase = 0.1) +
+  labs(subtitle = get_test_label(cycler.aov, detailed = TRUE),
+       caption = get_pwc_label(cycler.pwc), tag = "B)")+
+  theme_bw()+
+  theme(text = element_text(size=20), legend.position= "top")+
+  font("caption", size = 14)+
+  font("subtitle", size = 14)-> B
+
+##Linear model Genome copies modeled by Oocyst count 
+data.std.lm%>%
+  ggplot(aes(x = Oocyst_count, y = Genome_copies)) +
+  geom_smooth(method = "lm", se = F, color= "black") +
+  guides(color = "none", size = "none") +  # Size legend also removed
+  scale_x_log10("log 10 Eimeria Oocysts Count (Flotation)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_y_log10("log 10 Eimeria genome copies (qPCR)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  geom_jitter(shape=21, position=position_jitter(0.2), aes(size= 20, fill= Cycler), color= "black", alpha= 0.5)+
+  labs(tag = "C)")+
+  theme_bw() +
+  theme(text = element_text(size=20), legend.position= "top")+
+  annotation_logticks(sides = "bl")-> C
+
+##Model 11: Genome copies modeled by Oocyst count and cycle 
+lm.SCOoc<- lm(log10(Genome_copies_ngDNA)~log10(Oocyst_count)+Cycler, data.std.lm)
+
+## ### Figure 1 Final Standard curves 
+pdf(file = "fig/Figure_1.pdf", width = 15, height = 15)
+grid.arrange(A, B, C, widths = c(2, 2),
+layout_matrix = rbind(c(1, 2),
+                      c(3, 3)))
+dev.off()
+rm(A,B,C)
+## If it is necessary some of the previous figures could be included as supplementary  
+
+##Mean comparison standards against NTC (Supplementary 1)
+set.seed(2020)
+data.std%>%
+  select(Sample.Name,Task,Std_series,Ct,Qty,Cycler,Oocyst_count,Parasite,Tm, Date)%>%
+  filter(Task%in%c("Standard", "NTC"))%>%
+  ggplot(aes(x = Sample.Name, y = Ct)) +
+  scale_x_discrete(name = "Standard",
+                   labels= c("Eimeria_10_0"= "Oocysts 10^0", "Eimeria_10_1"= "Oocysts 10^1",
+                             "Eimeria_10_2"= "Oocysts 10^2", "Eimeria_10_3"= "Oocysts 10^3",
+                             "Eimeria_10_4"= "Oocysts 10^4", "Eimeria_10_5"= "Oocysts 10^5",
+                             "Eimeria_10_6"= "Oocysts 10^6", "H2O"= "NTC")) +
+  scale_y_continuous(name = "Ct")+ 
+  geom_jitter(shape=21, position=position_jitter(0.2), color= "black", size= 5, alpha= 0.5,
+              aes(fill= Cycler))+
+  theme_bw() +
+  theme(text = element_text(size=16),legend.position = "top")+
+  theme(axis.text.x = element_text(angle=-90))+
+  stat_summary(fun.data=mean_cl_boot, geom="pointrange",
+               shape=16, size=0.5, color="black")+
+  labs(tag = "A)")+
+  geom_hline(yintercept = 30, linetype = 2)+
+  stat_compare_means(method = "anova",
+                     aes(label = paste0(..method.., ",\n","p=",..p.format..)),
+                     label.y= 33, label.x = 7)+
+  stat_compare_means(label = "p.signif", method = "t.test",ref.group = "H2O", 
+                     label.y = c(40, 39, 33, 30.5, 24, 20, 16, 0)) -> Supp_1
+
+###Determine that 10^0 and 10^1 measurements are basically like NTC when all the information is taken into account
+
+### Tm as complementary reference for Negative samples 
+set.seed(2020)
+data.std%>%
+  select(Sample.Name,Task,Std_series,Ct,Qty,Cycler,Oocyst_count,Parasite,Tm, Date)%>%
+  filter(Task%in%c("Standard", "NTC"))%>%
+  ggplot(aes(x = Sample.Name, y = Tm)) +
+  scale_x_discrete(name = "Standard",
+                   labels= c("Eimeria_10_0"= "Oocysts 10^0", "Eimeria_10_1"= "Oocysts 10^1",
+                             "Eimeria_10_2"= "Oocysts 10^2", "Eimeria_10_3"= "Oocysts 10^3",
+                             "Eimeria_10_4"= "Oocysts 10^4", "Eimeria_10_5"= "Oocysts 10^5",
+                             "Eimeria_10_6"= "Oocysts 10^6", "H2O"= "NTC")) +
+  scale_y_continuous(name = "Tm")+ 
+  geom_jitter(shape=21, position=position_jitter(0.2), color= "black", size= 5, alpha= 0.5,
+              aes(fill= Cycler))+
+  theme_bw() +
+  theme(text = element_text(size=16),legend.position = "none")+
+  theme(axis.text.x = element_text(angle=-90))+
+  stat_summary(fun.data=mean_cl_boot, geom="pointrange",
+               shape=16, size=0.5, color="black")+
+  labs(tag = "B)")+
+  geom_hline(yintercept = 75, linetype = 2)+
+  stat_compare_means(method = "anova",
+                     aes(label = paste0(..method.., ", ","p=",..p.format..)),
+                     label.y= 76, label.x = 6)-> Supp_2
+
+#pdf(file = "fig/Supplementary_1.pdf", width = 10, height = 15)
+grid.arrange(Supp_1, Supp_2)
+#dev.off()
+rm(Supp_1, Supp_2)
+
+###### Intersample variation experiment #####
+##Predict genome copies using model 8
+data.unk.lm$Genome_copies<- 10^predict(lm.SCCyc, data.unk.lm)
+##Adjust genome copies per ng of DNA
+data.unk.lm%>%
+dplyr::mutate(Oocyst_DNA= Oocyst_count*(3.8E-4))%>% ##Estimation of DNA (ng) derived from Oocyst
+  dplyr::mutate(DNA_PCR= Oocyst_DNA/30)%>% ##DNA (ng) in PCR considering 1uL from a stock of 30uL
+  dplyr::mutate(Genome_copies_ngDNA= Genome_copies*DNA_PCR)-> data.unk.lm  
+
+data.unk.lm%>%
+  bind_rows(data.std.lm)-> data.unk.lm
+
+data.unk.lm%>%
+  filter(Task%in%c("Unknown"))%>%
+  ggplot(aes(Oocyst_count, Genome_copies), geom=c("point", "smooth"))+
+  scale_x_log10(name = "log10 Eimeria Oocysts count (Flotation)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_y_log10(name = "log 10 Eimeria genome copies (qPCR)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+ 
+  geom_point(shape=21, position=position_jitter(0.1), aes(size= 25, fill= Task), color= "black", alpha= 0.5)+
+  stat_summary(fun.data=mean_cl_boot, geom="pointrange", shape=16, size=0.5, color="black")+
+  theme_bw() +
+  theme(legend.text=element_text(size=20)) +
+  theme(legend.key.size = unit(3,"line")) +
+  geom_smooth(color= "black", method = "lm")+            
+  guides(colour = guide_legend(override.aes = list(size=10))) +
+  theme(text = element_text(size=20),legend.position = "none")+
+  labs(tag = "A)")+
+  annotation_logticks(sides = "bl")
+
+set.seed(2020)
+data.unk.lm%>%
+  dplyr::select(Sample.Name,Task, Oocyst_count, Genome_copies, Genome_copies_ngDNA)%>%  
+  filter(Task%in%c("Standard", "Unknown"))%>%
+  ggplot(aes(x = Oocyst_count, y = Genome_copies), geom=c("point", "smooth")) +
+  scale_x_log10(name = "log10 Eimeria Oocyst count (Flotation)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_y_log10(name = "log10 Eimeria genome copies (qPCR)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+ 
+  geom_jitter(shape=21, position=position_jitter(0.2),
+              aes(fill= Task), size= 5, color= "black", alpha= 0.5)+
+  stat_summary(fun.data=mean_cl_boot, geom="pointrange", shape=16, size=0.5, color="black")+
+  theme_bw() +
+  theme(legend.text=element_text(size=20)) +
+  theme(legend.key.size = unit(3,"line")) +
+  geom_smooth(aes(color= Task, fill= Task), method = "lm")+            
+  guides(colour = guide_legend(override.aes = list(size=10))) +
+  theme(text = element_text(size=20),legend.position = "none")+
+  labs(tag = "A)")+
+  annotation_logticks(sides = "bl")-> A
+
+##Model 12: Intersample variation considering Parasite, strain, cycler and sporulation rate as predictors
+lm.ISV<- lm(formula = log10(Genome_copies)~log10(Oocyst_count)+
+              Parasite+Strain+Cycler+Sporulation_rate, data = data.unk.lm, na.action = na.exclude)
+summary(lm.ISV)
+##Main effect from Oocyst count and small effect from Sporulation rate
+
+########## Spiked samples Experiment #########
+
+##Compair Spiked samples qPCR estimation with real oocyst count by two extraction methods
+set.seed(2020)
+##Predict genome copies using model 8
+data.spk$Genome_copies<- 10^predict(lm.SCCyc, data.spk)
+data.spk%>%
+  dplyr::mutate(Genome_copies_gFaeces= Genome_copies/Feces_weight)-> data.spk
+
+##Difference between 2 hatching strategies 
+data.spk%>%
+    ggplot(aes(x = Oocyst_count, y = Genome_copies, color=Extraction), geom=c("point", "smooth")) +
+    scale_x_log10(name = "log10 Eimeria Oocysts (Flotation)", 
+                  breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    scale_y_log10(name = "log10 Eimeria genome copies (qPCR)", 
+                  breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(10^.x)))+ 
+    geom_jitter(shape=21, position=position_jitter(0.2), color= "black", aes(size= 25, fill= Extraction), alpha= 0.5)+
+    theme_bw() +
+    geom_smooth(aes(color= Extraction, fill= Extraction), method = "lm")+
+    facet_grid(cols = vars(Extraction))+
+    stat_cor(label.x = log10(100), label.y = log10(50000), aes(label= paste(..rr.label.., ..p.label.., sep= "~`,`~"), color = Extraction))+        # Add correlation coefficient
+    stat_summary(fun.data=mean_cl_boot, geom="pointrange", shape=16, size=0.5, color="black")+
+    stat_regline_equation(aes(color = Extraction), label.x = log10(100), label.y = log10(75000))+
+    theme(text = element_text(size=20),legend.position = "none")+
+    labs(tag = "A)")+
+    annotation_logticks(sides = "bl")
+
+##All data together
+data.spk%>%
+  ggplot(aes(x = Oocyst_count, y = Genome_copies), geom=c("point", "smooth")) +
+  scale_x_log10(name = "log10 Eimeria Oocysts (Flotation)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+  scale_y_log10(name = "log10 Eimeria genome copies (qPCR)", 
+                breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::math_format(10^.x)))+ 
+  geom_jitter(shape=21, position=position_jitter(0.2), color= "black", aes(size= 25, fill= Extraction), alpha= 0.5)+
+  theme_bw() +
+  geom_smooth(color= "black", method = "lm")+
+  stat_cor(label.x = log10(100), label.y = log10(50000), aes(label= paste(..rr.label.., ..p.label.., sep= "~`,`~")))+ # Add correlation coefficient
+  stat_summary(fun.data=mean_cl_boot, geom="pointrange", shape=16, size=0.5, color="black")+
+  stat_regline_equation(label.x = log10(100), label.y = log10(70000))+
+  theme(text = element_text(size=20),legend.position = "none")+
+  labs(tag = "A)")+
+  annotation_logticks(sides = "bl")
+
+##Comparison between standard curve and spiked samples from ceramic bead extracted data
+data.spk%>%
+    filter(Sample_type=="Feces" & Task=="Unknown" & Extraction!="Glass_beads")%>%
+    dplyr::mutate(Genome_copies_ngDNA= Genome_copies/50, ## copies by ng of fecal DNA considering 1uL from 50 ng/uL DNA
+                  DNA_sample= Qubit*40, ## Estimate total gDNA of sample
+                  DNA_g_feces= DNA_sample/Feces_weight,
+                  ## Transform it to ng fecal DNA by g of faeces
+                  Genome_copies_gFaeces= Genome_copies_ngDNA*DNA_g_feces, ## Estimate genome copies by g of faeces
+                  OPG=Oocyst_count/Feces_weight) -> data.spk.lm ## Estimate oocyst per g of faeces for spiked samples
+
+data.spk.lm%>%
+    bind_rows(data.std.lm)-> data.spk.lm
+
+##
+set.seed(2020)
+data.spk.lm%>%
+    dplyr::select(Sample.Name,Task, Oocyst_count, Genome_copies, Genome_copies_ngDNA)%>%  
+    filter(Task%in%c("Standard", "Unknown"))%>%
+    ggplot(aes(x = Oocyst_count, y = Genome_copies), geom=c("point", "smooth")) +
+    scale_x_log10(name = "log10 Eimeria Oocyst count (Flotation)", 
+                  breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    scale_y_log10(name = "log10 Eimeria genome copies (qPCR)", 
+                  breaks = scales::trans_breaks("log10", function(x) 10^x),
+                  labels = scales::trans_format("log10", scales::math_format(10^.x)))+ 
+    geom_jitter(shape=21, position=position_jitter(0.2),
+                aes(fill= Task), size= 5, color= "black", alpha= 0.5)+
+    stat_summary(fun.data=mean_cl_boot, geom="pointrange", shape=16, size=0.5, color="black")+
+    theme_bw() +
+    theme(legend.text=element_text(size=20)) +
+    theme(legend.key.size = unit(3,"line")) +
+    geom_smooth(aes(color= Task, fill= Task), method = "lm")+            
+    guides(colour = guide_legend(override.aes = list(size=10))) +
+    theme(text = element_text(size=20),legend.position = "none")+
+    labs(tag = "B)")+
+    annotation_logticks(sides = "bl")-> B
+
+##Supplementary data 2: comparison between Eimeria genome copies from oocyst DNA and from fecal DNA, intersample variation 
+#pdf(file = "fig/Supplementary_2.pdf", width = 10, height = 15)
+grid.arrange(A,B)
+#dev.off()
+rm(A,B)
+
+##Model 13: Genome copies modeled by Oocyst count, cycler and parasite as predictors
+x<- subset(data.spk.lm, Task== "Unknown")
+lm.spk<- lm(formula = log10(Genome_copies)~ log10(Oocyst_count+1), 
+            data = x, na.action = na.exclude)
+
+##Compair model 11 (perfect fit) vs model 13 
+var.test(lm.SCOoc, lm.spk)
 
 ######### Infection experiment data############
 ## Define real positive and negatives based on Tm 

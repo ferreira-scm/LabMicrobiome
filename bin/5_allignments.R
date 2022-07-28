@@ -366,6 +366,70 @@ MA.e1 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[1]),]
 nb.col=length(levels(as.factor(SA.e5$EH_ID)))+1
 coul <- colorRampPalette(brewer.pal(8, "Accent"))(nb.col)
 
+Eim2@otu_table
+
+library(MASS)
+
+SA.eim.m <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
+
+gau.m <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
+
+summary(gau.m)
+
+calc.relimp(gau.m, rela=TRUE)
+
+summary(SA.eim.m)
+
+SA.eim.m1 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
+
+SA.eim.m2 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
+
+SA.eim.m3 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
+
+SA.eim.m4 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,5])
+
+SA.eim.m5 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4])
+
+SA.eim.m0 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~1)
+
+anova(SA.eim.m0, SA.eim.m)
+
+library(lmtest)
+lrtest(SA.eim.m, SA.eim.m5)
+
+library(relaimpo)
+
+calc.relimp(SA.eim.m)
+
+scatter.smooth(1:1000, rstandard(m0, type='deviance'), col='gray')
+
+
+
+MA.eim.m <- glm.nb(Eim@sam_data$Genome_copies_gFaeces~Eim@otu_table[,1]+Eim@otu_table[,2]+Eim@otu_table[,3])
+
+summary(SA.eim.m)
+
+plot(SA.eim.m)
+
+summary(MA.eim.m)
+
+plot(MA.eim.m)
+
+plot(density(rstandard(SA.eim.m, type='deviance')))
+
+plot(density(rstandard(SA.eim.m, type='pearson')))
+
+plot(density(resid(SA.eim.m, type='pearson')))
+
+SA_Eimeiria.ASVs <- ggplot(SA.e, aes(x=log(1+Genome_copies_gFaeces), y=log(1+Abundance), fill=ASV))+
+    geom_point(shape=21, size=4, alpha=0.7)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2",
+                               "#D55E00", "#E63C9A"))
+
+ggplot2::ggsave(file="fig/SA/SA_EimeriaASVs_qPCR.pdf", SA_Eimeiria.ASVs, width = 5, height = 3, dpi = 300)
+
+SA_Eimeiria.ASVs
+
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
 #### Plot by EH_ID
