@@ -18,54 +18,57 @@ library(DESeq2)
 set.seed(500)
 source("bin/PlottingCor.R")
 
-PS <- readRDS("tmp/PhyloSeqData_All.Rds")
-PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
-PS18S <- readRDS("tmp/PS_18Swang.Rds")
-PSwang <- PS.l[[37]]
+## All runs pooled
+all.PS <- readRDS("tmp/PhyloSeqData_All.Rds")
+all.PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
+# single amplicon from MA run
+all.PSwang <- all.PS.l[[37]]
 
-PS_SA <- readRDS("tmp/PhyloSeqData18S.Rds")
+## Single amplicon 18S
+sin.PS18S <- readRDS("tmp/PS_18Swang.Rds")
+sin.PS18S.slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
+
+## Single amplicon "pooled"
+sin.PS <- readRDS("tmp/PhyloSeqData18S.Rds")
+sin.PS.slv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
+
+source("bin/PlottingCor.R")
+# let's filter
+f.sin18 <- fil(sin.PS18S)
+f.all <- fil(all.PS)
+f.allwang <- fil(all.PSwang)
+f.sin18.slv <- fil(sin.PS18S.slv)
+## Single amplicon "pooled"
+f.sin <- fil(sin.PS)
+f.sin.slv <- fil(sin.PS.slv)
+# and transform
+T.sin18 <- f.sin18
+T.all <- f.all
+T.allwang <-f.allwang
+T.sin18.slv <- f.sin18.slv
+T.sin <-f.sin
+T.sin.slv <-f.sin.slv
+otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$DNA_g_feces
+otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$DNA_g_feces
+otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
+otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
+otu_table(T.sin) <- otu_table(T.sin)*sample_data(T.sin)$DNA_g_feces
+otu_table(T.sin.slv) <- otu_table(T.sin.slv)*sample_data(T.sin.slv)$DNA_g_feces
+
+#all.TSS <- transform_sample_counts(f.all, function(x) x / sum(x))
+
+## OK, now we want all the Eimeria sequences
+Eim <- subset_taxa(T.all, family%in%"Eimeriidae")
+Eim2 <- subset_taxa(T.sin18, family%in%"Eimeriidae")
+Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
 
 # load silva taxonomic annotation
-PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
-
-PS18slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
-
-
-PSslv
-
-PSa <- readRDS("tmp/PhyloSeqData18S.Rds")
-
-PSa
-
-# let's filter
-fPSa <- fil(PSa)
-fPS18S <- fil(PS18S)
-fPS <- fil(PS)
-fPSwang <- fil(PSwang)
-#fPS18SS <- fil(PS18SS)
-fPSslv <- fil(PSslv)
-fPS_SA <- fil(PS_SA)
-fPS18slv <- fil(PS18slv)
-# and transform
-
-Tpsa <- fPSa
-otu_table(Tpsa) <- otu_table(Tpsa)*sample_data(Tpsa)$DNA_g_feces
-Tps18S <- fPS18S
-Tps <- fPS
-otu_table(Tps18S) <- otu_table(fPS18S)*sample_data(fPS18S)$DNA_g_feces
-otu_table(Tps) <- otu_table(fPS)*sample_data(fPS)$DNA_g_feces
-
-TPSslv <- fPSslv
-TPS18slv <- fPS18slv
-TPS_SA <- fPS_SA
-otu_table(TPSslv) <- otu_table(TPSslv)*sample_data(TPSslv)$DNA_g_feces
-otu_table(TPS_SA) <- otu_table(TPS_SA)*sample_data(TPS_SA)$DNA_g_feces
-otu_table(TPS18slv) <- otu_table(TPS18slv)*sample_data(TPS18slv)$DNA_g_feces
-
+#PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
+#PS18slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
 
 # now plotting
-Plotting_cor(ps=PS, "MA", dir="fig/MA/")
-Plotting_cor(ps=PS18S, "SA", dir="fig/SA/")
+Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
+Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
 
 ## now plotting SA silva
 #Plotting_cor(ps=PSslv, "SA_slv", dir="fig/SA/")

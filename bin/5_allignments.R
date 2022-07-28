@@ -49,7 +49,7 @@ otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$DNA_g_feces
 otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
 otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
 
-psTSS <- transform_sample_counts(fPS, function(x) x / sum(x))
+#all.TSS <- transform_sample_counts(f.all, function(x) x / sum(x))
 
 ## OK, now we want all the Eimeria sequences
 Eim <- subset_taxa(T.all, family%in%"Eimeriidae")
@@ -366,8 +366,6 @@ MA.e1 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[1]),]
 nb.col=length(levels(as.factor(SA.e5$EH_ID)))+1
 coul <- colorRampPalette(brewer.pal(8, "Accent"))(nb.col)
 
-Eim2@otu_table
-
 library(MASS)
 
 SA.eim.m <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
@@ -375,8 +373,6 @@ SA.eim.m <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@o
 gau.m <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
 
 summary(gau.m)
-
-calc.relimp(gau.m, rela=TRUE)
 
 summary(SA.eim.m)
 
@@ -399,27 +395,18 @@ lrtest(SA.eim.m, SA.eim.m5)
 
 library(relaimpo)
 
-calc.relimp(SA.eim.m)
-
-scatter.smooth(1:1000, rstandard(m0, type='deviance'), col='gray')
-
+calc.relimp(gau.m)
 
 
 MA.eim.m <- glm.nb(Eim@sam_data$Genome_copies_gFaeces~Eim@otu_table[,1]+Eim@otu_table[,2]+Eim@otu_table[,3])
 
 summary(SA.eim.m)
 
-plot(SA.eim.m)
+#plot(SA.eim.m)
 
 summary(MA.eim.m)
 
-plot(MA.eim.m)
-
-plot(density(rstandard(SA.eim.m, type='deviance')))
-
-plot(density(rstandard(SA.eim.m, type='pearson')))
-
-plot(density(resid(SA.eim.m, type='pearson')))
+#plot(MA.eim.m)
 
 SA_Eimeiria.ASVs <- ggplot(SA.e, aes(x=log(1+Genome_copies_gFaeces), y=log(1+Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
@@ -521,10 +508,7 @@ p.ID <- function(i){
     nm
 }
 
-name
-
 p.EH <- list()
-
 for (i in 1:22){
     p <- p.ID(i)
     p.EH[[i]] <- p

@@ -117,16 +117,22 @@ saveRDS(MA, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax18S.Rds")
 
 ### Add sample information
 if(!exists("sample.data")){
-     source("bin/1_Data_preparation.R")
- }
+
+    source("bin/1_Data_preparation.R")
+
+}
+
 
 if(!exists("sdt")){
+
     source("bin/1_qPCR_data_preparation.R")
+
 }
 
 #little fix
 rownames(sdt) <- sdt$labels
 rownames(sdt)==rownames(sample.data)
+
 
 ##To phyloseq
 ##Sample data
@@ -134,11 +140,35 @@ rownames(sdt)==rownames(sample.data)
 source("bin/toPhyloseq.R")
 PS <- TMPtoPhyloseq(MA, colnames(MA))
 
+#there's 2 samples without metadata
+rownames(PS@sam_data)%in%rownames(sdt)
+rownames(PS@sam_data)%in%rownames(sample.data)
+
+
+PS <- subset_samples(PS, rownames(PS@sam_data)%in%rownames(sdt))
+
+sdt <- sdt[match(rownames(PS@sam_data), sdt$labels),]
+
+#sanity check
+rownames(PS@otu_table) == rownames(sdt)
+
+# adding sample data slot
 PS@sam_data <- sample_data(sdt)
+# sanity check
+rownames(PS@sam_data)==rownames(PS@otu_table)
+
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData18S.Rds")
 
 ##Primer data
 PS.l <- TMPtoPhyloseq(MA, colnames(MA),  multi2Single=FALSE)
+
+
+for (i in 1:3) {
+    PS.l[[i]] <- subset_samples(PS.l[[i]], rownames(PS.l[[i]]@sam_data)%in%rownames(sdt))
+}
+
+#sanity check
+rownames(PS.l[[1]]@otu_table)==rownames(sdt)
 
 # adding sample data
 for (i in 1:3)

@@ -273,11 +273,15 @@ saveRDS(MA, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1.Rds
 
 ### Add sample information
 if(!exists("sample.data")){
+
     source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_Data_preparation.R")
+
 }
 
 if(!exists("sdt")){
+
     source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_qPCR_data_preparation.R")
+
 }
 
 #little fix
@@ -292,11 +296,19 @@ PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
 PS2<- TMPtoPhyloseq(MA2, colnames(MA2))
 
 PS <- merge_phyloseq(PS1, PS2) ###Works!
-
+#removing negatives
+PS <- subset_samples(PS, !grepl("NEGATIVE",rownames(PS@otu_table)))
+#reordering metadata
+sdt <- sdt[match(rownames(PS@sam_data), sdt$labels),]
+#sanity check
+rownames(PS@otu_table) == rownames(sdt)
+# adding sample data slot
 PS@sam_data <- sample_data(sdt)
+# sanity check
+rownames(PS@sam_data)==rownames(PS@otu_table)
+
 
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
-
 
 ##Primer data
 ## just sorting out primers whithout any taxannot
@@ -307,26 +319,24 @@ PS1.l <- TMPtoPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
 #MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ]
 PS2.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
 
-
+#sanity check
 names(PS1.l)== names(PS2.l)
 
-
 along<- names(PS2.l) ## Run with less primers working
-
-                                        # 7 amplicons are empty.
+# 7 amplicons are empty.
 PS.l <- lapply(along, function(i) try(merge_phyloseq(PS1.l[[i]], PS2.l[[i]]))) ##Merge all the information from both experiments
-
 names(PS.l) <- names(PS2.l) ###Use the names from test list
 
-
-row.names(sdt) <- sdt$labels
-
-row.names(sdt)==row.names(sample.data)
-
-length(PS.l)
+#removing negatives
+for (i in 1:length(PS.l))
+{
+PS.l[[i]] <- subset_samples(PS.l[[i]], !grepl("NEGATIVE",rownames(PS.l[[i]]@otu_table)))
+}
+#sanity check
+rownames(PS.l[[1]]@otu_table)==rownames(sdt)
 
 # adding sample data
-for (i in 1:48)
+for (i in 1:length(PS.l))
 {
     try(sam_data(PS.l[[i]]) <- sdt)
 }
