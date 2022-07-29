@@ -11,7 +11,8 @@ require(grid)
 require(grid_extra)
 require(cowplot)
 library(microbiome)
-library(DESeq2)
+library(RColorBrewer)
+
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
@@ -117,6 +118,7 @@ for (i in 1:48) {
     rm(p)
 }
 
+###################################
 all.PS.l[14]
 all.PS.l[34]
 all.PS.l[37]
@@ -124,28 +126,72 @@ all.PS.l[45]
 
 #######################
 # how does host DNA change with infection
-PSclr = microbiome::transform(f.all, transform="clr")
-ePSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
-
-
-Mus <- subset_taxa(psTSS, genus%in%"Mus")
-
-Mus <-aggregate_taxa(Mus, level="genus")
-
 # no Mus reads in SA
-#Mus18S <- subset_taxa(Tps18S, phylum%in%"Chordata")
+PSclr = microbiome::transform(f.all, transform="clr")
+#PSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
+
+Mus <- subset_taxa(T.all, genus%in%"Mus")
+Mus <-aggregate_taxa(Mus, level="genus")
+Mus.clr <- subset_taxa(PSclr, genus%in%"Mus")
+Mus.clr <-aggregate_taxa(Mus.clr, level="genus")
+
+nb <- length(levels(as.factor(m$EH_ID)))
+
+coul <- colorRampPalette(brewer.pal(12, "Accent"))(nb)
+
+mycol <- coul[as.numeric(as.factor(m$EH_ID))]
 
 m <- psmelt(Mus)
+m.clr <- psmelt(Mus.clr)
 
-mp <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
-    geom_point()+
+
+mp.acs <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
+    geom_point(aes(fill=EH_ID), shape=21, size=4, position=position_jitter(0.1), alpha=0.6)+
+    scale_color_manual(values=coul)+
+        scale_fill_manual(values=coul)+           
     geom_line(aes(group=EH_ID))+
     labs(x="Days post infection", y="Host reads (per g of faeces)")+
+    labs(tag= "a)")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          legend.position = "none")
-#          axis.line = element_line(colour = "black"))
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+mp.clr <- ggplot(m.clr, aes(dpi, Abundance, color=EH_ID))+
+    geom_point(aes(fill=EH_ID), shape=21, size=4, position=position_jitter(0.1), alpha=0.6)+
+    scale_color_manual(values=coul)+
+        scale_fill_manual(values=coul)+           
+    geom_line(aes(group=EH_ID))+
+    labs(x="Days post infection", y="Host reads (per g of faeces)")+
+    labs(tag= "a)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+
+# save plots of what we have so far
+plot_grid(mp.acs,mp.clr) -> fCor
+
+ggplot2::ggsave(file="fig/Mus_abundance.pdf", fCor, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_abundance.png", fCor, width = 8, height = 5, dpi = 600)
+
+
+# Are host abundance and Eimeria associated
+cor.test(m$Abundance, m$Genome_copies_gFaeces, method="pearson")
+cor.test(m$Abundance, m$OPG, method="pearson")
+
+ggplot(m, aes(Abundance, OPG))+
+    geom_point()
+
+ggplot(m, aes(Abundance, Genome_copies_gFaeces))+
+    geom_point()
+
+mp
 
 m$logA <- log10(1+m$Abundance)
 
@@ -153,13 +199,30 @@ m$logGC <- log10(1+m$Genome_copies_gFaeces)
 
 m$logDNA <- log10(1+m$DNA_g_feces)
 
-m1 <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces, data=m)
+#mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
+
+m$OPG
+
+mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+m$OPG + dpi, data=m.clr)
+summary(mmus)
+
+mwl <- glm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
+
+mwl <- glm(weightloss~logA+logGC+ DNA_g_feces+dpi, data=m)
+
+summary(mmus)
+
+summary(mwl)
 
 library(lme4)
 
-#m2 <- lmer(weightloss~logA*logGC+ logDNA +(1|EH_ID), data=m)
+library(MASS)
+
+m2 <- lmer(weightloss~logA*logGC+ logDNA +(1|dpi), data=m)
 
 m2 <- lmer(weightloss~logA+logGC +EH_ID+(1|dpi), data=m)
+
+m2 <- glmm(weightloss~logA+logGC +EH_ID+(1|dpi), data=m)
 
 summary(m2)
 
