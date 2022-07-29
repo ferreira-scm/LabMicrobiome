@@ -68,6 +68,9 @@ Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
 
 # now plotting
 Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
+
+Plotting_cor(ps=all.PSwang, "MA_wang", dir="fig/MA/")
+
 Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
 
 ## now plotting SA silva
@@ -76,34 +79,54 @@ Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
 #Plotting_cor(ps=PSwang, name="wang1141_13_F.Nem_0425_6_3_R", dir="fig/MA/")
 
 for (i in 1:48) {
-    nm <- names(PS.l)[i]
-    ps <- PS.l[[i]]
+    nm <- names(all.PS.l)[i]
+    ps <- all.PS.l[[i]]
     print(nm)
     try(Plotting_cor(ps, name=nm, dir="fig/MA/"))
 }
 
 for (i in 1:48) {
-    nm <- names(PS.l)[i]
-    ps <- PS.l[[i]]
+    nm <- names(all.PS.l)[i]
+    ps <- all.PS.l[[i]]
     try(NoFilPlotting_cor(ps, name=nm, dir="fig/MA/NoFil/"))
 }
 
 #how many primers amplify Apicomplexa and which families?
 for (i in 1:48) {
 #    print(names(PS.l)[i])
-    try(p <- subset_taxa(PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
+    try(p <- subset_taxa(all.PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
     try(get_taxa_unique(p, "family"), silent=TRUE)
     if (exists("p")) {
         a <- get_taxa_unique(p, "family")
-        print(paste(i, "- ", names(PS.l[i]), ": ", length(a), sep=""))
+        print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
         print(a)
 }
     rm(p)
 }
 
+
+for (i in 1:48) {
+#    print(names(all.PS.l)[i])
+    try(p <- subset_taxa(all.PS.l[[i]],family=="Eimeriidae"), silent=TRUE)
+    try(get_taxa_unique(p, "family"), silent=TRUE)
+    if (exists("p")) {
+        a <- get_taxa_unique(p, "family")
+        print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
+        print(a)
+}
+    rm(p)
+}
+
+all.PS.l[14]
+all.PS.l[34]
+all.PS.l[37]
+all.PS.l[45]
+
 #######################
 # how does host DNA change with infection
-psTSS <- transform_sample_counts(fPS, function(x) x / sum(x))
+PSclr = microbiome::transform(f.all, transform="clr")
+ePSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
+
 
 Mus <- subset_taxa(psTSS, genus%in%"Mus")
 

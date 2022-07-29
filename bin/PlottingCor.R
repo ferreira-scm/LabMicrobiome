@@ -54,6 +54,7 @@ ggplot(df, aes(x=logA, y=logGC))+
 Plotting_cor <- function(ps, name, dir){
 #No filters
 library("ggpmisc")
+
 set.seed(500)
     
 sam <- data.frame(sample_data(ps))
@@ -87,18 +88,22 @@ summary(Alm)
 
 a <-ggplot(sdt, aes(y=logGC, x=logEimeriaSums))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces(log 1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
+    xlab("Eimeriidae (log1+)")+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
     theme_bw()+
-    theme(text = element_text(size=16))
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
-#now we filter
+##############now we filter
 ppPS <- fil(ps)
 
 #now we make the data frame
@@ -127,27 +132,26 @@ Blm <- lm(logGC ~ logFilEimeriaSums, sdt)
 b <-ggplot(sdt, aes(y=logGC, x=logFilEimeriaSums))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
     geom_smooth(method = "lm", se=FALSE) +
+    scale_fill_brewer(palette="Spectral")+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces(log 1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
-    ggtitle("prev 1%, ab 0.001%, 500 sample")+
+    xlab("Eimeriidae (log1+)")+
+    ggtitle("Raw counts filtered")+
     labs(tag= "b)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
     theme_bw()+
-    theme(text = element_text(size=16))
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
+################################################################
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
 cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
 
 #create total sums and Eimeria sums data frame
-bdf <- data.frame(sample_sums(otu_table(ppPS)))
-bdf$labels <- rownames(bdf)
-bdf$eim <-(sample_sums(otu_table(bPSeimf)))
-names(bdf) <- c("Fil_TotalSums", "labels", "FilEimeriaSums")
-
-
 df <-data.frame(sample_sums(otu_table(cPSeimf)))
 df$labels <- rownames(df)
 names(df) <- c("TSS_Eim", "labels")
@@ -166,18 +170,24 @@ Clm <- lm(logGC ~ logTSS_Eim, sdt)
 
 # plotting TSS correlation
 c <-ggplot(sdt, aes(x=logTSS_Eim, y=logGC))+
-    geom_jitter(shape=21, position=position_jitter(0.002), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    geom_jitter(shape=21, position=position_jitter(0.002),
+                size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
-    ggtitle("TSS")+
+    xlab("Eimeriidae (log1+)")+
+    ggtitle("Total sum scaling")+
         labs(tag= "c)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
-        theme_bw()+
-    theme(text = element_text(size=16))
+    theme_bw()+
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
+###############################################################
 #### using Relative log expression
 library(edgeR)
 source("bin/edgeR_phyloseq.R")
@@ -201,20 +211,61 @@ print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
 
 # Linear models
 Dlm <- lm(logGC ~ logREL_Eim, sdt)
-summary(Dlm)
+#summary(Dlm)
 
 # plotting REL correlation
 d <-ggplot(sdt, aes(x=logREL_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
-    ggtitle("REL")+
+    xlab("Eimeriidae")+
+    ggtitle("Relative log expression")+
         labs(tag= "d)")+
-        theme_bw()+
-    theme(text = element_text(size=16))
+    theme_bw()+
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+
+########### centered log Ration
+PSclr = microbiome::transform(ppPS, transform="clr")
+ePSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
+
+df <-data.frame(sample_sums(otu_table(ePSeimf)))
+df$labels <- rownames(df)
+names(df) <- c("clr_Eim", "labels")
+
+#merge
+sdt <- merge(df, sdt, by="labels", all=TRUE) 
+
+#correlation tests
+print(cor.test(sdt$logGC, sdt$clr_Eim, method="pearson"))
+
+# Linear models
+Elm <- lm(logGC ~ clr_Eim, sdt)
+
+# plotting CLR correlation
+e <-ggplot(sdt, aes(x=clr_Eim, y=logGC))+
+    geom_jitter(shape=21, position=position_jitter(0.002),
+                size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
+    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
+    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+                                          parse = TRUE) +  
+    ylab("Genome copies gFaeces log(1+)")+
+    xlab("Eimeriidae")+
+    ggtitle("centered log-ratio")+
+        labs(tag= "e)")+
+#        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
+    theme_bw()+
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+
 
 #### experimental quantification
 #ABsolute Count Scaling: scaled to DNA/g/faeces
@@ -224,31 +275,32 @@ sdt$logACS_Eim <- log(1+sdt$ACS_Eim)
 
 #correlation tests
 print(cor.test(sdt$logGC, sdt$logACS_Eim, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logACS_Eim, method="pearson"))
 
 # Linear models
-Elm <- lm(logGC ~ logACS_Eim, sdt)
-summary(Elm)
+Flm <- lm(logGC ~ logACS_Eim, sdt)
+#summary(Flm)
 
 # plotting REL correlation
-e <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
+f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
     geom_smooth(method = "lm", se=FALSE) +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
+    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
-    ggtitle("ACS")+
-        labs(tag= "e)")+
-        theme_bw()+
-    theme(text = element_text(size=16))
+    xlab("Eimeriidae (log1+)")+
+    ggtitle("Absolute count scaling")+
+        labs(tag= "f)")+
+    theme_bw()+
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
 # save plots of what we have so far
-plot_grid(a,b,c,d,e) -> fCor
+plot_grid(a,b,c,d,e,f) -> fCor
 
-ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 14, height = 8, dpi = 600)
+ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 12, height = 10, dpi = 600)
 
-ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 14, height = 8, dpi = 600)
+ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 12, height = 10, dpi = 600)
 
 ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, height = 5, dpi = 600)
 
