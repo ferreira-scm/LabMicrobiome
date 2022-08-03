@@ -38,6 +38,7 @@ return(ps)
 p_tss <- function(df, lb, name){
 ggplot(df, aes(x=logA, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
@@ -45,9 +46,12 @@ ggplot(df, aes(x=logA, y=logGC))+
     xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
     ggtitle(name)+
     labs(tag=lb)+
-#        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
+                                        #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
         theme_bw()+
-    theme(text = element_text(size=16))
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
 }
 
 
@@ -150,7 +154,8 @@ b <-ggplot(sdt, aes(y=logGC, x=logFilEimeriaSums))+
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
 cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
-
+cPSeimf <-aggregate_taxa(cPSeimf, level="family")
+    
 #create total sums and Eimeria sums data frame
 df <-data.frame(sample_sums(otu_table(cPSeimf)))
 df$labels <- rownames(df)
@@ -257,7 +262,7 @@ e <-ggplot(sdt, aes(x=clr_Eim, y=logGC))+
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
     xlab("Eimeriidae")+
-    ggtitle("centered log-ratio")+
+    ggtitle("Centered log-ratio")+
         labs(tag= "e)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
     theme_bw()+
@@ -283,6 +288,7 @@ Flm <- lm(logGC ~ logACS_Eim, sdt)
 # plotting REL correlation
 f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+

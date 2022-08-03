@@ -137,7 +137,7 @@ Mus.clr <-aggregate_taxa(Mus.clr, level="genus")
 
 nb <- length(levels(as.factor(m$EH_ID)))
 
-coul <- colorRampPalette(brewer.pal(12, "Accent"))(nb)
+coul <- colorRampPalette(brewer.pal(8, "Accent"))(nb)
 
 mycol <- coul[as.numeric(as.factor(m$EH_ID))]
 
@@ -174,226 +174,227 @@ mp.clr <- ggplot(m.clr, aes(dpi, Abundance, color=EH_ID))+
           axis.line = element_line(colour = "black"))
 
 
-# save plots of what we have so far
-plot_grid(mp.acs,mp.clr) -> fCor
-
-ggplot2::ggsave(file="fig/Mus_abundance.pdf", fCor, width = 8, height = 5, dpi = 600)
-ggplot2::ggsave(file="fig/Mus_abundance.png", fCor, width = 8, height = 5, dpi = 600)
+mp.clr
 
 
 # Are host abundance and Eimeria associated
-cor.test(m$Abundance, m$Genome_copies_gFaeces, method="pearson")
-cor.test(m$Abundance, m$OPG, method="pearson")
+cor.test(log(1+m$Abundance), log(1+m$Genome_copies_gFaeces), method="spearman")
 
-ggplot(m, aes(Abundance, OPG))+
-    geom_point()
+cor.test(log(1+m$Abundance), log(1+m$OPG), method="spearman")
 
-ggplot(m, aes(Abundance, Genome_copies_gFaeces))+
-    geom_point()
+cor.test(m.clr$Abundance, log(1+m.clr$Genome_copies_gFaeces), method="spearman")
+#cor.test(m.clr$Abundance, log(1+m.clr$OPG), method="spearman")
 
-mp
+m.host <- ggplot(m, aes(log(1+Abundance), log(1+Genome_copies_gFaeces)))+
+    geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
+    scale_fill_brewer(palette="Paired")+           
+    labs(x="Host reads per g of Faeces, log(+1)", y="Genome copies per g of faeces log(1+)")+
+    labs(tag= "b)")+
+    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
+    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE,  label.x=0.1, label.y=0.9) +  
+    annotate(geom="text", x=5, y=19, label="Spearman rho=0.41, p<0.001")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#           legend.position = "none",
+          axis.line = element_line(colour = "black"))
 
-m$logA <- log10(1+m$Abundance)
+m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
+    geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
+#    scale_color_brewer(palette="Accent")+
+    scale_fill_brewer(palette="Paired")+
+    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
+    stat_poly_eq(aes(label = paste(..eq.label..,
+                                   ..rr.label..,
+                                   sep = "~~~")),
+                 parse = TRUE, label.x=0.85, label.y=0.23) + 
+    annotate(geom="text", x=6, y=3, label="Spearman rho=0.44, p<0.001")+
+#    geom_line(aes(group=EH_ID), alpha=0.3)+
+    labs(x="Host reads per g of Faeces, clr(+1)", y="Genome copies per g of faeces log(1+)")+
+    labs(tag= "b)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#           legend.position = "none",
+          axis.line = element_line(colour = "black"))
 
-m$logGC <- log10(1+m$Genome_copies_gFaeces)
+# save plots of what we have so far
+plot_grid(mp.acs, m.host, nrow=2) -> m.acsCor
+plot_grid(mp.clr,m.clr.host, nrow=2) -> m.clrCor
 
-m$logDNA <- log10(1+m$DNA_g_feces)
+ggplot2::ggsave(file="fig/Mus_Eimeria.clr.pdf", m.clrCor, width = 8, height = 6, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.clr.png", m.clrCor, width = 8, height = 6, dpi = 600)
+
+ggplot2::ggsave(file="fig/Mus_Eimeria.acs.pdf", m.acsCor, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.acs.png", m.acsCor, width = 8, height = 5, dpi = 600)
+
+
+# ordination
+# host reads, total dna, opg, Genome_copies
+# can't have zeros in all columns
+
+m.ord <- m[,c("Genome_copies_gFaeces", "Abundance", "OPG")][rowSums(m[,c("Genome_copies_gFaeces", "Abundance", "OPG")])>0,]
+
+m.clr.ord <- m.clr[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")][rowSums(m[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")])>0,]
+
+
+library(vegan)
+
+m.mds <- metaMDS(m.ord)
+m.clr.euc <- vegdist(m.clr.ord, method="euclidean")
+m.bray <- vegdist(m.ord, "bray")
+#sanity check
+rownames(mAxis)==rownames(m.ord)
+
+dpi <- as.factor(m$dpi[as.numeric(rownames(m.ord))])
+dpi.clr <- as.factor(m.clr$dpi[as.numeric(rownames(m.clr.ord))])
+
+adonis2(m.bray~dpi, method="bray", permutations=10000)
+
+adonis2(m.clr.euc~dpi.clr, method="euclidean", permutations=10000)
+
+#m.anosim <- anosim(m.bray,dpi, distance="bray", permutations=1000)
+#summary(m.anosim)
+
+mAxis <- m.mds$points[,1:2]
+mAxis <- as.data.frame(mAxis)
+#ggplot(mAxis, aes(MDS1, MDS2))+
+#    geom_point(size=2, alpha=0.8, aes(color=dpi))
+
+ord.fit <- envfit(m.mds~dpi)
+ord.fit
 
 #mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
 
-m$OPG
+m.clr$logGC <- log(1+m.clr$Genome_copies_gFaeces)
 
-mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+m$OPG + dpi, data=m.clr)
+m$logA <- log(1+m$Abundance)
+m$logGC <- log(1+m$Genome_copies_gFaeces)
+
+mmus <- lm(Abundance~logGC+ DNA_g_feces, data=m.clr)
 summary(mmus)
 
-mwl <- glm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
-
-mwl <- glm(weightloss~logA+logGC+ DNA_g_feces+dpi, data=m)
-
-summary(mmus)
+mwl <- lm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces, data=m.clr)
 
 summary(mwl)
+
+anova(mwl)
+
+mwl.acs <- lm(weightloss~logA+logGC, data=m)
+
+mwl.acs <- lm(weightloss~Abundance+Genome_copies_gFaeces, data=m)
+
+summary(mwl.acs)
 
 library(lme4)
 
 library(MASS)
 
-m2 <- lmer(weightloss~logA*logGC+ logDNA +(1|dpi), data=m)
+m2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m)
+m3 <- lmer(weightloss~Abundance +(1|EH_ID), data=m)
+m4 <- lmer(weightloss~Genome_copies_gFaeces +(1|EH_ID), data=m)
 
-m2 <- lmer(weightloss~logA+logGC +EH_ID+(1|dpi), data=m)
+cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
+cm3 <- lmer(weightloss~Abundance +(1|EH_ID), data=m.clr)
+cm4 <- lmer(weightloss~Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
 
-m2 <- glmm(weightloss~logA+logGC +EH_ID+(1|dpi), data=m)
+summary(cm2)
 
 summary(m2)
 
-Sdem <- with(m, data.frame(
-                             weightloss=weightloss- ave(weightloss, EH_ID),
-                             logGC=logGC-ave(logGC, EH_ID, FUN=function(x) mean(x, na.rm=T)),
-                             logA=logA-ave(logA, EH_ID, FUN=function(x) mean(x, na.rm=T)),
-                             dpi=dpi,
-                             EH_ID=EH_ID))
+anova(m2, m3)
+anova(m2, m4)
 
+anova(cm2, cm3)
+anova(cm2, cm4)
 
-STdem <- with(Sdem, data.frame(
-                            weightloss=weightloss- ave(weightloss, dpi),
-                            logGC=logGC-ave(logGC, dpi, FUN=function(x) mean(x, na.rm=T)),
-                            logA=logA-ave(logA, dpi, FUN=function(x) mean(x, na.rm=T)),
-                            dpi=dpi,
-                            EH_ID=EH_ID))
-
-head(m)
-
-## analysing at peak
-# it isn't working so well here...
-library(dplyr)
-
-MaxDNA <- m %>% dplyr::group_by(EH_ID) %>%
-    dplyr::filter(logGC==max(logGC, na.rm=T))%>%
-    dplyr::select(EH_ID, logDNA, logA, logGC)%>% data.frame()
-
-Maxwl <- m %>% dplyr::group_by(EH_ID) %>%
-    dplyr::filter(weightloss==max(weightloss, na.rm=T))%>%
-    dplyr::select(EH_ID, dpi, weightloss)%>% data.frame()
-
-Maxdf <- merge(Maxwl, MaxDNA, by="EH_ID")
-
-mdem <- lm(weightloss~logA*logGC, data=m)
-
-summary(mdem)
-
-maxm <- lm(weightloss~logA*logGC, data=Maxdf)
-
-summary(maxm)
-
-calc.relimp(mdem)
-
-calc.relimp(maxm)
-
-ggplot(m, aes(Abundance, DNA_g_feces))+
-          geom_point()
-
-ggplot(m, aes(Abundance, Genome_copies_gFaeces))+
-          geom_point()
 
 # how does DNA g/faeces change with infection
-dnap <- ggplot(m, aes(y=DNA_g_feces, x=dpi, color=EH_ID))+
-    geom_point()+
-    geom_line(aes(group=EH_ID))+
-    labs(x="Days post infection", y="DNA (per g of faeces)")+
-    theme_bw()+
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position = "none")
-
-
-wl <- ggplot(m, aes(y=weightloss, x=dpi, color=EH_ID))+
-    geom_point()+
-    geom_line(aes(group=EH_ID))+
-    labs(x="Days post infection", y="DNA (per g of faeces)")+
-    theme_bw()+
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position = "none")
-
-ggplot2::ggsave(file="fig/Mus_abundance.pdf", mp, width = 7, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/DNA_abundance_all.pdf", dnap, width = 7, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/Mus_abundance.png", mp, width = 7, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/DNA_abundance_all.png", dnap, width = 7, height = 5, dpi = 300)
-
-plot_grid(mp, dnap, wl, nrow=3) -> mplot
-
-ggplot2::ggsave(file="fig/Mus_WeighLoss.png", mplot, width = 7, height = 15, dpi = 300)
-
-ggplot2::ggsave(file="fig/Mus_WeighLoss.pdf", mplot, width = 7, height = 15, dpi = 300)
-
-
-# and does it correlate with weight loss?
-cor.test(m$Abundance, m$weightloss, method="pearson")
-
+cor.test(m$logA, log(1+m$weightloss), method="spearman")
 
 ##################################################################
 ### OK, so let's remove food
-plant <- subset_taxa(fPS, !phylum%in%"Streptophyta")
+plant <- subset_taxa(f.all, !phylum%in%"Streptophyta")
 plant <- subPS(plant)
 
-Mus <- subset_taxa(fPS, !phylum%in%"Chordata")
+Mus <- subset_taxa(f.all, !phylum%in%"Chordata")
 Mus <- subPS(Mus)
 
-worms <- subset_taxa(fPS, !phylum%in%"Nematoda")
+worms <- subset_taxa(f.all, !phylum%in%"Nematoda")
 worms <- subPS(worms)
 
-plant18 <- subset_taxa(fPS18S, !phylum%in%"Streptophyta")
+plant18 <- subset_taxa(f.sin18, !phylum%in%"Streptophyta")
 plant18 <- subPS(plant18)
 
 #no Mus in fPS18S
-worms18 <- subset_taxa(fPS18S, !phylum%in%"Nematoda")
+worms18 <- subset_taxa(f.sin18, !phylum%in%"Nematoda")
 worms18 <- subPS(worms18)
 
-TSS <- subPS(fPS)
-TSS18 <- subPS(fPS18S)
+TSS <- subPS(f.all)
+TSS18 <- subPS(f.sin18)
 
-PlantMusWorms <-  subset_taxa(fPS, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
+PlantMusWorms <-  subset_taxa(f.all, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
 PlantMusWorms <- subPS(PlantMusWorms)
 
-PlantMus <-  subset_taxa(fPS, !(phylum%in%"Streptophyta"|phylum%in%"Chordata"))
+PlantMus <-  subset_taxa(f.all, !(phylum%in%"Streptophyta"|phylum%in%"Chordata"))
 PlantMus <- subPS(PlantMus)
 
-PlantMusWorms18 <-  subset_taxa(fPS18S, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
+PlantMusWorms18 <-  subset_taxa(f.sin18, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
 PlantMusWorms18 <- subPS(PlantMusWorms18)
 
-plantw <- subset_taxa(fPSwang, !phylum%in%"Streptophyta")
+plantw <- subset_taxa(f.allwang, !phylum%in%"Streptophyta")
 plantw <- subPS(plantw)
 
-wormsw <- subset_taxa(fPSwang, !phylum%in%"Nematoda")
+wormsw <- subset_taxa(f.allwang, !phylum%in%"Nematoda")
 wormsw <- subPS(wormsw)
 
-TSSwang <- subPS(fPSwang)
+TSSwang <- subPS(f.allwang)
 
-PlantWormsw <-  subset_taxa(fPSwang, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda"))
+PlantWormsw <-  subset_taxa(f.allwang, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda"))
 PlantWormsw <- subPS(PlantWormsw)
 
-
+## person tests
 cor.test(TSS$logGC, TSS$logA, method="pearson")
-
 cor.test(plant$logGC, plant$logA, method="pearson")
-
 cor.test(worms$logGC, worms$logA, method="pearson")
-
 cor.test(Mus$logGC, Mus$logA, method="pearson")
-
-cor.test(PlantMusWorms$logGC, PlantMusWorms$logA, method="pearson")
-
+#cor.test(PlantMusWorms$logGC, PlantMusWorms$logA, method="pearson")
 cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
 
 
 cor.test(TSS18$logGC, TSS18$logA, method="pearson")
-
 cor.test(plant18$logGC, plant18$logA, method="pearson")
-
 cor.test(worms18$logGC, worms18$logA, method="pearson")
-
-cor.test(PlantMusWorms18$logGC, PlantMusWorms18$logA, method="pearson")
-
+#cor.test(PlantMusWorms18$logGC, PlantMusWorms18$logA, method="pearson")
 
 cor.test(TSSwang$logGC, TSSwang$logA, method="pearson")
-
 cor.test(plantw$logGC, plantw$logA, method="pearson")
-
 cor.test(wormsw$logGC, wormsw$logA, method="pearson")
-
-cor.test(PlantWormsw$logGC, PlantWormsw$logA, method="pearson")
-
-
+#cor.test(PlantWormsw$logGC, PlantWormsw$logA, method="pearson")
 
 # plotting TSS correlation
 a <- p_tss(TSS, "a)", "MA")
 b <- p_tss(plant, "b)", "MA no plant")
 c <- p_tss(Mus, "c)", "MA no host")
 d <- p_tss(worms, "d)", "MA no nematodes")
-e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
-f <- p_tss(PlantMus, "f)", "MA no plants or host")
+#e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
+e <- p_tss(PlantMus, "e)", "MA no plants or host")
 
-plot_grid(a,b,c,d,e, f) -> p_cor
+plot_grid(a,b,c,d,e) -> p_cor
+
+MA.a <- lm(data=TSS,logGC~logA)
+MA.b <- lm(data=plant,logGC~logA)
+MA.c <- lm(data=Mus,logGC~logA)
+MA.d <- lm(data=worms,logGC~logA)
+MA.e <- lm(data=PlantMus,logGC~logA)
+
+
+
+
+summary(MA.e)
+
 
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA.pdf", p_cor, width = 15, height = 8, dpi = 600)
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA.png", p_cor, width = 15, height = 8, dpi = 600)
@@ -402,8 +403,13 @@ a1 <- p_tss(TSS18, "a)", "SA")
 b1 <- p_tss(plant18, "b)", "SA no plant")
 #c1 <- p_tss(Mus18, "c)", "SA no host")
 d1 <- p_tss(worms18, "c)", "SA no nematodes")
-e1 <- p_tss(PlantMusWorms18, "d)", "SA no plants or nematodes")
+#e1 <- p_tss(PlantMusWorms18, "d)", "SA no plants or nematodes")
 
+SA.a <- lm(data=TSS18,logGC~logA)
+SA.b <- lm(data=plant18,logGC~logA)
+SA.d <- lm(data=worms18,logGC~logA)
+
+summary(SA.d)
 
 plot_grid(a1,b1,d1,e1) -> p_cor1
 ggplot2::ggsave(file="fig/SA/Biological_rem_SA.pdf", p_cor1, width = 15, height = 10, dpi = 600)
@@ -414,6 +420,12 @@ b2 <- p_tss(plantw, "b)", "MA wang no plant")
 #c1 <- p_tss(Mus18, "c)", "SA no host")
 d2 <- p_tss(wormsw, "c)", "MA wang no nematodes")
 e2 <- p_tss(PlantWormsw, "d)", "MA wang no plants or nematodes")
+
+MAw.a <- lm(data=TSSwang,logGC~logA)
+MAw.b <- lm(data=plantw,logGC~logA)
+MAw.d <- lm(data=wormsw,logGC~logA)
+
+summary(MAw.d)
 
 plot_grid(a2,b2,d2,e2) -> p_cor2
 ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
