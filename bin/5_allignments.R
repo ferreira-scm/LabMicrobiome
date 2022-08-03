@@ -8,7 +8,6 @@ library(phyloseq)
 library(DECIPHER)
 library(phangorn)
 library(ShortRead)
-
 library(RColorBrewer)
 
 #library(BiocManager, lib.loc="/usr/local/lib/R/site-library/")
@@ -332,7 +331,7 @@ ggplot2::ggsave(file="fig/Eimeria_Utree.pdf", t2, width = 5, height = 5, dpi = 3
 
 
 t1
-
+#####################################################
 ########################### Eimeria ASVs
 ## Are ASV's the same between SA and MA?
 colnames(Eim@otu_table)[1] == colnames(Eim2@otu_table)[1]
@@ -372,41 +371,42 @@ SA.eim.m <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@o
 
 gau.m <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
 
+gau.m1 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
+gau.m2 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
+gau.m3 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
+gau.m4 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(1+Eim2@otu_table[,5]))
+gau.m5 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1))
+gau.m0 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~1)
+
+
+lrtest(gau.m)
+
+lrtest(gau.m, gau.m1)
+lrtest(gau.m, gau.m2)
+lrtest(gau.m, gau.m3)
+lrtest(gau.m, gau.m4)
+lrtest(gau.m, gau.m5)
+
+anova(gau.m, test="LRT")
+
 summary(gau.m)
 
-summary(SA.eim.m)
+plot(gau.m) # not great
 
-SA.eim.m1 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
-
-SA.eim.m2 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
-
-SA.eim.m3 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
-
-SA.eim.m4 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,5])
-
-SA.eim.m5 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4])
-
-SA.eim.m0 <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~1)
-
-anova(SA.eim.m0, SA.eim.m)
+summary(SA.eim.m) # terrible
 
 library(lmtest)
-lrtest(SA.eim.m, SA.eim.m5)
+lrtest(gau.m, gau.m0)
 
 library(relaimpo)
 
 calc.relimp(gau.m)
 
+MA.gau <- lm(log(1+Eim@sam_data$Genome_copies_gFaeces)~log(1+Eim@otu_table[,1])+log(1+Eim@otu_table[,2])+log(1+Eim@otu_table[,3]))
 
-MA.eim.m <- glm.nb(Eim@sam_data$Genome_copies_gFaeces~Eim@otu_table[,1]+Eim@otu_table[,2]+Eim@otu_table[,3])
+summary(MA.gau)
 
-summary(SA.eim.m)
-
-#plot(SA.eim.m)
-
-summary(MA.eim.m)
-
-#plot(MA.eim.m)
+plot(MA.gau) # uff, not great either!
 
 SA_Eimeiria.ASVs <- ggplot(SA.e, aes(x=log(1+Genome_copies_gFaeces), y=log(1+Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
@@ -419,87 +419,94 @@ SA_Eimeiria.ASVs
 
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
-#### Plot by EH_ID
-
-ggplot(SA.e5, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_point(shape=21, size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+#### Plot by EH_ID, only positive animals
+keep <- SA.e5$EH_ID[SA.e5$Abundance>0]
+SA.e5 <- SA.e5[which(SA.e5$EH_ID%in%keep),]
+SA5 <- ggplot(SA.e5, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
-ggplot(SA.e4, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_point(shape=21, size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+keep <- SA.e4$EH_ID[SA.e4$Abundance>0]
+SA.e4 <- SA.e4[which(SA.e4$EH_ID%in%keep),]
+SA4 <- ggplot(SA.e4, aes(x=dpi, y=Abundance, fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
-ggplot(SA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- SA.e3$EH_ID[SA.e3$Abundance>0]
+SA.e3 <- SA.e3[which(SA.e3$EH_ID%in%keep),]
+SA3 <- ggplot(SA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
-ggplot(SA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- SA.e2$EH_ID[SA.e2$Abundance>0]
+SA.e2 <- SA.e2[which(SA.e2$EH_ID%in%keep),]
+SA2 <- ggplot(SA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID, alpha=0.2))+
     scale_fill_manual(values=coul)
 
-ggplot(SA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- SA.e1$EH_ID[SA.e1$Abundance>0]
+SA.e1 <- SA.e1[which(SA.e1$EH_ID%in%keep),]
+SA1 <- ggplot(SA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
 ### ASV from MA run plotted
-ggplot(MA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- MA.e3$EH_ID[MA.e3$Abundance>0]
+MA.e3 <- MA.e3[which(MA.e3$EH_ID%in%keep),]
+MA3 <- ggplot(MA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
-ggplot(MA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- MA.e2$EH_ID[MA.e2$Abundance>0]
+MA.e2 <- MA.e2[which(MA.e2$EH_ID%in%keep),]
+MA2 <- ggplot(MA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID, alpha=0.2))+
     scale_fill_manual(values=coul)
 
-ggplot(MA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
+keep <- MA.e1$EH_ID[MA.e1$Abundance>0]
+MA.e1 <- MA.e1[which(MA.e1$EH_ID%in%keep),]
+MA1 <- ggplot(MA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
-#### how does the qpcr curve looks like?
-ggplot(sdt, aes(x=dpi, y=Genome_copies_gFaeces+1))+
-    geom_point(shape=21, position=position_jitter(0.2), size=2.5, alpha=0.7, aes(shape=Infection, fill=dpi), color="black")+
-    scale_y_log10("log10 (Genome copies/g Faeces + 1) (qPCR)",
-      breaks = scales::trans_breaks("log10", function(x) 10^x),
-      labels = scales::trans_format("log10", scales::math_format(10^.x)))+
-    scale_shape_manual(values = c(21, 24))+
-    geom_line(aes(group=EH_ID), color="gray", alpha=0.5)+
-    scale_fill_manual(values=coul)+
-    theme_bw()+
-    theme(text = element_text(size=16), axis.title.x = element_blank(), legend.position = "top")+
-    annotation_logticks(sides = "l")+
-    guides(fill=FALSE)
 
-ggplot(SA.e.g, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID))+
-    scale_fill_manual(values=coul)
+plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
+
+plot_grid(MA1,MA2,MA3) -> MA.asv
+
+SA.asv
+
+ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 10, height = 5, dpi = 300)
+
+ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height = 5, dpi = 300)
 
 #################### plotting individuals by ASV
 library(cowplot) # to plot a list of plots
 
 head(SA.e5$EH_ID)
 
-SA.e4$EH_ID[
-
 cl <- colorRampPalette(brewer.pal(8, "Accent"))(5)
 
 length(levels(SA.e$EH_ID))
 
+SA.e$EH_ID
+
 p.ID <- function(i){
     SA.e%>%
-    filter(EH_ID%in%SA.e$EH_ID[i])%>%
+    dplyr::filter(EH_ID%in%SA.e$EH_ID[i])%>%
     dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
     ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
     geom_line(aes(group=ASV), color="gray", alpha=0.5)+
-    scale_fill_manual(values=cl)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+
     scale_y_log10("log10 (Eimeira /gFaeces + 1) (qPCR)",
       breaks = scales::trans_breaks("log10", function(x) 10^x),
       labels = scales::trans_format("log10", scales::math_format(10^.x)))+
@@ -519,6 +526,4 @@ for (i in 1:22) {
     print(p.EH[[i]])
 }
 dev.off()
-
-p.EH[1]
 
