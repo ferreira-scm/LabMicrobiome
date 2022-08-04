@@ -12,6 +12,10 @@ require(grid_extra)
 require(cowplot)
 library(microbiome)
 library(RColorBrewer)
+library(relaimpo)
+library(lme4)
+library(MASS)
+
 
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
@@ -224,11 +228,11 @@ m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
 plot_grid(mp.acs, m.host, nrow=2) -> m.acsCor
 plot_grid(mp.clr,m.clr.host, nrow=2) -> m.clrCor
 
-ggplot2::ggsave(file="fig/Mus_Eimeria.clr.pdf", m.clrCor, width = 8, height = 6, dpi = 600)
-ggplot2::ggsave(file="fig/Mus_Eimeria.clr.png", m.clrCor, width = 8, height = 6, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.clr.pdf", m.clrCor, width = 8, height = 8, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.clr.png", m.clrCor, width = 8, height = 8, dpi = 600)
 
-ggplot2::ggsave(file="fig/Mus_Eimeria.acs.pdf", m.acsCor, width = 8, height = 5, dpi = 600)
-ggplot2::ggsave(file="fig/Mus_Eimeria.acs.png", m.acsCor, width = 8, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.acs.pdf", m.acsCor, width = 8, height = 8, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.acs.png", m.acsCor, width = 8, height = 8, dpi = 600)
 
 
 # ordination
@@ -251,6 +255,9 @@ rownames(mAxis)==rownames(m.ord)
 dpi <- as.factor(m$dpi[as.numeric(rownames(m.ord))])
 dpi.clr <- as.factor(m.clr$dpi[as.numeric(rownames(m.clr.ord))])
 
+weighloss <- m$weightloss[as.numeric(rownames(m.ord))]
+weighloss.clr <- m.clr$weightloss[as.numeric(rownames(m.clr.ord))]
+
 adonis2(m.bray~dpi, method="bray", permutations=10000)
 
 adonis2(m.clr.euc~dpi.clr, method="euclidean", permutations=10000)
@@ -258,13 +265,18 @@ adonis2(m.clr.euc~dpi.clr, method="euclidean", permutations=10000)
 #m.anosim <- anosim(m.bray,dpi, distance="bray", permutations=1000)
 #summary(m.anosim)
 
-mAxis <- m.mds$points[,1:2]
-mAxis <- as.data.frame(mAxis)
+#mAxis <- m.mds$points[,1:2]
+#mAxis <- as.data.frame(mAxis)
 #ggplot(mAxis, aes(MDS1, MDS2))+
 #    geom_point(size=2, alpha=0.8, aes(color=dpi))
 
-ord.fit <- envfit(m.mds~dpi)
+ord.fit <- envfit(m.mds~dpi+weighloss)
 ord.fit
+
+
+ord.fit <- envfit(m.bray~dpi+weighloss)
+ord.fit
+
 
 #mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
 
@@ -273,42 +285,55 @@ m.clr$logGC <- log(1+m.clr$Genome_copies_gFaeces)
 m$logA <- log(1+m$Abundance)
 m$logGC <- log(1+m$Genome_copies_gFaeces)
 
+##CLR
 mmus <- lm(Abundance~logGC+ DNA_g_feces, data=m.clr)
 summary(mmus)
-
 mwl <- lm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces, data=m.clr)
-
 summary(mwl)
 
 anova(mwl)
-
-mwl.acs <- lm(weightloss~logA+logGC, data=m)
-
-mwl.acs <- lm(weightloss~Abundance+Genome_copies_gFaeces, data=m)
-
-summary(mwl.acs)
-
-library(lme4)
-
-library(MASS)
-
-m2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m)
-m3 <- lmer(weightloss~Abundance +(1|EH_ID), data=m)
-m4 <- lmer(weightloss~Genome_copies_gFaeces +(1|EH_ID), data=m)
-
 cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
 cm3 <- lmer(weightloss~Abundance +(1|EH_ID), data=m.clr)
 cm4 <- lmer(weightloss~Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
 
-summary(cm2)
 
-summary(m2)
+## ACS
+#mwl.acs <- lm(weightloss~logA+logGC, data=m)
+#plot(mwl.acs)
+mwl.acs <- lm(weightloss~Abundance+Genome_copies_gFaeces, data=m)
 
-anova(m2, m3)
-anova(m2, m4)
+summary(mwl.acs)
 
-anova(cm2, cm3)
-anova(cm2, cm4)
+calc.relimp(mwl.acs)
+
+mmwl.acs1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
+
+summary(mmwl.acs1)
+
+mmwl.acs <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID)+(1|dpi), data=m)
+mmwl.acs2 <- lmer(weightloss~Abundance +(1|EH_ID)+(1|dpi), data=m)
+mmwl.acs3 <- lmer(weightloss~Genome_copies_gFaeces+(1|EH_ID)+(1|dpi), data=m)
+
+ranova(mmwl.acs)
+
+summary(mmwl.acs)
+
+anova(mmwl.acs, mmwl.acs2)
+anova(mmwl.acs,mmwl.acs3)
+
+anova(mmwl.acs)
+
+mmmus <- lmer(Abundance~Genome_copies_gFaeces+(1|EH_ID)+(1|dpi), data=m)
+
+mmmus0 <- lmer(Abundance~1+(1|EH_ID), data=m)
+
+summary(mmmus)
+
+library(lmerTest)
+
+ranova(mmmus)
+
+anova(mmmus,mmmus0)
 
 
 # how does DNA g/faeces change with infection
@@ -614,5 +639,3 @@ ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.png", Euk_phy, width = 7, 
 ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.pdf", Bac_phy, width = 7, height = 5, dpi = 600)
 
 ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.png", Bac_phy, width = 7, height = 5, dpi = 600)
-
-

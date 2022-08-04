@@ -151,23 +151,20 @@ ggplot2::ggsave(file="fig/SA_Eimeria_reads.sa.png", Eimeria_reads.sa, width = 5,
 
 ##aligments
 #first better name reads
-names(seqs) <- MA_dada2Sp[,2]
-names(seqs) <- paste(names(seqs),c("MA1", "MA2", "MA3"),sep="")
-names(seqs2) <- SA_dada2Sp[,2]
-names(seqs2) <- paste(names(seqs2), c("SA1", "SA2", "SA3", "SA4", "SA5"), sep="")
+names(seqs2) <- c("ASV1", "ASV2", "ASV3", "ASV4", "ASV5")
 
 
 refEim <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Eim_ref.fa")
 
 names(refEim) <- gsub("(\\s)", "_", names(refEim))
 
-poolSeqs <- c(seqs, seqs2)
+allSeqs <- c(seqs2, refEim)
 
-allSeqs <- c(poolSeqs, refEim)
-
-alignment <- AlignSeqs(poolSeqs, anchor=NA, verbose=FALSE)
+alignment <- AlignSeqs(seqs2, anchor=NA, verbose=FALSE)
 
 alignmentdb <- AlignSeqs(refEim, anchor=NA, verbose=FALSE)
+
+alignment@element
 
 
 # we need an outgroup
@@ -178,7 +175,7 @@ Teur <- c(readDNAStringSet("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/Teur1.fas
 
 names(Teur) <- gsub("(.*sp.)(.*)","\\1", names(Teur))
 
-alignmentAll <- AlignSeqs(c(poolSeqs, refEim, Teur), anchor=NA)
+alignmentAll <- AlignSeqs(c(seqs2, refEim, Teur), anchor=NA)
 
 writeFasta(alignmentAll, "tmp/Eimeria_alignment.fa")
 
@@ -193,7 +190,7 @@ max(DistanceMatrix(alignment))
 DistanceMatrix(alignment)
 
 # making a phylo tree
-PhanAlign <- phyDat(as(alignment, "matrix"), type="DNA")
+PhanAlign <- phyDat(as(alignmentAll, "matrix"), type="DNA")
 dm <- dist.ml(PhanAlign)
 
 treeUPGMA  <- upgma(dm)
@@ -204,18 +201,18 @@ bs_upgma <- bootstrap.phyDat(PhanAlign, fun)
 plotBS(treeUPGMA, bs_upgma, main="UPGMA")
 #ml
 
-# now for fun, our reference eimeria db
-
-Peim <- phyDat(as(alignmentdb, "matrix"), type="DNA")
+#our reference eimeria db and reads
+Peim <- phyDat(as(alignmentAll, "matrix"), type="DNA")
 dm <- dist.ml(Peim)
 treeUPGMA  <- upgma(dm)
 treeNJ <- NJ(dm)
 
 fun <- function(x) upgma(dist.ml(x))
 bs_upgma <- bootstrap.phyDat(Peim, fun)
+
 plotBS(treeUPGMA, bs_upgma, main="UPGMA")
 
-                                        # for NJ too
+# for NJ too
 fun <- function(x) NJ(dist.ml(x))
 bs_NJ <- bootstrap.phyDat(Peim, fun)
 plotBS(treeNJ, bs_NJ, main="NJ")
@@ -223,26 +220,12 @@ plotBS(treeNJ, bs_NJ, main="NJ")
 ### ML
 
 fit <- pml(treeNJ, data=Peim)
-fit
-
-
-############
-Pall <- phyDat(as(Allal, "matrix"), type="DNA")
-dm <- dist.ml(Pall)
-treeUPGMA  <- upgma(dm)
-treeNJ <- NJ(dm)
 
 plot(treeNJ)
 
 plot(treeUPGMA)
 
-fun <- function(x) upgma(dist.ml(x))
-bs_upgma <- bootstrap.phyDat(Pall, fun)
-plotBS(treeUPGMA, bs_upgma, main="UPGMA")
-
-fit <- pml(treeNJ, data=Pall)
-
-fit2 <- pml(treeUPGMA, data=Pall)
+fit2 <- pml(treeUPGMA, data=Peim)
 
 fitJC  <- optim.pml(fit, rearrangement="NNI")
 
@@ -260,7 +243,7 @@ fitGTR2 <- optim.pml(fitGTR2, model="GTR", optInv=TRUE, optGamma=TRUE,optNni=TRU
                     rearrangement = "stochastic", control = pml.control(trace = 0))
 
 
-#anova(fitJC, fitGTR)
+anova(fitJC, fitGTR)
 #bs1 <- bootstrap.pml(fitJC, bs=100, optNni=TRUE,
 #                    control = pml.control(trace = 0))
 #plotBS(midpoint(fitJC$tree), bs1, p = 50, type="p")
@@ -272,10 +255,8 @@ library(ggtree)
 
 #pat <- c("Eimeria ferrisi", "Eimeria vermiformis", "Eimeria falciformis", "SA", "MA")
 
-unloadNamespace("microbiome")
-unloadNamespace("phyloseq")
-
-group
+#unloadNamespace("microbiome")
+#unloadNamespace("phyloseq")
 
 group <- fitGTR$tree$tip.label
 
@@ -351,6 +332,12 @@ SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[4])] <- "ASV4"
 SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[3])] <- "ASV3"
 SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[2])] <- "ASV2"
 SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[1])] <- "ASV1"
+
+MA.e$ASV <- "ASV"
+MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[3])] <- "ASV3"
+MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[2])] <- "ASV2"
+MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[1])] <- "ASV1"
+
 
 SA.e5 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[5]),]
 SA.e4 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[4]),]
@@ -445,7 +432,7 @@ keep <- SA.e2$EH_ID[SA.e2$Abundance>0]
 SA.e2 <- SA.e2[which(SA.e2$EH_ID%in%keep),]
 SA2 <- ggplot(SA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID, alpha=0.2))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
 keep <- SA.e1$EH_ID[SA.e1$Abundance>0]
@@ -467,7 +454,7 @@ keep <- MA.e2$EH_ID[MA.e2$Abundance>0]
 MA.e2 <- MA.e2[which(MA.e2$EH_ID%in%keep),]
 MA2 <- ggplot(MA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
-    geom_line(aes(group=EH_ID, alpha=0.2))+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
     scale_fill_manual(values=coul)
 
 keep <- MA.e1$EH_ID[MA.e1$Abundance>0]
@@ -478,15 +465,14 @@ MA1 <- ggplot(MA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
     scale_fill_manual(values=coul)
 
 
-plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
+plot_grid(SA1,SA2,SA3,SA4,SA5, nrow=3) -> SA.asv
 
-plot_grid(MA1,MA2,MA3) -> MA.asv
+plot_grid(MA1,MA2,MA3, nrow=2) -> MA.asv
 
-SA.asv
-
-ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 10, height = 5, dpi = 300)
-
-ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 15, height = 10, dpi = 300)
+ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.png", SA.asv, width = 15, height = 10, dpi = 300)
+ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height = 8, dpi = 300)
+ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.png", MA.asv, width = 10, height = 8, dpi = 300)
 
 #################### plotting individuals by ASV
 library(cowplot) # to plot a list of plots
@@ -526,4 +512,88 @@ for (i in 1:22) {
     print(p.EH[[i]])
 }
 dev.off()
+
+p.ID <- function(i){
+    SA.e%>%
+    dplyr::filter(EH_ID%in%SA.e$EH_ID[i])%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
+    geom_line(aes(group=ASV), color="gray", alpha=0.5)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+
+    scale_y_log10("log10 (Eimeira /gFaeces + 1) (qPCR)",
+      breaks = scales::trans_breaks("log10", function(x) 10^x),
+      labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    theme_bw()+
+    theme(text = element_text(size=16), axis.title.x = element_blank(), legend.position = "top") -> nm
+    nm
+}
+
+p.EH <- list()
+for (i in 1:22){
+    p <- p.ID(i)
+    p.EH[[i]] <- p
+}
+
+pdf("fig/SA/Eimeria_ASVs_ID.pdf")
+for (i in 1:22) {
+    print(p.EH[[i]])
+}
+dev.off()
+
+head(MA.e)
+
+p.ID.MA <- function(i){
+    MA.e%>%
+    dplyr::filter(EH_ID%in%MA.e$EH_ID[i])%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
+    geom_line(aes(group=ASV), color="gray", alpha=0.5)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
+    scale_y_log10("log10 (Eimeira /gFaeces + 1) (qPCR)",
+      breaks = scales::trans_breaks("log10", function(x) 10^x),
+      labels = scales::trans_format("log10", scales::math_format(10^.x)))+
+    theme_bw()+
+    theme(text = element_text(size=16), axis.title.x = element_blank(), legend.position = "top") -> nm
+    nm
+}
+
+p.EH.M <- list()
+for (i in 1:22){
+    p <- p.ID.MA(i)
+    p.EH.M[[i]] <- p
+}
+
+p.EH.M[1]
+
+pdf("fig/MA/Eimeria_ASVs_ID.pdf")
+for (i in 1:22) {
+    print(p.EH.M[[i]])
+}
+dev.off()
+
+################################
+
+names(SA.e)
+
+ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
+
+ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
+
+head(ma.sa.t)
+
+ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
+
+head(ma.sa)
+
+ASV.cor <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
+    geom_point(size=4, shape=21, alpha=0.5)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
+    ylab("SA - ASV abundance (log1+)")+
+    xlab("MA - ASV abundance (log1+)")+
+    theme_bw()+
+    theme(text = element_text(size=12))
+
+ggplot2::ggsave(file="fig/ASV_CORRELATION.pdf", ASV.cor, width = 8, height = 8, dpi = 600)
 

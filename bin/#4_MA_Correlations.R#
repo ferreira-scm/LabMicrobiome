@@ -306,6 +306,10 @@ summary(mwl.acs)
 
 calc.relimp(mwl.acs)
 
+mmwl.acs1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
+
+summary(mmwl.acs1)
+
 mmwl.acs <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID)+(1|dpi), data=m)
 mmwl.acs2 <- lmer(weightloss~Abundance +(1|EH_ID)+(1|dpi), data=m)
 mmwl.acs3 <- lmer(weightloss~Genome_copies_gFaeces+(1|EH_ID)+(1|dpi), data=m)
@@ -410,7 +414,6 @@ MA.b <- lm(data=plant,logGC~logA)
 MA.c <- lm(data=Mus,logGC~logA)
 MA.d <- lm(data=worms,logGC~logA)
 MA.e <- lm(data=PlantMus,logGC~logA)
-
 
 
 
@@ -637,3 +640,4 @@ ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.pdf", Bac_phy, width = 7, 
 ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.png", Bac_phy, width = 7, height = 5, dpi = 600)
 
 
+######################################################
