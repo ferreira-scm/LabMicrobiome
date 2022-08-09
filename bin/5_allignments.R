@@ -581,19 +581,93 @@ ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
 
 ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
 
-head(ma.sa.t)
 
 ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
 
 head(ma.sa)
 
-ASV.cor <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
+ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
     geom_point(size=4, shape=21, alpha=0.5)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
     ylab("SA - ASV abundance (log1+)")+
     xlab("MA - ASV abundance (log1+)")+
     theme_bw()+
-    theme(text = element_text(size=12))
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
 
-ggplot2::ggsave(file="fig/ASV_CORRELATION.pdf", ASV.cor, width = 8, height = 8, dpi = 600)
 
+ggplot(SA.e, aes(x=log(1+Abundance), y=ASV))+
+    geom_point(aes(fill=ASV), size=4, shape=21, apha=0.5, position=position_jitter(height=0.2))+
+#      geom_density(aes(color = ASV), size = 1) +
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+
+#        scale_colour_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+
+#    ylab("SA - ASV abundance (log1+)")+
+#    xlab("MA - ASV abundance (log1+)")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "top",
+          axis.line = element_line(colour = "black"))
+
+
+ASV1 <- ma.sa[ma.sa$ASV=="ASV1",]
+ASV2 <- ma.sa[ma.sa$ASV=="ASV2",]
+ASV3 <- ma.sa[ma.sa$ASV=="ASV3",]
+
+cor.test(ASV1$Abundance.x, ASV1$Abundance.y)
+cor.test(ASV2$Abundance.x, ASV2$Abundance.y)
+cor.test(log(1+ASV1$Abundance.x), log(1+ASV1$Abundance.y))
+cor.test(log(1+ASV2$Abundance.x), log(1+ASV2$Abundance.y))
+cor.test(log(1+ASV3$Abundance.x), log(1+ASV3$Abundance.y))
+
+ASV1.m <- ggplot(ASV1, aes(x=log(1+Abundance.x), y=log(1+Abundance.y)))+
+    geom_point(size=4, shape=21, alpha=0.5, fill="#009E73")+
+    ylab("SA - ASV3 abundance (log1+)")+
+    xlab("MA - ASV3 abundance (log1+)")+
+        annotate(geom="text", x=5, y=18, label="Pearson rho=0.78, p<0.001")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+ASV2.m <- ggplot(ASV2, aes(x=log(1+Abundance.x), y=log(1+Abundance.y)))+
+    geom_point(size=4, shape=21, alpha=0.5, fill= "#F0E442")+
+    ylab("SA - ASV3 abundance (log1+)")+
+    xlab("MA - ASV3 abundance (log1+)")+
+        annotate(geom="text", x=5, y=16, label="Pearson rho=0.67, p<0.001")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+
+ASV3.m <- ggplot(ASV3, aes(x=log(1+Abundance.x), y=log(1+Abundance.y)))+
+    geom_point(size=4, shape=21, alpha=0.5, fill="#0072B2")+
+    ylab("SA - ASV3 abundance (log1+)")+
+    xlab("MA - ASV3 abundance (log1+)")+
+        annotate(geom="text", x=5, y=13, label="Pearson rho=0.57, p<0.001")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+ASV3.m
+
+bottom_row <- plot_grid(ASV1.m,ASV2.m,ASV3.m, labels=c("b", "c", "d"), nrow=1, label_size=12)
+
+ASV.cor <- plot_grid(ASV.c,bottom_row, labels=c("a", ""), label_size=12, ncol=1)
+
+
+ASV.cor
+
+ggplot2::ggsave(file="fig/ASV_CORRELATION.pdf", ASV.cor, width = 10, height = 10, dpi = 600)

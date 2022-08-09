@@ -191,28 +191,30 @@ cor.test(m.clr$Abundance, log(1+m.clr$Genome_copies_gFaeces), method="spearman")
 
 m.host <- ggplot(m, aes(log(1+Abundance), log(1+Genome_copies_gFaeces)))+
     geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
-    scale_fill_brewer(palette="Paired")+           
+    scale_fill_brewer(palette="Spectral")+           
     labs(x="Host reads per g of Faeces, log(+1)", y="Genome copies per g of faeces log(1+)")+
     labs(tag= "b)")+
-    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE,  label.x=0.1, label.y=0.9) +  
+#    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
+#    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE,  label.x=0.1, label.y=0.9) +  
     annotate(geom="text", x=5, y=19, label="Spearman rho=0.41, p<0.001")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           text=element_text(size=12),
-#           legend.position = "none",
-          axis.line = element_line(colour = "black"))
+          legend.position = "top",
+          axis.line = element_line(colour = "black"))+
+    guides(fill=guide_legend(nrow=1, byrow=TRUE))
+
 
 m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
     geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
 #    scale_color_brewer(palette="Accent")+
-    scale_fill_brewer(palette="Paired")+
-    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
-    stat_poly_eq(aes(label = paste(..eq.label..,
-                                   ..rr.label..,
-                                   sep = "~~~")),
-                 parse = TRUE, label.x=0.85, label.y=0.23) + 
+    scale_fill_brewer(palette="Spectral")+
+#    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
+#    stat_poly_eq(aes(label = paste(..eq.label..,
+#                                   ..rr.label..,
+#                                   sep = "~~~")),
+#                 parse = TRUE, label.x=0.85, label.y=0.23) + 
     annotate(geom="text", x=6, y=3, label="Spearman rho=0.44, p<0.001")+
 #    geom_line(aes(group=EH_ID), alpha=0.3)+
     labs(x="Host reads per g of Faeces, clr(+1)", y="Genome copies per g of faeces log(1+)")+
@@ -221,8 +223,9 @@ m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           text=element_text(size=12),
-#           legend.position = "none",
-          axis.line = element_line(colour = "black"))
+          legend.position = "top",
+          axis.line = element_line(colour = "black"))+
+    guides(fill=guide_legend(nrow=1, byrow=TRUE))
 
 # save plots of what we have so far
 plot_grid(mp.acs, m.host, nrow=2) -> m.acsCor
@@ -290,36 +293,40 @@ mmus <- lm(Abundance~logGC+ DNA_g_feces, data=m.clr)
 summary(mmus)
 mwl <- lm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces, data=m.clr)
 summary(mwl)
-
 anova(mwl)
-cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
-cm3 <- lmer(weightloss~Abundance +(1|EH_ID), data=m.clr)
-cm4 <- lmer(weightloss~Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
 
+cm1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m.clr)
+cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
+cm3 <- lmer(weightloss~Abundance+dpi+(1|EH_ID), data=m.clr)
+cm4 <- lmer(weightloss~Genome_copies_gFaeces +dpi+(1|EH_ID), data=m.clr)
 
 ## ACS
 #mwl.acs <- lm(weightloss~logA+logGC, data=m)
 #plot(mwl.acs)
 mwl.acs <- lm(weightloss~Abundance+Genome_copies_gFaeces, data=m)
 
-summary(mwl.acs)
-
 calc.relimp(mwl.acs)
 
 mmwl.acs1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
 
+mmwl.acs2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces+(1|EH_ID), data=m)
+
+mmwl.acs3 <- lmer(weightloss~Abundance +dpi+(1|EH_ID), data=m)
+
+mmwl.acs4 <- lmer(weightloss~Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
+
+sink("fig/weightLoss_lmm.txt")
 summary(mmwl.acs1)
+sink()
 
 mmwl.acs <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID)+(1|dpi), data=m)
-mmwl.acs2 <- lmer(weightloss~Abundance +(1|EH_ID)+(1|dpi), data=m)
-mmwl.acs3 <- lmer(weightloss~Genome_copies_gFaeces+(1|EH_ID)+(1|dpi), data=m)
 
-ranova(mmwl.acs)
+ranova(mmwl.acs1)
 
-summary(mmwl.acs)
+anova(mmwl.acs1, mmwl.acs2)
+anova(mmwl.acs1,mmwl.acs3)
+anova(mmwl.acs1,mmwl.acs4)
 
-anova(mmwl.acs, mmwl.acs2)
-anova(mmwl.acs,mmwl.acs3)
 
 anova(mmwl.acs)
 
@@ -414,7 +421,6 @@ MA.b <- lm(data=plant,logGC~logA)
 MA.c <- lm(data=Mus,logGC~logA)
 MA.d <- lm(data=worms,logGC~logA)
 MA.e <- lm(data=PlantMus,logGC~logA)
-
 
 
 
@@ -639,3 +645,6 @@ ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.png", Euk_phy, width = 7, 
 ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.pdf", Bac_phy, width = 7, height = 5, dpi = 600)
 
 ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.png", Bac_phy, width = 7, height = 5, dpi = 600)
+
+
+######################################################
