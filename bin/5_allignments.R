@@ -545,10 +545,10 @@ ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
 cor.test(log(1+ma.sa$Abundance.x), log(1+ma.sa$Abundance.y), method="pearson")
 
 ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
-    geom_point(size=4, shape=21, alpha=0.5)+
+    geom_point(size=2, shape=21, alpha=0.5)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
-    ylab("SA - ASV abundance (log1+)")+
-    xlab("MA - ASV abundance (log1+)")+
+    xlab("SA - ASV abundance (log1+)")+
+    ylab("MA - ASV abundance (log1+)")+
     annotate(geom="text", x=5, y=18, label="Pearson rho=0.72, p<0.001")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -556,23 +556,13 @@ ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV)
           text=element_text(size=12),
           legend.position = "top",
           axis.line = element_line(colour = "black"))
-ASV.c
-
 
 plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
-
 plot_grid(MA1,MA2,MA3, nrow=2) -> MA.asv
-
 plot_grid(SA1,MA1,SA2,MA2,SA3,MA3,qpcr, ASV.c,  nrow=4, labels="auto") -> SAMA.asv
 
-SAMA.asv
-
-
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.pdf", SAMA.asv, width = 10, height = 15, dpi = 300)
-
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.png", SAMA.asv, width = 10, height = 15, dpi = 300)
-
-
 ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 15, height = 10, dpi = 300)
 ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.png", SA.asv, width = 15, height = 10, dpi = 300)
 ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height = 8, dpi = 300)
