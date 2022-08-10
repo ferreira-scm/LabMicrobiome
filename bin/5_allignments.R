@@ -365,35 +365,34 @@ gau.m4 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1]
 gau.m5 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1))
 gau.m0 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~1)
 
-
-lrtest(gau.m)
-
-lrtest(gau.m, gau.m1)
-lrtest(gau.m, gau.m2)
-lrtest(gau.m, gau.m3)
-lrtest(gau.m, gau.m4)
-lrtest(gau.m, gau.m5)
-
 anova(gau.m, test="LRT")
-
 summary(gau.m)
+#plot(gau.m) # not great
+#summary(SA.eim.m) # terrible
 
-plot(gau.m) # not great
+### testing Victor's hypothesis for oocysts
+gau.o <- lm(log(1+Eim2@sam_data$OPG)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
 
-summary(SA.eim.m) # terrible
+cor.test(log(1+SA.e2$Abundance), log(1+SA.e2$OPG))
+cor.test(log(1+SA.e2$Abundance), log(1+SA.e2$Genome_copies_gFaeces))
 
-library(lmtest)
-lrtest(gau.m, gau.m0)
+#ggplot(SA.e1, aes(log(1+Abundance), log(1+OPG)))+
+#    geom_jitter()
 
-library(relaimpo)
+#ggplot(SA.e1, aes(log(1+Abundance), log(1+Genome_copies_gFaeces)))+
+#    geom_jitter()
 
-calc.relimp(gau.m)
+summary(gau.o)
+
 
 MA.gau <- lm(log(1+Eim@sam_data$Genome_copies_gFaeces)~log(1+Eim@otu_table[,1])+log(1+Eim@otu_table[,2])+log(1+Eim@otu_table[,3]))
-
 summary(MA.gau)
 
-plot(MA.gau) # uff, not great either!
+calc.relimp(MA.gau)
+
+anova(MA.gau, test="LRT")
+
+#plot(MA.gau) # uff, not great either!
 
 SA_Eimeiria.ASVs <- ggplot(SA.e, aes(x=log(1+Genome_copies_gFaeces), y=log(1+Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
@@ -409,65 +408,170 @@ SA_Eimeiria.ASVs
 #### Plot by EH_ID, only positive animals
 keep <- SA.e5$EH_ID[SA.e5$Abundance>0]
 SA.e5 <- SA.e5[which(SA.e5$EH_ID%in%keep),]
-SA5 <- ggplot(SA.e5, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+SA5 <- ggplot(SA.e5, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV5 abundance, log(+1)", x="Days post infection")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- SA.e4$EH_ID[SA.e4$Abundance>0]
 SA.e4 <- SA.e4[which(SA.e4$EH_ID%in%keep),]
-SA4 <- ggplot(SA.e4, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+SA4 <- ggplot(SA.e4, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    labs(y="ASV4 abundance, log(+1)", x="Days post infection")+
+    scale_fill_manual(values=coul)+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- SA.e3$EH_ID[SA.e3$Abundance>0]
 SA.e3 <- SA.e3[which(SA.e3$EH_ID%in%keep),]
-SA3 <- ggplot(SA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+SA3 <- ggplot(SA.e3, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV3 abundance, log(+1)", x="Days post infection")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- SA.e2$EH_ID[SA.e2$Abundance>0]
 SA.e2 <- SA.e2[which(SA.e2$EH_ID%in%keep),]
-SA2 <- ggplot(SA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+SA2 <- ggplot(SA.e2, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+        labs(y="ASV2 abundance, log(+1)", x="Days post infection")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- SA.e1$EH_ID[SA.e1$Abundance>0]
 SA.e1 <- SA.e1[which(SA.e1$EH_ID%in%keep),]
-SA1 <- ggplot(SA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+SA1 <- ggplot(SA.e1, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV1 abundance, log(+1)", x="Days post infection")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 ### ASV from MA run plotted
 keep <- MA.e3$EH_ID[MA.e3$Abundance>0]
 MA.e3 <- MA.e3[which(MA.e3$EH_ID%in%keep),]
-MA3 <- ggplot(MA.e3, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+MA3 <- ggplot(MA.e3, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV3 abundance, log(+1)", x="Days post infection")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- MA.e2$EH_ID[MA.e2$Abundance>0]
 MA.e2 <- MA.e2[which(MA.e2$EH_ID%in%keep),]
-MA2 <- ggplot(MA.e2, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+MA2 <- ggplot(MA.e2, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV2 abundance, log(+1)", x="Days post infection")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
 
 keep <- MA.e1$EH_ID[MA.e1$Abundance>0]
 MA.e1 <- MA.e1[which(MA.e1$EH_ID%in%keep),]
-MA1 <- ggplot(MA.e1, aes(x=dpi, y=Abundance, fill=EH_ID))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, alpha=0.7)+
+MA1 <- ggplot(MA.e1, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    scale_fill_manual(values=coul)
+    scale_fill_manual(values=coul)+
+    labs(y="ASV1 abundance, log(+1)", x="Days post infection")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
 
 
-plot_grid(SA1,SA2,SA3,SA4,SA5, nrow=3) -> SA.asv
+qpcr <- ggplot(MA.e1, aes(x=dpi, y=log(1+Genome_copies_gFaeces), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
+    scale_fill_manual(values=coul)+
+    labs(y="Genome copies log(1+)", x="Days post infection")+
+        theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
+ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
+ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
+
+cor.test(log(1+ma.sa$Abundance.x), log(1+ma.sa$Abundance.y), method="pearson")
+
+ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
+    geom_point(size=4, shape=21, alpha=0.5)+
+    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
+    ylab("SA - ASV abundance (log1+)")+
+    xlab("MA - ASV abundance (log1+)")+
+    annotate(geom="text", x=5, y=18, label="Pearson rho=0.72, p<0.001")+
+    theme_bw()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "top",
+          axis.line = element_line(colour = "black"))
+ASV.c
+
+
+plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
 
 plot_grid(MA1,MA2,MA3, nrow=2) -> MA.asv
+
+plot_grid(SA1,MA1,SA2,MA2,SA3,MA3,qpcr, ASV.c,  nrow=4, labels="auto") -> SAMA.asv
+
+SAMA.asv
+
+
+ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.pdf", SAMA.asv, width = 10, height = 15, dpi = 300)
+
+ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.png", SAMA.asv, width = 10, height = 15, dpi = 300)
+
 
 ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 15, height = 10, dpi = 300)
 ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.png", SA.asv, width = 15, height = 10, dpi = 300)
@@ -575,28 +679,6 @@ dev.off()
 
 ################################
 
-names(SA.e)
-
-ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
-
-ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
-
-
-ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
-
-head(ma.sa)
-
-ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
-    geom_point(size=4, shape=21, alpha=0.5)+
-    scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
-    ylab("SA - ASV abundance (log1+)")+
-    xlab("MA - ASV abundance (log1+)")+
-    theme_bw()+
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-           legend.position = "none",
-          axis.line = element_line(colour = "black"))
 
 
 ggplot(SA.e, aes(x=log(1+Abundance), y=ASV))+
@@ -671,3 +753,6 @@ ASV.cor <- plot_grid(ASV.c,bottom_row, labels=c("a", ""), label_size=12, ncol=1)
 ASV.cor
 
 ggplot2::ggsave(file="fig/ASV_CORRELATION.pdf", ASV.cor, width = 10, height = 10, dpi = 600)
+
+
+

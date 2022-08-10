@@ -531,7 +531,7 @@ blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)
           axis.ticks.x=element_blank())
 
 
-silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Genus, Abundance)))+
+silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorderGenus, Abundance)))+
     geom_bar(stat="identity", position="stack")+
     labs(y="ASV reads (per g of faeces)")+
     scale_color_brewer(palette="Dark2")+
