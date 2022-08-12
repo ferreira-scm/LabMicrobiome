@@ -185,7 +185,9 @@ writeFasta(alignment, "tmp/Eimeria_reads_alignment.fa")
 # read our tree constructed with iqtree2
 #~/iqtree-2.2.0-Linux/bin/iqtree2 -s tmp/Eimeria_alignment.fa -m TN+F+R2 -B 5000 -redo
 
-my_tree <- read.iqtree("tmp/Eimeria_alignment.fa.iqtree")
+#my_tree <- read.iqtree('tmp/Eimeria_alignment.fa.iqtree') error
+
+
 
 Peim <- phyDat(as(Allal, "matrix"), type="DNA")
 dm <- dist.ml(Peim)

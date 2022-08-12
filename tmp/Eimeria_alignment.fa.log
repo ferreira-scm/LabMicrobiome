@@ -1,0 +1,523 @@
+IQ-TREE multicore version 2.2.0 COVID-edition for Linux 64-bit built Jun  1 2022
+Developed by Bui Quang Minh, James Barbetti, Nguyen Lam Tung,
+Olga Chernomor, Heiko Schmidt, Dominik Schrempf, Michael Woodhams, Ly Trong Nhan.
+
+Host:    harriet (AVX, 503 GB RAM)
+Command: /home/susana/iqtree-2.2.0-Linux/bin/iqtree2 -s tmp/Eimeria_alignment.fa -m TN+F+R2 -B 5000 -redo
+Seed:    494127 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Fri Aug 12 09:29:55 2022
+Kernel:  AVX - 1 threads (96 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 96 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file tmp/Eimeria_alignment.fa ... Fasta format detected
+Reading fasta file: done in 0.0107839 secs using 99.96% CPU
+Alignment most likely contains DNA/RNA sequences
+Constructing alignment: done in 0.00773473 secs using 67.42% CPU
+WARNING: 3 sites contain only gaps or ambiguous characters.
+Alignment has 205 sequences with 1877 columns, 789 distinct patterns
+100 parsimony-informative, 200 singleton sites, 1577 constant sites
+                                                 Gap/Ambiguity  Composition  p-value
+Analyzing sequences: done in 0.000725503 secs using 85.46% CPU
+   1  JQ993669_Isospora_sp._ex_Talpa_europaea           34.58%    passed     95.88%
+   2  JQ993670_Isospora_sp._ex_Talpa_europaea           51.94%    passed     64.06%
+   3  JQ993671_Isospora_sp._ex_Talpa_europaea           22.96%    passed     99.79%
+   4  JQ993665_Eimeria_nafuko                           26.74%    passed     99.11%
+   5  JQ993659_Eimeria_alorani                          26.80%    passed     69.59%
+   6  KU174470_Eimeria_apionodes                        25.84%    passed     99.12%
+   7  KU174461_Eimeria_apionodes                        25.95%    passed     98.91%
+   8  KU174464_Eimeria_apionodes                        55.67%    passed     93.55%
+   9  KU174480_Eimeria_apionodes                        49.71%    passed     76.96%
+  10  KU174483_Eimeria_apionodes                        50.40%    passed     75.74%
+  11  KU174462_Eimeria_apionodes                        25.73%    passed     98.76%
+  12  KU174463_Eimeria_apionodes                        57.11%    passed     71.50%
+  13  KU174468_Eimeria_apionodes                        27.33%    passed     98.15%
+  14  KU174479_Eimeria_apionodes                        46.72%    passed     87.75%
+  15  KU174449_Eimeria_apionodes                        26.43%    passed     98.64%
+  16  KU174450_Eimeria_apionodes                        25.31%    passed     99.46%
+  17  KU174465_Eimeria_apionodes                        54.34%    passed     98.23%
+  18  KU174467_Eimeria_apionodes                        25.84%    passed     98.37%
+  19  KU174474_Eimeria_apionodes                        26.00%    passed     98.85%
+  20  KU174451_Eimeria_apionodes                        25.79%    passed     98.37%
+  21  KU174459_Eimeria_apionodes                        26.27%    passed     96.57%
+  22  KU174485_Eimeria_apionodes                        38.84%    passed     98.39%
+  23  KU174487_Eimeria_apionodes                        59.67%    passed     78.62%
+  24  KU174472_Eimeria_apionodes                        25.79%    passed     99.16%
+  25  JQ993666_Eimeria_burdai                           24.56%    passed     99.87%
+  26  JQ993649_Eimeria_caviae                           24.13%    passed     99.92%
+  27  JQ993650_Eimeria_chinchillae                      19.23%    passed     98.23%
+  28  AF080614_Eimeria_falciformis                       4.74%    passed     92.58%
+  29  MH751998_Eimeria_falciformis                      41.29%    passed     97.27%
+  30  KT360995_Eimeria_ferrisi                          29.20%    passed     99.05%
+  31  JF304148_Eimeria_myoxi                            22.80%    passed     99.19%
+  32  U40263_Eimeria_nieschulzi                          4.32%    passed     89.97%
+  33  JQ993651_Eimeria_nkaka                            26.80%    passed     91.41%
+  34  AF311643_Eimeria_separata                         17.95%    passed     77.84%
+  35  AF311644_Eimeria_sevilletensis                    17.16%    passed     59.93%
+  36  JQ993654_Eimeria_sp._ex_Acomys_sp._JK-2013        19.29%    passed     97.88%
+  37  JQ993655_Eimeria_sp._ex_Apodemus_agrarius         24.51%    passed     94.08%
+  38  JQ993656_Eimeria_sp._ex_Apodemus_agrarius         24.61%    passed     86.68%
+  39  JQ993657_Eimeria_sp._ex_Apodemus_agrarius         24.56%    passed     99.56%
+  40  JQ993658_Eimeria_sp._ex_Apodemus_agrarius         26.27%    passed     97.76%
+  41  JQ993660_Eimeria_sp._ex_Apodemus_agrarius         24.61%    passed     98.93%
+  42  KU174475_Eimeria_apionodes                        25.84%    passed     81.96%
+  43  JQ993661_Eimeria_sp._ex_Apodemus_sylvaticus       25.63%    passed     82.36%
+  44  JQ993662_Eimeria_sp._ex_Apodemus_sylvaticus       25.52%    passed     97.34%
+  45  JQ993663_Eimeria_sp._ex_Cricetus_cricetus         24.51%    passed     98.35%
+  46  JQ993664_Eimeria_sp._ex_Gerbillus_dasyurus        19.29%    passed     99.97%
+  47  JQ993652_Eimeria_sp._2_JK-2013                    24.08%    passed     92.76%
+  48  JQ993667_Eimeria_sp._ex_Mastomys_natalensis       19.18%    passed     98.03%
+  49  KU174454_Eimeria_sp._ex_Microtus_agrestis         26.64%    passed     98.80%
+  50  KU174469_Eimeria_sp._ex_Microtus_agrestis         28.88%    passed     99.62%
+  51  KU174481_Eimeria_sp._ex_Microtus_agrestis         48.00%    passed     79.35%
+  52  KU174456_Eimeria_sp._ex_Microtus_arvalis          25.84%    passed     98.80%
+  53  KU174484_Eimeria_sp._ex_Microtus_arvalis          49.33%    passed     80.37%
+  54  KU174478_Eimeria_sp._ex_Microtus_arvalis          58.23%    passed     76.76%
+  55  KU174473_Eimeria_sp._ex_Microtus_arvalis          25.95%    passed     98.91%
+  56  KU174471_Eimeria_sp._ex_Microtus_levis            25.73%    passed     99.03%
+  57  KU174455_Eimeria_sp._ex_Microtus_subterraneus     25.47%    passed     99.91%
+  58  KU174457_Eimeria_sp._ex_Clethrionomys_glareolus   27.97%    passed     98.87%
+  59  KU174476_Eimeria_sp._ex_Clethrionomys_glareolus   36.81%    passed     97.39%
+  60  KU174466_Eimeria_sp._ex_Clethrionomys_glareolus   28.24%    passed     99.21%
+  61  KU174486_Eimeria_sp._ex_Clethrionomys_glareolus   56.15%    passed     95.85%
+  62  KU174453_Eimeria_sp._ex_Clethrionomys_glareolus   28.88%    passed     99.04%
+  63  KU174458_Eimeria_sp._ex_Clethrionomys_glareolus   28.77%    passed     98.67%
+  64  KU174460_Eimeria_sp._ex_Clethrionomys_glareolus   25.84%    passed     98.59%
+  65  KU174452_Eimeria_sp._ex_Clethrionomys_glareolus   26.16%    passed     98.92%
+  66  KU174482_Eimeria_sp._ex_Clethrionomys_glareolus   57.27%    passed     87.02%
+  67  AF246717_Eimeria_telekii                          16.89%    passed     92.11%
+  68  KT184355_Eimeria_vermiformis                      39.26%    passed     87.19%
+  69  JQ993653_Eimeria_vilasi                           23.34%    passed     96.44%
+  70  AF307880_Eimeria_albigulae                        17.42%    passed     93.73%
+  71  AF339489_Eimeria_chaetodipi                       16.46%    passed     92.12%
+  72  AF307878_Eimeria_arizonensis                      16.73%    passed     94.03%
+  73  AF307876_Eimeria_antrozoi                         16.94%    passed     98.03%
+  74  AF324214_Eimeria_chobotari                        17.10%    passed     93.20%
+  75  AF339490_Eimeria_dipodomysis                      18.38%    passed     69.62%
+  76  AF339491_Eimeria_leucopi                          18.59%    passed     92.79%
+  77  AF307879_Eimeria_onychomysis                      18.59%    passed     91.49%
+  78  AF339492_Eimeria_peromysci                        16.25%    passed     86.81%
+  79  AF307877_Eimeria_rioarribaensis                   17.47%    passed     97.48%
+  80  AF311642_Eimeria_reedi                            17.74%    passed     95.26%
+  81  KU192965_Eimeria_alorani                          40.38%    passed     95.03%
+  82  KU192958_Eimeria_alorani                          31.65%    passed     98.18%
+  83  KU192936_Eimeria_apionodes                        25.79%    passed     98.77%
+  84  KU192961_Eimeria_alorani                          26.43%    passed     97.35%
+  85  KU192956_Eimeria_apionodes                        59.14%    passed     70.60%
+  86  KU192931_Eimeria_apionodes                        25.63%    passed     98.27%
+  87  KU192938_Eimeria_apionodes                        72.94%    passed     77.74%
+  88  KU192916_Eimeria_apionodes                        28.29%    passed     96.07%
+  89  MH751925.1_Eimeria_ferrisi                        29.94%    passed     98.80%
+  90  MH751926.1_Eimeria_vermiformis                    43.21%    passed     91.78%
+  91  MH751927.1_Eimeria_ferrisi                        49.55%    passed     92.32%
+  92  MH751928.1_Eimeria_ferrisi                        43.21%    passed     95.62%
+  93  MH751929.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+  94  MH751930.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+  95  MH751931.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+  96  MH751932.1_Eimeria_ferrisi                        43.95%    passed     89.12%
+  97  MH751933.1_Eimeria_ferrisi                        43.21%    passed     95.79%
+  98  MH751934.1_Eimeria_falciformis                    44.11%    passed     87.31%
+  99  MH751935.1_Eimeria_ferrisi                        43.15%    passed     93.90%
+ 100  MH751936.1_Eimeria_ferrisi                        43.31%    passed     96.10%
+ 101  MH751937.1_Eimeria_falciformis                    43.31%    passed     91.74%
+ 102  MH751938.1_Eimeria_ferrisi                        28.72%    passed     99.46%
+ 103  MH751939.1_Eimeria_ferrisi                        43.58%    passed     96.36%
+ 104  MH751940.1_Eimeria_vermiformis                    39.00%    passed     96.98%
+ 105  MH751941.1_Eimeria_falciformis                    43.26%    passed     92.63%
+ 106  MH751942.1_Eimeria_falciformis                    28.40%    passed     94.50%
+ 107  MH751943.1_Eimeria_falciformis                    43.37%    passed     94.10%
+ 108  MH751944.1_Eimeria_ferrisi                        43.10%    passed     95.32%
+ 109  MH751945.1_Eimeria_ferrisi                        31.01%    passed     99.99%
+ 110  MH751946.1_Eimeria_vermiformis                    42.35%    passed     93.85%
+ 111  MH751947.1_Eimeria_ferrisi                        28.56%    passed     98.69%
+ 112  MH751948.1_Eimeria_vermiformis                    29.20%    passed     97.40%
+ 113  MH751949.1_Eimeria_ferrisi                        28.77%    passed     98.92%
+ 114  MH751950.1_Eimeria_ferrisi                        37.08%    passed     97.35%
+ 115  MH751951.1_Eimeria_vermiformis                    43.53%    passed     92.70%
+ 116  MH751952.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 117  MH751953.1_Eimeria_ferrisi                        43.15%    passed     95.70%
+ 118  MH751954.1_Eimeria_ferrisi                        40.54%    passed     97.23%
+ 119  MH751955.1_Eimeria_ferrisi                        29.89%    passed     97.93%
+ 120  MH751956.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 121  MH751957.1_Eimeria_vermiformis                    27.70%    passed     95.28%
+ 122  MH751958.1_Eimeria_ferrisi                        50.13%    passed     94.37%
+ 123  MH751959.1_Eimeria_ferrisi                        29.04%    passed     99.36%
+ 124  MH751960.1_Eimeria_falciformis                    28.13%    passed     99.75%
+ 125  MH751961.1_Eimeria_ferrisi                        43.10%    passed     93.89%
+ 126  MH751962.1_Eimeria_ferrisi                        30.58%    passed     99.55%
+ 127  MH751963.1_Eimeria_ferrisi                        27.06%    passed     98.91%
+ 128  MH751964.1_Eimeria_falciformis                    47.04%    passed     77.41%
+ 129  MH751965.1_Eimeria_ferrisi                        32.02%    passed     99.71%
+ 130  MH751966.1_Eimeria_ferrisi                        28.50%    passed     99.53%
+ 131  MH751967.1_Eimeria_ferrisi                        46.88%    passed     85.81%
+ 132  MH751968.1_Eimeria_ferrisi                        43.21%    passed     94.34%
+ 133  MH751969.1_Eimeria_ferrisi                        43.69%    passed     88.23%
+ 134  MH751970.1_Eimeria_ferrisi                        27.86%    passed     97.89%
+ 135  MH751971.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 136  MH751972.1_Eimeria_ferrisi                        37.51%    passed     98.16%
+ 137  MH751973.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 138  MH751974.1_Eimeria_vermiformis                    43.15%    passed     92.75%
+ 139  MH751975.1_Eimeria_falciformis                    48.48%    passed     91.86%
+ 140  MH751976.1_Eimeria_falciformis                    55.41%    passed     92.09%
+ 141  MH751977.1_Eimeria_vermiformis                    31.49%    passed     99.08%
+ 142  MH751978.1_Eimeria_falciformis                    27.70%    passed     97.66%
+ 143  MH751979.1_Eimeria_ferrisi                        26.05%    passed     98.39%
+ 144  MH751980.1_Eimeria_falciformis                    28.08%    passed     98.19%
+ 145  MH751981.1_Eimeria_falciformis                    30.53%    passed     96.26%
+ 146  MH751982.1_Eimeria_ferrisi                        28.77%    passed     98.92%
+ 147  MH751983.1_Eimeria_ferrisi                        46.78%    passed     74.87%
+ 148  MH751984.1_Eimeria_ferrisi                        28.29%    passed     98.14%
+ 149  MH751985.1_Eimeria_ferrisi                        27.81%    passed     98.80%
+ 150  MH751986.1_Eimeria_ferrisi                        29.14%    passed     98.93%
+ 151  MH751987.1_Eimeria_ferrisi                        29.99%    passed     99.96%
+ 152  MH751988.1_Eimeria_ferrisi                        30.47%    passed     99.03%
+ 153  MH751989.1_Eimeria_ferrisi                        27.97%    passed     97.21%
+ 154  MH751990.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 155  MH751991.1_Eimeria_ferrisi                        29.04%    passed     99.12%
+ 156  MH751992.1_Eimeria_ferrisi                        43.10%    passed     95.32%
+ 157  MH751993.1_Eimeria_ferrisi                        29.20%    passed     98.60%
+ 158  MH751994.1_Eimeria_ferrisi                        36.01%    passed     99.96%
+ 159  MH751995.1_Eimeria_ferrisi                        29.20%    passed     98.60%
+ 160  MH751996.1_Eimeria_ferrisi                        28.77%    passed     99.21%
+ 161  MH751997.1_Eimeria_ferrisi                        36.49%    passed     99.23%
+ 162  MH751998.1_Eimeria_falciformis                    41.29%    passed     97.27%
+ 163  MH751999.1_Eimeria_ferrisi                        47.36%    passed     78.75%
+ 164  MH752000.1_Eimeria_ferrisi                        26.16%    passed     97.44%
+ 165  MH752001.1_Eimeria_ferrisi                        43.15%    passed     94.30%
+ 166  MH752002.1_Eimeria_ferrisi                        59.62%    passed     89.08%
+ 167  MH752003.1_Eimeria_vermiformis                    28.88%    passed     99.50%
+ 168  MH752004.1_Eimeria_ferrisi                        26.53%    passed     98.81%
+ 169  MH752005.1_Eimeria_ferrisi                        25.84%    passed     98.17%
+ 170  MH752006.1_Eimeria_ferrisi                        26.11%    passed     98.37%
+ 171  MH752007.1_Eimeria_ferrisi                        46.88%    passed     87.48%
+ 172  MH752008.1_Eimeria_ferrisi                        26.96%    passed     98.65%
+ 173  MH752009.1_Eimeria_ferrisi                        25.73%    passed     98.20%
+ 174  MH752010.1_Eimeria_ferrisi                        39.64%    passed     96.34%
+ 175  MH752011.1_Eimeria_falciformis                    25.63%    passed     99.24%
+ 176  MH752012.1_Eimeria_falciformis                    25.52%    passed     99.62%
+ 177  MH752013.1_Eimeria_ferrisi                        25.15%    passed     99.04%
+ 178  MH752014.1_Eimeria_ferrisi                        25.15%    passed     99.04%
+ 179  MH752015.1_Eimeria_ferrisi                        25.41%    passed     98.32%
+ 180  MH752016.1_Eimeria_falciformis                    31.49%    passed     98.94%
+ 181  MH752017.1_Eimeria_falciformis                    28.45%    passed     99.50%
+ 182  MH752018.1_Eimeria_falciformis                    28.56%    passed     99.37%
+ 183  MH752019.1_Eimeria_falciformis                    28.08%    passed     99.37%
+ 184  MH752020.1_Eimeria_ferrisi                        71.23%    passed     98.66%
+ 185  MH752021.1_Eimeria_ferrisi                        55.25%    passed     59.08%
+ 186  MH752022.1_Eimeria_ferrisi                        28.93%    passed     91.54%
+ 187  MH752023.1_Eimeria_ferrisi                        60.95%    passed     49.91%
+ 188  MH752024.1_Eimeria_ferrisi                        35.32%    passed     98.77%
+ 189  MH752025.1_Eimeria_ferrisi                        27.06%    passed     91.12%
+ 190  MH752026.1_Eimeria_ferrisi                        52.64%    passed     68.20%
+ 191  MH752027.1_Eimeria_ferrisi                        28.02%    passed     91.42%
+ 192  MH752028.1_Eimeria_ferrisi                        60.63%    passed     59.65%
+ 193  MH752029.1_Eimeria_ferrisi                        43.31%    passed     93.47%
+ 194  MH752030.1_Eimeria_vermiformis                    32.39%    passed     98.99%
+ 195  MH752031.1_Eimeria_ferrisi                        50.35%    passed     67.41%
+ 196  MH752032.1_Eimeria_ferrisi                        42.62%    passed     98.00%
+ 197  MH752033.1_Eimeria_ferrisi                        33.03%    passed     98.64%
+ 198  MH752034.1_Eimeria_ferrisi                        31.65%    passed     99.88%
+ 199  MH752035.1_Eimeria_ferrisi                        37.29%    passed     99.47%
+ 200  MH752036.1_Eimeria_ferrisi                        45.07%    passed     97.34%
+ 201  ASV1                                              85.94%    passed     91.71%
+ 202  ASV2                                              85.94%    passed     95.63%
+ 203  ASV3                                              85.94%    passed     97.39%
+ 204  ASV4                                              85.94%    passed     96.09%
+ 205  ASV5                                              86.79%    passed     91.55%
+WARNING: 25 sequences contain more than 50% gaps/ambiguity
+****  TOTAL                                             35.11%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+NOTE: KU174473_Eimeria_sp._ex_Microtus_arvalis is identical to KU174461_Eimeria_apionodes but kept for subsequent analysis
+NOTE: MH751998.1_Eimeria_falciformis is identical to MH751998_Eimeria_falciformis but kept for subsequent analysis
+NOTE: MH751930.1_Eimeria_ferrisi is identical to MH751929.1_Eimeria_ferrisi but kept for subsequent analysis
+NOTE: MH751992.1_Eimeria_ferrisi is identical to MH751944.1_Eimeria_ferrisi but kept for subsequent analysis
+NOTE: MH751982.1_Eimeria_ferrisi is identical to MH751949.1_Eimeria_ferrisi but kept for subsequent analysis
+NOTE: MH751995.1_Eimeria_ferrisi is identical to MH751993.1_Eimeria_ferrisi but kept for subsequent analysis
+NOTE: MH752014.1_Eimeria_ferrisi is identical to MH752013.1_Eimeria_ferrisi but kept for subsequent analysis
+Checking for duplicate sequences: done in 0.00122994 secs
+Identifying sites to remove: done in 0.00527538 secs using 88.83% CPU
+NOTE: 7 identical sequences (see below) will be ignored for subsequent analysis
+NOTE: MH751931.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH751952.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH751956.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH751971.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH751973.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH751990.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+NOTE: MH752001.1_Eimeria_ferrisi (identical to MH751929.1_Eimeria_ferrisi) is ignored but added at the end
+Alignment was printed to tmp/Eimeria_alignment.fa.uniqueseq.phy
+
+For your convenience alignment with unique sequences printed to tmp/Eimeria_alignment.fa.uniqueseq.phy
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.014 seconds
+Generating 5000 samples for ultrafast bootstrap (seed: 494127)...
+
+NOTE: 25 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -5692.913
+2. Current log-likelihood: -5601.884
+3. Current log-likelihood: -5597.617
+4. Current log-likelihood: -5593.206
+5. Current log-likelihood: -5588.707
+6. Current log-likelihood: -5584.243
+7. Current log-likelihood: -5579.989
+8. Current log-likelihood: -5576.306
+9. Current log-likelihood: -5572.971
+10. Current log-likelihood: -5570.032
+11. Current log-likelihood: -5567.571
+12. Current log-likelihood: -5565.671
+13. Current log-likelihood: -5564.292
+14. Current log-likelihood: -5563.332
+15. Current log-likelihood: -5562.681
+16. Current log-likelihood: -5562.244
+17. Current log-likelihood: -5561.947
+18. Current log-likelihood: -5561.727
+19. Current log-likelihood: -5561.537
+20. Current log-likelihood: -5561.361
+21. Current log-likelihood: -5561.201
+22. Current log-likelihood: -5561.054
+23. Current log-likelihood: -5560.921
+24. Current log-likelihood: -5560.802
+25. Current log-likelihood: -5560.697
+Optimal log-likelihood: -5560.592
+Rate parameters:  A-C: 1.00000  A-G: 1.23102  A-T: 1.00000  C-G: 1.00000  C-T: 3.39324  G-T: 1.00000
+Base frequencies:  A: 0.251  C: 0.197  G: 0.269  T: 0.282
+Site proportion and rates:  (0.847,0.320) (0.153,4.773)
+Parameters optimization took 25 rounds (3.834 sec)
+Wrote distance file to... 
+Computing ML distances based on estimated model parameters...
+Calculating distance matrix: done in 0.221282 secs using 99.98% CPU
+Computing ML distances took 0.222212 sec (of wall-clock time) 0.222171 sec (of CPU time)
+Setting up auxiliary I and S matrices: done in 0.00275556 secs using 99.94% CPU
+Constructing RapidNJ tree: done in 0.00412134 secs using 117.1% CPU
+Computing RapidNJ tree took 0.006988 sec (of wall-clock time) 0.007693 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -5715.787
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 2.109 second
+Computing log-likelihood of 98 initial trees ... 3.451 seconds
+Current best score: -5532.082
+
+Do NNI search on 20 best initial trees
+Optimizing NNI: done in 7.01491 secs using 99.65% CPU
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 1: -5523.404
+Optimizing NNI: done in 7.5545 secs using 99.78% CPU
+Optimizing NNI: done in 8.34207 secs using 99.41% CPU
+Optimizing NNI: done in 6.96341 secs using 99.42% CPU
+Optimizing NNI: done in 10.1638 secs using 99.51% CPU
+Optimizing NNI: done in 6.99325 secs using 99.42% CPU
+Optimizing NNI: done in 5.86119 secs using 99.51% CPU
+Optimizing NNI: done in 8.83809 secs using 99.58% CPU
+Optimizing NNI: done in 6.30815 secs using 99.36% CPU
+Optimizing NNI: done in 9.83675 secs using 99.58% CPU
+Iteration 10 / LogL: -5530.502 / Time: 0h:1m:29s
+Optimizing NNI: done in 7.64406 secs using 99.51% CPU
+Optimizing NNI: done in 6.12066 secs using 99.66% CPU
+Optimizing NNI: done in 6.68735 secs using 99.51% CPU
+Optimizing NNI: done in 8.25487 secs using 99.55% CPU
+Optimizing NNI: done in 6.11538 secs using 99.72% CPU
+Optimizing NNI: done in 4.14565 secs using 99.22% CPU
+Optimizing NNI: done in 8.67442 secs using 99.57% CPU
+Optimizing NNI: done in 9.65032 secs using 99.69% CPU
+Optimizing NNI: done in 7.96187 secs using 99.68% CPU
+Optimizing NNI: done in 8.02536 secs using 99.64% CPU
+Iteration 20 / LogL: -5530.211 / Time: 0h:2m:42s
+Finish initializing candidate tree set (20)
+Current best tree score: -5523.404 / CPU time: 158.163
+Number of iterations: 20
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Optimizing NNI: done in 2.55524 secs using 99.35% CPU
+Optimizing NNI: done in 1.13914 secs using 98.59% CPU
+Optimizing NNI: done in 2.65276 secs using 99.38% CPU
+Estimate model parameters (epsilon = 0.100)
+BETTER TREE FOUND at iteration 23: -5522.409
+Optimizing NNI: done in 2.86437 secs using 99.43% CPU
+BETTER TREE FOUND at iteration 24: -5522.404
+Optimizing NNI: done in 6.05035 secs using 99.66% CPU
+Optimizing NNI: done in 2.83111 secs using 99.42% CPU
+Optimizing NNI: done in 2.4622 secs using 98.69% CPU
+Optimizing NNI: done in 3.67839 secs using 99.66% CPU
+Optimizing NNI: done in 2.9207 secs using 98.62% CPU
+Optimizing NNI: done in 2.58136 secs using 99.68% CPU
+Iteration 30 / LogL: -5523.539 / Time: 0h:3m:13s (0h:10m:25s left)
+Optimizing NNI: done in 2.42975 secs using 99% CPU
+Optimizing NNI: done in 2.05844 secs using 99.6% CPU
+BETTER TREE FOUND at iteration 32: -5522.397
+Optimizing NNI: done in 1.91466 secs using 98.94% CPU
+Optimizing NNI: done in 2.58857 secs using 99.22% CPU
+Optimizing NNI: done in 2.04518 secs using 99.99% CPU
+Optimizing NNI: done in 3.45081 secs using 99.41% CPU
+BETTER TREE FOUND at iteration 36: -5522.395
+Optimizing NNI: done in 1.47597 secs using 98.64% CPU
+Optimizing NNI: done in 2.89488 secs using 98.47% CPU
+Optimizing NNI: done in 2.14986 secs using 99.44% CPU
+BETTER TREE FOUND at iteration 39: -5522.389
+Optimizing NNI: done in 1.31265 secs using 99.99% CPU
+Iteration 40 / LogL: -5547.703 / Time: 0h:3m:35s (0h:9m:7s left)
+Optimizing NNI: done in 2.89916 secs using 99.57% CPU
+Optimizing NNI: done in 2.5141 secs using 99.67% CPU
+Optimizing NNI: done in 3.36435 secs using 99.4% CPU
+Optimizing NNI: done in 1.91957 secs using 99.58% CPU
+Optimizing NNI: done in 2.57518 secs using 99.53% CPU
+Optimizing NNI: done in 2.8132 secs using 99.57% CPU
+Optimizing NNI: done in 3.57373 secs using 99.76% CPU
+Optimizing NNI: done in 2.31316 secs using 99.82% CPU
+Optimizing NNI: done in 2.28698 secs using 99.81% CPU
+Optimizing NNI: done in 3.00691 secs using 99.85% CPU
+Iteration 50 / LogL: -5536.490 / Time: 0h:4m:3s (0h:7m:22s left)
+Log-likelihood cutoff on original alignment: -5562.379
+Optimizing NNI: done in 2.59822 secs using 98.44% CPU
+Optimizing NNI: done in 2.94603 secs using 98.89% CPU
+Optimizing NNI: done in 2.77818 secs using 99.4% CPU
+Optimizing NNI: done in 3.04179 secs using 99.59% CPU
+Optimizing NNI: done in 2.60501 secs using 99.67% CPU
+Optimizing NNI: done in 1.83304 secs using 99.11% CPU
+Optimizing NNI: done in 3.00463 secs using 99.32% CPU
+Optimizing NNI: done in 2.35395 secs using 99.64% CPU
+Optimizing NNI: done in 3.38649 secs using 99.5% CPU
+Optimizing NNI: done in 2.11892 secs using 99.98% CPU
+Iteration 60 / LogL: -5522.404 / Time: 0h:4m:36s (0h:6m:9s left)
+Optimizing NNI: done in 2.95937 secs using 99.44% CPU
+Optimizing NNI: done in 2.08429 secs using 99.78% CPU
+Optimizing NNI: done in 2.78343 secs using 98.97% CPU
+Optimizing NNI: done in 2.63036 secs using 99.37% CPU
+Optimizing NNI: done in 2.79913 secs using 99.84% CPU
+Optimizing NNI: done in 2.89216 secs using 99.15% CPU
+Optimizing NNI: done in 2.60018 secs using 99.06% CPU
+Optimizing NNI: done in 1.20478 secs using 98.99% CPU
+Optimizing NNI: done in 3.5553 secs using 99.64% CPU
+Optimizing NNI: done in 3.66349 secs using 99.54% CPU
+Iteration 70 / LogL: -5522.403 / Time: 0h:5m:4s (0h:5m:4s left)
+Optimizing NNI: done in 2.16772 secs using 99.24% CPU
+Optimizing NNI: done in 1.84601 secs using 98.25% CPU
+Optimizing NNI: done in 2.33759 secs using 98.95% CPU
+Optimizing NNI: done in 2.0439 secs using 99.59% CPU
+Optimizing NNI: done in 1.56106 secs using 98.95% CPU
+Optimizing NNI: done in 2.24132 secs using 99.27% CPU
+Optimizing NNI: done in 2.00366 secs using 99.79% CPU
+Optimizing NNI: done in 2.62442 secs using 99.37% CPU
+Optimizing NNI: done in 3.24495 secs using 99.74% CPU
+Optimizing NNI: done in 3.041 secs using 99.33% CPU
+Iteration 80 / LogL: -5524.202 / Time: 0h:5m:28s (0h:4m:5s left)
+Optimizing NNI: done in 2.36668 secs using 99.64% CPU
+Optimizing NNI: done in 1.9066 secs using 98.93% CPU
+Optimizing NNI: done in 2.58673 secs using 99.36% CPU
+Optimizing NNI: done in 2.78153 secs using 99.7% CPU
+Optimizing NNI: done in 1.9748 secs using 99.58% CPU
+Optimizing NNI: done in 2.72317 secs using 98.95% CPU
+Optimizing NNI: done in 1.7866 secs using 99.09% CPU
+Optimizing NNI: done in 1.8402 secs using 99.32% CPU
+Optimizing NNI: done in 2.84659 secs using 98.86% CPU
+Optimizing NNI: done in 3.15478 secs using 98.83% CPU
+Iteration 90 / LogL: -5522.418 / Time: 0h:5m:53s (0h:3m:14s left)
+Optimizing NNI: done in 3.36286 secs using 98.91% CPU
+Optimizing NNI: done in 2.36171 secs using 99.3% CPU
+Optimizing NNI: done in 2.75214 secs using 99.55% CPU
+Optimizing NNI: done in 2.80096 secs using 99.56% CPU
+Optimizing NNI: done in 3.05902 secs using 99.33% CPU
+Optimizing NNI: done in 3.11095 secs using 99.47% CPU
+Optimizing NNI: done in 2.05432 secs using 99.2% CPU
+Optimizing NNI: done in 2.0582 secs using 98.63% CPU
+Optimizing NNI: done in 2.31241 secs using 99.46% CPU
+Optimizing NNI: done in 3.13385 secs using 99.22% CPU
+Iteration 100 / LogL: -5525.911 / Time: 0h:6m:21s (0h:2m:30s left)
+Log-likelihood cutoff on original alignment: -5562.379
+NOTE: Bootstrap correlation coefficient of split occurrence frequencies: 0.993
+Optimizing NNI: done in 2.37316 secs using 99.31% CPU
+Optimizing NNI: done in 2.721 secs using 99.25% CPU
+Optimizing NNI: done in 2.36414 secs using 99.48% CPU
+Optimizing NNI: done in 2.82958 secs using 99.57% CPU
+Optimizing NNI: done in 2.18652 secs using 99.81% CPU
+Optimizing NNI: done in 2.61235 secs using 99.37% CPU
+Optimizing NNI: done in 2.25339 secs using 99.63% CPU
+Optimizing NNI: done in 2.44323 secs using 99.33% CPU
+Optimizing NNI: done in 2.71257 secs using 99.84% CPU
+Optimizing NNI: done in 1.61844 secs using 98.99% CPU
+Iteration 110 / LogL: -5534.624 / Time: 0h:6m:52s (0h:5m:40s left)
+Optimizing NNI: done in 2.18596 secs using 99.62% CPU
+Optimizing NNI: done in 1.41101 secs using 99.42% CPU
+Optimizing NNI: done in 2.66122 secs using 99.54% CPU
+Optimizing NNI: done in 2.86059 secs using 99% CPU
+Optimizing NNI: done in 2.60353 secs using 99.38% CPU
+Optimizing NNI: done in 3.70694 secs using 99.34% CPU
+Optimizing NNI: done in 1.96806 secs using 99.58% CPU
+Optimizing NNI: done in 2.74388 secs using 99.4% CPU
+Optimizing NNI: done in 2.13972 secs using 99.8% CPU
+Optimizing NNI: done in 2.85377 secs using 99.15% CPU
+Iteration 120 / LogL: -5524.549 / Time: 0h:7m:19s (0h:4m:55s left)
+Optimizing NNI: done in 1.81306 secs using 99.54% CPU
+Optimizing NNI: done in 3.43289 secs using 99.17% CPU
+Optimizing NNI: done in 1.78966 secs using 99.54% CPU
+Optimizing NNI: done in 2.49187 secs using 99.51% CPU
+Optimizing NNI: done in 2.2693 secs using 99.28% CPU
+Optimizing NNI: done in 2.82763 secs using 99.28% CPU
+Optimizing NNI: done in 2.57723 secs using 99.22% CPU
+Optimizing NNI: done in 3.29393 secs using 98.65% CPU
+Optimizing NNI: done in 1.90473 secs using 99.77% CPU
+Optimizing NNI: done in 2.69465 secs using 99.24% CPU
+Iteration 130 / LogL: -5541.312 / Time: 0h:7m:45s (0h:4m:12s left)
+Optimizing NNI: done in 2.11283 secs using 99.42% CPU
+Optimizing NNI: done in 2.30545 secs using 99.47% CPU
+Optimizing NNI: done in 2.66159 secs using 99.09% CPU
+Optimizing NNI: done in 2.83605 secs using 99.42% CPU
+Optimizing NNI: done in 2.81405 secs using 99.84% CPU
+Optimizing NNI: done in 1.45425 secs using 99.71% CPU
+Optimizing NNI: done in 1.18515 secs using 97.62% CPU
+Optimizing NNI: done in 2.26605 secs using 99.63% CPU
+Optimizing NNI: done in 2.77256 secs using 99.69% CPU
+Optimizing NNI: done in 2.56778 secs using 99.36% CPU
+Iteration 140 / LogL: -5526.333 / Time: 0h:8m:10s (0h:3m:31s left)
+TREE SEARCH COMPLETED AFTER 140 ITERATIONS / Time: 0h:8m:10s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -5522.389
+2. Current log-likelihood: -5522.327
+3. Current log-likelihood: -5522.273
+4. Current log-likelihood: -5522.230
+5. Current log-likelihood: -5522.195
+6. Current log-likelihood: -5522.168
+7. Current log-likelihood: -5522.147
+8. Current log-likelihood: -5522.130
+9. Current log-likelihood: -5522.117
+10. Current log-likelihood: -5522.106
+Optimal log-likelihood: -5522.097
+Rate parameters:  A-C: 1.00000  A-G: 1.29156  A-T: 1.00000  C-G: 1.00000  C-T: 3.29323  G-T: 1.00000
+Base frequencies:  A: 0.251  C: 0.197  G: 0.269  T: 0.282
+Site proportion and rates:  (0.897,0.425) (0.103,6.004)
+Parameters optimization took 10 rounds (1.395 sec)
+BEST SCORE FOUND : -5522.097
+Creating bootstrap support values...
+Split supports printed to NEXUS file tmp/Eimeria_alignment.fa.splits.nex
+Total tree length: 0.353
+
+Total number of iterations: 140
+CPU time used for tree search: 482.402 sec (0h:8m:2s)
+Wall-clock time used for tree search: 486.044 sec (0h:8m:6s)
+Total CPU time used: 492.828 sec (0h:8m:12s)
+Total wall-clock time used: 496.655 sec (0h:8m:16s)
+
+Computing bootstrap consensus tree...
+Reading input file tmp/Eimeria_alignment.fa.splits.nex...
+198 taxa and 12388 splits.
+Consensus tree written to tmp/Eimeria_alignment.fa.contree
+Reading input trees file tmp/Eimeria_alignment.fa.contree
+Log-likelihood of consensus tree: -5522.351
+
+Analysis results written to: 
+  IQ-TREE report:                tmp/Eimeria_alignment.fa.iqtree
+  Maximum-likelihood tree:       tmp/Eimeria_alignment.fa.treefile
+  Likelihood distances:          tmp/Eimeria_alignment.fa.mldist
+
+Ultrafast bootstrap approximation results written to:
+  Split support values:          tmp/Eimeria_alignment.fa.splits.nex
+  Consensus tree:                tmp/Eimeria_alignment.fa.contree
+  Screen log file:               tmp/Eimeria_alignment.fa.log
+
+Date and Time: Fri Aug 12 09:38:13 2022
