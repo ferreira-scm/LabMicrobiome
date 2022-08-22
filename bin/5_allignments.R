@@ -53,6 +53,11 @@ otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_
 Eim <- subset_taxa(T.all, family%in%"Eimeriidae")
 Eim2 <- subset_taxa(T.sin18, family%in%"Eimeriidae")
 Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
+Eim.w <- subset_taxa(T.allwang, family%in%"Eimeriidae")
+
+nfEim <- subset_taxa(all.PS, family%in%"Eimeriidae")
+nfEim2 <- subset_taxa(sin.PS18S, family%in%"Eimeriidae")
+nfEim.w <- subset_taxa(all.PSwang, family%in%"Eimeriidae")
 
 get_taxa_unique(Eim, "genus")
 
@@ -173,10 +178,12 @@ names(refEim) <- gsub("(\\s)", "_", names(refEim))
 names(refEim)
 
 allSeqs <- c(eim.DB,refEim, seqs2)
-alignment <- AlignSeqs(seqs2, anchor=NA, verbose=FALSE)
-Allal <- AlignSeqs(allSeqs, anchor=NA, verbose=FALSE)
+
+alignment <- AlignSeqs(seqs2, anchor=NA, verbose=FALSE, iterations=10, refinements=10, processors=90)
+Allal <- AlignSeqs(allSeqs, anchor=NA, verbose=FALSE, iterations=10, refinements=10, processors=90)
 Allal <- AdjustAlignment(Allal)
 
+writeFasta(allSeqs, "tmp/Eimeria_seqs.fa")
 writeFasta(Allal, "tmp/Eimeria_alignment.fa")
 writeFasta(alignment, "tmp/Eimeria_reads_alignment.fa")
 
@@ -185,7 +192,9 @@ writeFasta(alignment, "tmp/Eimeria_reads_alignment.fa")
 # read our tree constructed with iqtree2
 #~/iqtree-2.2.0-Linux/bin/iqtree2 -s tmp/Eimeria_alignment.fa -m TN+F+R2 -B 5000 -redo
 
-my_tree <- read.iqtree("tmp/Eimeria_alignment.fa.iqtree")
+my_tree <- read.iqtree('tmp/Eimeria_alignment.fa.iqtree') error
+
+
 
 Peim <- phyDat(as(Allal, "matrix"), type="DNA")
 dm <- dist.ml(Peim)
@@ -297,6 +306,17 @@ SA.e <- psmelt(Eim2)
 
 Eim2.g <- tax_glom(Eim2, taxrank="family")
 SA.e.g <- psmelt(Eim2.g)
+Eim.g <- tax_glom(Eim, taxrank="family")
+MA.e.g <- psmelt(Eim.g)
+Eim.g.w <- tax_glom(Eim.w, taxrank="family")
+MA.e.g.w <- psmelt(Eim.g.w)
+
+nfEim2.g <- tax_glom(nfEim2, taxrank="family")
+nfSA.e.g <- psmelt(nfEim2.g)
+nfEim.g <- tax_glom(nfEim, taxrank="family")
+nfMA.e.g <- psmelt(nfEim.g)
+nfEim.g.w <- tax_glom(nfEim.w, taxrank="family")
+nfMA.e.g.w <- psmelt(nfEim.g.w)
 
 SA.e$ASV <- "ASV"
 SA.e$ASV[which(SA.e$OTU==colnames(Eim2@otu_table)[5])] <- "ASV5"
@@ -718,3 +738,49 @@ ggplot2::ggsave(file="fig/ASV_CORRELATION.pdf", ASV.cor, width = 10, height = 10
 
 
 
+############# sensitivity and specificity
+#remove NA row
+SA.e.g <- SA.e.g[-which(is.na(SA.e.g$Genome_copies_gFaeces)),]
+nrow(SA.e.g)
+
+sensit <- function(SA.e.g){
+SA.eim <- matrix(as.numeric(c(summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces==0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces==0)[3])), ncol=2, byrow=TRUE)
+margin1 <- margin.table(SA.eim, margin=1)
+margin2 <- margin.table(SA.eim, margin=2)
+eimN <- margin1[2]
+eimP <- margin1[1]
+testP <- margin2[1]
+testN <- margin2[2]
+tN <- margin2[2]
+tP <- margin2[1]
+tP <- SA.eim[1,1]
+fP <- SA.eim[2,1]
+tN <- SA.eim[2,2]
+fN <- SA.eim[1,2]
+print("Sensitivity:")
+print(tP/eimP)
+print("Specificity")
+print(tN/eimN)
+print("positive predictive value")
+print(tP/testP)
+print("negative predictive value")
+print(tN/testN)
+}
+
+#sensitivity for the 3 datasets filtered and not filtered
+sensit(SA.e.g)
+
+sensit(nfSA.e.g)
+
+sensit(MA.e.g)
+sensit(nfMA.e.g)
+
+sensit(MA.e.g.w)
+sensit(nfMA.e.g.w)
+
+tP/testP
+
+testP

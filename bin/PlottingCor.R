@@ -54,8 +54,9 @@ ggplot(df, aes(x=logA, y=logGC))+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 }
 
+ps <- all.PS
 
-Plotting_cor <- function(ps, name, dir){
+#Plotting_cor <- function(ps, name, dir){
 #No filters
 library("ggpmisc")
 
@@ -85,7 +86,6 @@ sdt$logTotalSums <- log(1+sdt$TotalSums)
 print(cor.test(sdt$logGC, sdt$logEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logTotalSums, sdt$logEimeriaSums, method="pearson"))
-
 # Linear models
 Alm <- lm(logGC ~ logEimeriaSums , sdt)
 summary(Alm)
@@ -169,7 +169,6 @@ sdt$logTSS_Eim <- log(1+sdt$TSS_Eim)
 
 print(cor.test(sdt$logGC, sdt$logTSS_Eim, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logTSS_Eim, method="pearson"))
-
 # Linear models
 Clm <- lm(logGC ~ logTSS_Eim, sdt)
 
@@ -211,15 +210,15 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 #correlation tests
 sdt$logREL_Eim <- log(1+sdt$REL_Eim)
 
-print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logREL_Eim, method="pearson"))
+#print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
+print(cor.test(sdt$logGC, sdt$REL_Eim, method="pearson"))
 
 # Linear models
 Dlm <- lm(logGC ~ logREL_Eim, sdt)
 #summary(Dlm)
 
 # plotting REL correlation
-d <-ggplot(sdt, aes(x=logREL_Eim, y=logGC))+
+d <-ggplot(sdt, aes(x=REL_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
@@ -248,7 +247,6 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 
 #correlation tests
 print(cor.test(sdt$logGC, sdt$clr_Eim, method="pearson"))
-
 # Linear models
 Elm <- lm(logGC ~ clr_Eim, sdt)
 
@@ -280,7 +278,6 @@ sdt$logACS_Eim <- log(1+sdt$ACS_Eim)
 
 #correlation tests
 print(cor.test(sdt$logGC, sdt$logACS_Eim, method="pearson"))
-
 # Linear models
 Flm <- lm(logGC ~ logACS_Eim, sdt)
 #summary(Flm)
@@ -310,12 +307,43 @@ ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 12, heig
 
 ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, height = 5, dpi = 600)
 
+#names(sdt)
+cor.df <- sdt[,c(69, 68, 70,72, 73, 3, 2, 76)]
+
+cor.df$REL_Eim <- cor.df$REL_Eim*-1
+    
+print(cocor(~logGC + logFilEimeriaSums | logGC + logEimeriaSums, data = cor.df,
+            test = c("hittner2003", "zou2007")))
+
+print(cocor(~logGC + logEimeriaSums | logGC + logTSS_Eim, data = cor.df,
+            test = c("hittner2003", "zou2007")))
+
+print(cocor(~logGC + logEimeriaSums | logGC + REL_Eim, data = cor.df,
+            test = c("hittner2003", "zou2007")))
+
+print(cocor(~logGC + logEimeriaSums | logGC + clr_Eim, data = cor.df,
+            test = c("hittner2003", "zou2007")))
+
+print(cocor(~logGC + logACS_Eim | logGC + logEimeriaSums, data = cor.df,
+            test = c("hittner2003", "zou2007")))
     
 #png(filename=paste(dir, name, "COR.png", sep=""),
 #    width =14, height = 14, units = "in", res= 300)
 #fCor
 #dev.off()
 }
+
+
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+    cormat[upper.tri(cormat)] <- NA
+    return(cormat)
+}
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+      }
 
 
 NoFilPlotting_cor <- function(ps, name, dir){
