@@ -534,23 +534,28 @@ ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
 ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
 ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
 # remove zeros
-ma.sa <- ma.sa[ma.sa$Abundance.x>0,]
-ma.sa <- ma.sa[ma.sa$Abundance.y>0,]
 
-cor.test(log(1+ma.sa$Abundance.x), log(1+ma.sa$Abundance.y), method="pearson")
+t <- ma.sa[ma.sa$Abundance.x>0,]
+t <- t[t$Abundance.y>0,]
+
+t
+
+cor.test(log(1+t$Abundance.x), log(1+t$Abundance.y), method="pearson")
 
 ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
     geom_point(size=2, shape=21, alpha=0.5)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
     xlab("SA - ASV abundance (log1+)")+
     ylab("MA - ASV abundance (log1+)")+
-    annotate(geom="text", x=5, y=18, label="Pearson rho=0.92, p<0.001")+
+    annotate(geom="text", x=15, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
+          text=element_text(size=11),
           legend.position = "top",
           axis.line = element_line(colour = "black"))
+
+ASV.c
 
 plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
 plot_grid(MA1,MA2,MA3, nrow=2) -> MA.asv
