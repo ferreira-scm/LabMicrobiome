@@ -292,4 +292,189 @@ ggplot2::ggsave(file="fig/Silva_Blast_Eimeria.png", Silva_Blast_Eimeria, width =
 
 ggplot2::ggsave(file="fig/Silva_Blast_Eimeria.pdf", Silva_Blast_Eimeria, width = 8, height = 4, dpi = 600)
 
-    
+# this bit was moved from 4_* script it might break here on its own #################################################
+################################################
+#############################################
+################## comparing taxonomies
+Tslv <- psmelt(TPSslv)
+TSA <- psmelt(TPS_SA)
+
+library(forcats)
+
+TPSslv
+
+TPSslv@sam_data$glom <- "a"
+TPS_SA@sam_data$glom <- "a"
+
+Avgslv <- merge_samples(TPSslv, "glom")
+Avgbla <- merge_samples(TPS_SA, "glom")
+
+Tslv <- psmelt(Avgslv)
+TSA <- psmelt(Avgbla)
+
+
+silva_phy <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+silva_phy
+
+blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+
+silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorderGenus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+silva_gen
+
+blast_gen <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(genus, Abundance)))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_color_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+
+
+ggplot2::ggsave(file="fig/phy_silva_Abundace.pdf", silva_phy, width = 5, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_silva_Abundace.png", silva_phy, width = 5, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.pdf", blast_phy, width = 5, height = 5, dpi = 600)
+ggplot2::ggsave(file="fig/phy_blast_Abundace.png", blast_phy, width = 5, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/gen_silva_Abundace.pdf", silva_gen, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_silva_Abundace.png", silva_gen, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.pdf", blast_gen, width = 8, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/gen_blast_Abundace.png", blast_gen, width = 8, height = 10, dpi = 600)
+
+silva_gen
+
+Tpsa@sam_data$glom <- "a"
+TPSslv@sam_data$glom <- "a"
+
+Tpsa@sam_data$glom
+
+colnames(TPSslv@tax_table)
+
+psa <- merge_samples(Tpsa, "glom")
+PSslv <- merge_samples(TPSslv, "glom")
+
+Ebla <- subset_taxa(psa, superkingdom%in%"Eukaryota") 
+Bbla <- subset_taxa(psa, superkingdom%in%"Bacteria")
+
+Bslv <- subset_taxa(PSslv, Kingdom%in%"Bacteria")
+Eslv <- subset_taxa(PSslv, Kingdom%in%"Eukaryota")
+
+Ebla <-  psmelt(Ebla)
+Eslv <- psmelt(Eslv)
+
+Bbla <- psmelt(Bbla)
+Bslv <- psmelt(Bslv)
+
+library(RColorBrewer)
+
+Ebla_phy <- ggplot(Ebla, aes(dpi, Abundance, fill=phylum))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_fill_brewer(palette="Set3")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+Eslv_phy <- ggplot(Eslv, aes(dpi, Abundance,  fill=Order))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_fill_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+
+Bbla_phy <- ggplot(Bbla, aes(dpi, Abundance, fill=phylum))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+    scale_fill_brewer(palette="Set3")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+Bslv_phy <- ggplot(Bslv, aes(dpi, Abundance, fill=Phylum))+
+    geom_bar(stat="identity", position="stack")+
+    labs(y="ASV reads (per g of faeces)")+
+#    scale_fill_brewer(palette="Dark2")+
+    theme_minimal()+
+        theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+Ebla_phy
+
+plot_grid(Ebla_phy, Eslv_phy) -> Euk_phy
+
+plot_grid(Bbla_phy, Bslv_phy) -> Bac_phy
+
+Euk_phy
+
+Bac_phy
+
+ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.pdf", Euk_phy, width = 7, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.png", Euk_phy, width = 7, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.pdf", Bac_phy, width = 7, height = 5, dpi = 600)
+
+ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.png", Bac_phy, width = 7, height = 5, dpi = 600)

@@ -54,9 +54,8 @@ ggplot(df, aes(x=logA, y=logGC))+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 }
 
-ps <- all.PS
 
-#Plotting_cor <- function(ps, name, dir){
+Plotting_cor <- function(ps, name, dir){
 #No filters
 library("ggpmisc")
 
@@ -309,10 +308,10 @@ ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, heig
 
 #names(sdt)
 cor.df <- sdt[,c(69, 68, 70,72, 73, 3, 2, 76)]
-
+#quick fix on RLE, to force it into a positive correlation
 cor.df$REL_Eim <- cor.df$REL_Eim*-1
     
-print(cocor(~logGC + logFilEimeriaSums | logGC + logEimeriaSums, data = cor.df,
+print(cocor(~logGC + logEimeriaSums | logGC + logFilEimeriaSums, data = cor.df,
             test = c("hittner2003", "zou2007")))
 
 print(cocor(~logGC + logEimeriaSums | logGC + logTSS_Eim, data = cor.df,
@@ -324,7 +323,7 @@ print(cocor(~logGC + logEimeriaSums | logGC + REL_Eim, data = cor.df,
 print(cocor(~logGC + logEimeriaSums | logGC + clr_Eim, data = cor.df,
             test = c("hittner2003", "zou2007")))
 
-print(cocor(~logGC + logACS_Eim | logGC + logEimeriaSums, data = cor.df,
+print(cocor(~logGC + logEimeriaSums | logGC + logACS_Eim, data = cor.df,
             test = c("hittner2003", "zou2007")))
     
 #png(filename=paste(dir, name, "COR.png", sep=""),
@@ -334,7 +333,7 @@ print(cocor(~logGC + logACS_Eim | logGC + logEimeriaSums, data = cor.df,
 }
 
 
-# Get lower triangle of the correlation matrix
+                                        # Get lower triangle of the correlation matrix
 get_lower_tri<-function(cormat){
     cormat[upper.tri(cormat)] <- NA
     return(cormat)

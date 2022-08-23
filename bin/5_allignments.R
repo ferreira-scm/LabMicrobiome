@@ -533,6 +533,9 @@ qpcr <- ggplot(MA.e1, aes(x=dpi, y=log(1+Genome_copies_gFaeces), fill=EH_ID))+
 ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
 ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
 ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
+# remove zeros
+ma.sa <- ma.sa[ma.sa$Abundance.x>0,]
+ma.sa <- ma.sa[ma.sa$Abundance.y>0,]
 
 cor.test(log(1+ma.sa$Abundance.x), log(1+ma.sa$Abundance.y), method="pearson")
 
@@ -541,7 +544,7 @@ ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV)
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
     xlab("SA - ASV abundance (log1+)")+
     ylab("MA - ASV abundance (log1+)")+
-    annotate(geom="text", x=5, y=18, label="Pearson rho=0.72, p<0.001")+
+    annotate(geom="text", x=5, y=18, label="Pearson rho=0.92, p<0.001")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -559,6 +562,10 @@ ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.pdf", SA.asv, width = 15, height =
 ggplot2::ggsave(file="fig/SA/Eimeria_ASVs_dpi.png", SA.asv, width = 15, height = 10, dpi = 300)
 ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height = 8, dpi = 300)
 ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.png", MA.asv, width = 10, height = 8, dpi = 300)
+
+ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.pdf", ASV.c, width = 5, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.c, width = 5, height = 5, dpi = 300)
+
 
 #################### plotting individuals by ASV
 library(cowplot) # to plot a list of plots
