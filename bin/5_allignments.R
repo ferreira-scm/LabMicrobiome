@@ -538,8 +538,6 @@ ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
 t <- ma.sa[ma.sa$Abundance.x>0,]
 t <- t[t$Abundance.y>0,]
 
-t
-
 cor.test(log(1+t$Abundance.x), log(1+t$Abundance.y), method="pearson")
 
 ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV))+
