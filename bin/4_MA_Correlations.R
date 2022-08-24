@@ -24,6 +24,7 @@ library(Hmisc)
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 set.seed(500)
+
 source("bin/PlottingCor.R")
 
 ## All runs pooled
@@ -62,7 +63,7 @@ otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
 otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
 otu_table(T.sin) <- otu_table(T.sin)*sample_data(T.sin)$DNA_g_feces
 otu_table(T.sin.slv) <- otu_table(T.sin.slv)*sample_data(T.sin.slv)$DNA_g_feces
-
+############################################
 ##############################################
 #### exploring MA
 for (i in 1:48) {
@@ -80,12 +81,21 @@ for (i in 1:48) {
 
 ## filtering MA by amplicon
 f.all.l <- list()
-
 for (i in 1:48) {
     try(f.all.l[[i]] <- fil(all.PS.l[[i]]), silent=TRUE)
 }
 
-#f.all.l
+f.all.lp <- f.all.l[[1]]
+for (i in 2:47){
+    f.all.lp <- try(merge_phyloseq(f.all.lp,f.all.l[[i]]))
+    print(f.all.lp)}
+f.all.lp
+
+# sanity check
+#merge_phyloseq(f.all.l[[45]], f.all.l[[44]], f.all.l[[47]], f.all.l[[37]],f.all.l[[1]], f.all.l[[7]],
+#               f.all.l[[12]], f.all.l[[13]], f.all.l[[13]], f.all.l[[22]], f.all.l[[23]], f.all.l[[28]],
+#               f.all.l[[33]], f.all.l[[35]])
+
 
 #########################################################
 #how many primers amplify Apicomplexa and which families?
@@ -124,19 +134,29 @@ Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
 #PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
 #PS18slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
 
-# now plotting
+# now plotting and doing correlation analysis and comparisons
+## for "pooled" MA
 Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
 # Seqf, TSS, RLE, CLR, ACS
-p <- c(0.6113, 0.00001, 0.00001, 0.2989, 0.0225)
+p <- c(0.0208, 0.0134, 0.1037, 0.00001, 0.00001)
 p.adjust(p, method="BH")
 
+#only for wang
 Plotting_cor(ps=all.PSwang, "MA_wang", dir="fig/MA/")
-p <- c(0.0187, 0.00001, 0.00001, 0.8687, 0.0028)
+# seq-f,tss,rle,clr,acs
+p <- c(0.00001, 0.0138, 0.0880, 0.0030, 0.00001)
 p.adjust(p, method="BH")
 
+## for single amplicon
 Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
+# seq-f,tss,rle,clr,acs
+p <- c(0.0117, 0.1045, 0.00001, 0.00001, 0.0.0024)
+p.adjust(p, method="BH")
 
-p <- c(0.4525, 0.00001, 0.0142, 0.0005, 0.3511)
+# for MA but individually filtered
+Plotting_cor_MA.l(ps=all.PS, ps.f=f.all.lp, "MA_individually_filtered", dir="fig/MA/")
+
+p <- c(0.0208, 0.0149, 0.1008, 0.00001, 0.00001)
 p.adjust(p, method="BH")
 
 ##################################################################

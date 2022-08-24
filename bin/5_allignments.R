@@ -348,7 +348,16 @@ library(MASS)
 
 SA.eim.m <- glm.nb(Eim2@sam_data$Genome_copies_gFaeces~Eim2@otu_table[,1]+Eim2@otu_table[,2]+Eim2@otu_table[,3]+Eim2@otu_table[,4]+Eim2@otu_table[,5])
 
-gau.m <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
+gau.m <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5])*Eim2@sam_data$dpi)
+
+#### for multiamplicon
+
+##### work on this:
+
+#gau.m <- lm(log(Eim@sam_data$Genome_copies_gFaeces)~log(Eim@otu_table[,1])+log(Eim@otu_table[,2])+log(Eim@otu_table[,3])*Eim@sam_data$dpi)
+
+summary(gau.m)
+
 
 gau.m1 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
 gau.m2 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
@@ -358,6 +367,7 @@ gau.m5 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~log(1+Eim2@otu_table[,1]
 gau.m0 <- lm(log(1+Eim2@sam_data$Genome_copies_gFaeces)~1)
 
 anova(gau.m, test="LRT")
+
 summary(gau.m)
 #plot(gau.m) # not great
 #summary(SA.eim.m) # terrible
@@ -545,11 +555,11 @@ ASV.c <- ggplot(ma.sa, aes(x=log(1+Abundance.x), y=log(1+Abundance.y), fill=ASV)
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
     xlab("SA - ASV abundance (log1+)")+
     ylab("MA - ASV abundance (log1+)")+
-    annotate(geom="text", x=15, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
+    annotate(geom="text", x=5, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=11),
+          text=element_text(size=12),
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
@@ -567,7 +577,10 @@ ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.pdf", MA.asv, width = 10, height =
 ggplot2::ggsave(file="fig/MA/Eimeria_ASVs_dpi.png", MA.asv, width = 10, height = 8, dpi = 300)
 
 ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.pdf", ASV.c, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.c, width = 5, height = 5, dpi = 300)
+
+ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.c, width = 5,
+                height = 5, dpi = 300)
+
 
 
 #################### plotting individuals by ASV
