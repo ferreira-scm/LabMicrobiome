@@ -1,26 +1,30 @@
 ######
 
 fil <- function(ps){
-x = phyloseq::taxa_sums(ps)
-keepTaxa = (x / sum(x) > 0.00001)
-summary(keepTaxa)
-ps = phyloseq::prune_taxa(keepTaxa, ps)
+    x = phyloseq::taxa_sums(ps)
+    # abundance filtering at 0.001%
+    keepTaxa = (x / sum(x) > 0.00001)
+#    keepTaxa = (x / sum(x) > 0.0005)
+    summary(keepTaxa)
+    ps = phyloseq::prune_taxa(keepTaxa, ps)
 # plus prevalnce filter at 1%
-KeepTaxap <- microbiome::prevalence(ps)>0.01
-ps <- phyloseq::prune_taxa(KeepTaxap, ps)
+    KeepTaxap <- microbiome::prevalence(ps)>0.01
+    ps <- phyloseq::prune_taxa(KeepTaxap, ps)
 # subset samples based on total read count (500 reads)
 #ps <- phyloseq::subset_samples(ps, phyloseq::sample_sums(ps) > 500)
-ps <- phyloseq::prune_samples(sample_sums(ps)>100, ps)
-ps
+    ps <- phyloseq::prune_samples(sample_sums(ps)>100, ps)
+    ps
 }
 
 subPS <- function(ps) {
 ps <- transform_sample_counts(ps, function(x) x / sum(x))
-ps <- subset_taxa(ps, family%in%"Eimeriidae")
-ps <-aggregate_taxa(ps, level="family")
+ps <- subset_taxa(ps, genus%in%"Eimeria")
+ps <-aggregate_taxa(ps, level="genus")
 ps <- psmelt(ps)
-ps$logA <- log(1+ps$Abundance)
-ps$logGC <- log(1+ps$Genome_copies_gFaeces)
+ps <- ps[ps$Abundance>0,]
+ps <- ps[ps$Genome_copies_gFaeces>0,]
+ps$logA <- log(ps$Abundance)
+ps$logGC <- log(ps$Genome_copies_gFaeces)
 return(ps)
 }
 
@@ -42,8 +46,8 @@ ggplot(df, aes(x=logA, y=logGC))+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
+    ylab("Genome copies gFaeces (log)")+
+    xlab(paste(name, "Eimeria (log)", sep=" "))+
     ggtitle(name)+
     labs(tag=lb)+
                                         #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -62,7 +66,7 @@ library("ggpmisc")
 set.seed(500)
     
 sam <- data.frame(sample_data(ps))
-PSeimf <- subset_taxa(ps, family%in%"Eimeriidae")
+PSeimf <- subset_taxa(ps, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 df <- data.frame(sample_sums(otu_table(ps)))
@@ -101,8 +105,8 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(aes(y=logGC, x=logEimeriaSums),method = "lm", se=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
-    ylab("Genome copies gFaeces(log 1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces(log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
@@ -116,7 +120,7 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
 ppPS <- fil(ps)
 
 #now we make the data frame
-bPSeimf <- subset_taxa(ppPS, family%in%"Eimeriidae")
+bPSeimf <- subset_taxa(ppPS, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 bdf <- data.frame(sample_sums(otu_table(ppPS)))
@@ -149,8 +153,8 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces(log 1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces(log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Raw counts filtered")+
     labs(tag= "b)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
@@ -163,8 +167,8 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
 ################################################################
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
-cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
-cPSeimf <-aggregate_taxa(cPSeimf, level="family")
+cPSeimf <- subset_taxa(PSTSS, genus%in%"Eimeria")
+cPSeimf <-aggregate_taxa(cPSeimf, level="genus")
     
 #create total sums and Eimeria sums data frame
 df <-data.frame(sample_sums(otu_table(cPSeimf)))
@@ -195,8 +199,8 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces log")+
+    xlab("Eimeria (log)")+
     ggtitle("Total sum scaling")+
         labs(tag= "c)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -239,8 +243,8 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae")+
+    ylab("Genome copies gFaeces log")+
+    xlab("Eimeria")+
     ggtitle("Relative log expression")+
         labs(tag= "d)")+
     theme_bw()+
@@ -251,7 +255,7 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
 
 ########### centered log ratio
 PSclr = microbiome::transform(ppPS, transform="clr")
-ePSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
+ePSeimf <- subset_taxa(PSclr, genus%in%"Eimeria")
 
 df <-data.frame(sample_sums(otu_table(ePSeimf)))
 df$labels <- rownames(df)
@@ -278,8 +282,8 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log")+
-    xlab("Eimeriidae")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria")+
     ggtitle("Centered log-ratio")+
         labs(tag= "e)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -311,8 +315,8 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Absolute count scaling")+
         labs(tag= "f)")+
     theme_bw()+
@@ -387,7 +391,7 @@ NoFilPlotting_cor <- function(ps, name, dir){
 library("ggpmisc")
 
 sam <- data.frame(sample_data(ps))
-PSeimf <- subset_taxa(ps, family%in%"Eimeriidae")
+PSeimf <- subset_taxa(ps, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 df <- data.frame(sample_sums(otu_table(ps)))
@@ -421,7 +425,7 @@ a <-ggplot(sdt, aes(y=logGC, x=logEimeriaSums))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces(log 1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
+    xlab(paste(name, "Eimeria (log1+)", sep=" "))+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
@@ -433,7 +437,7 @@ ppPS <- ps
 
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
-cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
+cPSeimf <- subset_taxa(PSTSS, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 bdf <- data.frame(sample_sums(otu_table(ppPS)))
@@ -465,7 +469,7 @@ c <-ggplot(sdt, aes(x=logTSS_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab(paste(name, "Eimeriidae (log1+)", sep=" "))+
+    xlab(paste(name, "Eimeria (log1+)", sep=" "))+
     ggtitle("TSS")+
         labs(tag= "c)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -504,7 +508,7 @@ d <-ggplot(sdt, aes(x=REL_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab("SA Eimeriidae")+
+    xlab("SA Eimeria")+
     ggtitle("REL")+
         labs(tag= "d)")+
         theme_bw()+
@@ -531,7 +535,7 @@ e <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces log(1+)")+
-    xlab("SA Eimeriidae log(1+)")+
+    xlab("SA Eimeria log(1+)")+
     ggtitle("ACS")+
         labs(tag= "e)")+
         theme_bw()+
@@ -557,7 +561,7 @@ library("ggpmisc")
 set.seed(500)
     
 sam <- data.frame(sample_data(ps))
-PSeimf <- subset_taxa(ps, family%in%"Eimeriidae")
+PSeimf <- subset_taxa(ps, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 df <- data.frame(sample_sums(otu_table(ps)))
@@ -596,8 +600,8 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(aes(y=logGC, x=logEimeriaSums),method = "lm", se=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
-    ylab("Genome copies gFaeces(log 1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces(log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
@@ -611,7 +615,7 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
 ppPS <- ps.f
 
 #now we make the data frame
-bPSeimf <- subset_taxa(ppPS, family%in%"Eimeriidae")
+bPSeimf <- subset_taxa(ppPS, genus%in%"Eimeria")
 
 #create total sums and Eimeria sums data frame
 bdf <- data.frame(sample_sums(otu_table(ppPS)))
@@ -644,8 +648,8 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces(log 1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces(log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Raw counts filtered")+
     labs(tag= "b)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
@@ -658,8 +662,8 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
 ################################################################
 #### using relative abundance
 PSTSS = transform_sample_counts(ppPS, function(x) x / sum(x))
-cPSeimf <- subset_taxa(PSTSS, family%in%"Eimeriidae")
-cPSeimf <-aggregate_taxa(cPSeimf, level="family")
+cPSeimf <- subset_taxa(PSTSS, genus%in%"Eimeria")
+cPSeimf <-aggregate_taxa(cPSeimf, level="genus")
     
 #create total sums and Eimeria sums data frame
 df <-data.frame(sample_sums(otu_table(cPSeimf)))
@@ -690,8 +694,8 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Total sum scaling")+
         labs(tag= "c)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -734,8 +738,8 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria")+
     ggtitle("Relative log expression")+
         labs(tag= "d)")+
     theme_bw()+
@@ -746,7 +750,7 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
 
 ########### centered log ratio
 PSclr = microbiome::transform(ppPS, transform="clr")
-ePSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
+ePSeimf <- subset_taxa(PSclr, genus%in%"Eimeria")
 
 df <-data.frame(sample_sums(otu_table(ePSeimf)))
 df$labels <- rownames(df)
@@ -773,8 +777,8 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log")+
-    xlab("Eimeriidae")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria")+
     ggtitle("Centered log-ratio")+
         labs(tag= "e)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
@@ -806,8 +810,8 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
-    ylab("Genome copies gFaeces log(1+)")+
-    xlab("Eimeriidae (log1+)")+
+    ylab("Genome copies gFaeces (log)")+
+    xlab("Eimeria (log)")+
     ggtitle("Absolute count scaling")+
         labs(tag= "f)")+
     theme_bw()+
