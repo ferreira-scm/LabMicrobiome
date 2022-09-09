@@ -82,9 +82,9 @@ SA.eim.m <- glm.nb(Eim2.0@sam_data$Genome_copies_gFaeces~Eim2.0@otu_table[,1]+Ei
 
 gau.m <- lm(log(Eim2.0@sam_data$Genome_copies_gFaeces)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3])+log(1+Eim2.0@otu_table[,4])+log(1+Eim2.0@otu_table[,5])*Eim2.0@sam_data$dpi)
 
-#sink("fig/Eimeira_asv_SA.txt")
-summary(gau.m)
-#sink()
+sink("fig/Eimeira_asv_SA.txt")
+print(summary(gau.m))
+sink()
 
 summary(SA.eim.m) # not good based on the null deviance
 
@@ -94,9 +94,9 @@ summary(SA.eim.m) # not good based on the null deviance
 gau.m.ma <- lm(log(Eim.0@sam_data$Genome_copies_gFaeces)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3])*Eim.0@sam_data$dpi)
 #plot(gau.m.ma) # also acceptable. cool!!
 
-#sink("fig/Eimeira_asv_MA.txt")
-summary(gau.m.ma)
-#sink()
+sink("fig/Eimeira_asv_MA.txt")
+print(summary(gau.m.ma))
+sink()
 
 # LR tests for significance
 anova(gau.m, test="LRT")
