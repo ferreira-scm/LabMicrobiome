@@ -347,10 +347,7 @@ MA_Eimeiria.ASVs <- ggplot(MA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abund
           axis.line = element_line(colour = "black"))
 
 
-ggplot2::ggsave(file="fig/SA/SA_EimeriaASVs_qPCR.pdf", SA_Eimeiria.ASVs, width = 5, height = 3, dpi = 300)
-
 ASV.SA.MA <- plot_grid(SA_Eimeiria.ASVs, MA_Eimeiria.ASVs, ASV.c, nrow=1, labels="auto")
-
 
 plot_grid(SA1,SA2,SA3,SA4,SA5) -> SA.asv
 plot_grid(MA1,MA2,MA3, nrow=2) -> MA.asv
@@ -363,8 +360,9 @@ SAMA.asv <- plot_grid(qpcr, row1, row2, row3, labels=c("a", "", "", ""), ncol=1)
 
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.pdf", SAMA.asv, width = 10, height = 15, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.png", SAMA.asv, width = 10, height = 15, dpi = 300)
-ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.pdf", ASV.SA.MA, width = 8, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.SA.MA, width = 8, height = 5, dpi = 300)
+
+ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.pdf", ASV.SA.MA, width = 10, height = 5, dpi = 300)
+ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.SA.MA, width = 10, height = 5, dpi = 300)
 
 #################### plotting individuals by ASV
 library(cowplot) # to plot a list of plots
