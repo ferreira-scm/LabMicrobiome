@@ -1,0 +1,64 @@
+
+Call:
+lm(formula = log(Eim.0@sam_data$Genome_copies_gFaeces) ~ log(1 + 
+    Eim.0@otu_table[, 1]) + log(1 + Eim.0@otu_table[, 2]) + log(1 + 
+    Eim.0@otu_table[, 3]) * Eim.0@sam_data$dpi)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.8293 -0.7978  0.0424  0.7903  3.7848 
+
+Coefficients: (2 not defined because of singularities)
+                                                   Estimate Std. Error t value
+(Intercept)                                         9.96240    0.77834  12.799
+log(1 + Eim.0@otu_table[, 1])                       0.06684    0.03682   1.815
+log(1 + Eim.0@otu_table[, 2])                       0.06287    0.03203   1.963
+log(1 + Eim.0@otu_table[, 3])                      -0.02303    0.10012  -0.230
+Eim.0@sam_data$dpi2                                 1.90694    0.93639   2.036
+Eim.0@sam_data$dpi3                                 3.56589    0.88718   4.019
+Eim.0@sam_data$dpi4                                 5.56845    1.05527   5.277
+Eim.0@sam_data$dpi5                                 9.56465    1.03897   9.206
+Eim.0@sam_data$dpi6                                 9.39192    0.98633   9.522
+Eim.0@sam_data$dpi7                                 7.20000    1.22292   5.888
+Eim.0@sam_data$dpi8                                 4.11301    1.09740   3.748
+Eim.0@sam_data$dpi9                                 3.76444    0.96094   3.917
+Eim.0@sam_data$dpi10                                2.20117    0.90484   2.433
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi2        NA         NA      NA
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi3  -0.11983    0.12721  -0.942
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi4   0.11704    0.11590   1.010
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi5  -0.12427    0.11867  -1.047
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi6  -0.04738    0.11509  -0.412
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi7   0.03505    0.12042   0.291
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi8   0.06522    0.11716   0.557
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi9  -0.02102    0.11905  -0.177
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi10       NA         NA      NA
+                                                   Pr(>|t|)    
+(Intercept)                                         < 2e-16 ***
+log(1 + Eim.0@otu_table[, 1])                      0.071529 .  
+log(1 + Eim.0@otu_table[, 2])                      0.051563 .  
+log(1 + Eim.0@otu_table[, 3])                      0.818408    
+Eim.0@sam_data$dpi2                                0.043497 *  
+Eim.0@sam_data$dpi3                                9.29e-05 ***
+Eim.0@sam_data$dpi4                                4.63e-07 ***
+Eim.0@sam_data$dpi5                                3.16e-16 ***
+Eim.0@sam_data$dpi6                                 < 2e-16 ***
+Eim.0@sam_data$dpi7                                2.55e-08 ***
+Eim.0@sam_data$dpi8                                0.000256 ***
+Eim.0@sam_data$dpi9                                0.000137 ***
+Eim.0@sam_data$dpi10                               0.016189 *  
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi2        NA    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi3  0.347762    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi4  0.314256    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi5  0.296738    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi6  0.681184    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi7  0.771388    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi8  0.578593    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi9  0.860061    
+log(1 + Eim.0@otu_table[, 3]):Eim.0@sam_data$dpi10       NA    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.557 on 147 degrees of freedom
+Multiple R-squared:  0.8358,	Adjusted R-squared:  0.8146 
+F-statistic: 39.39 on 19 and 147 DF,  p-value: < 2.2e-16
+

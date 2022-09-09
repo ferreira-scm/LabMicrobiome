@@ -1,134 +1,329 @@
-#!/usr/bin/Rscript
+source("bin/4_MA_SA_filtering.R")
 
-library(ggplot2)
-library(dada2)
-#library(MultiAmplicon, lib.loc="/usr/local/lib/R/site-library/")
-library(reshape)
-library(phyloseq)
-#remotes::install_github("vmikk/metagMisc")
-library(metagMisc)
-require(grid)
-require(grid_extra)
-require(cowplot)
-library(microbiome)
-library(RColorBrewer)
 library(relaimpo)
 library(lme4)
 library(MASS)
+library(DescTools)
+library(cocor)
+library(reshape2)
+library(microbiome)
 
+library(phyloseq)
 
-## using the devel
-#devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
+############################################
+##############################################
 
-set.seed(500)
-source("bin/PlottingCor.R")
+#### sensitivity, specificity, positive predicted value and negative predictive value
+############# sensitivity and specificity
+#remove NA row
+SA.e.g <- SA.e.g[-which(is.na(SA.e.g$Genome_copies_gFaeces)),]
+nrow(SA.e.g)
 
-## All runs pooled
-all.PS <- readRDS("tmp/PhyloSeqData_All.Rds")
-all.PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
-# single amplicon from MA run
-all.PSwang <- all.PS.l[[37]]
+sensit <- function(SA.e.g){
+SA.eim <- matrix(as.numeric(c(summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces==0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces==0)[3])), ncol=2, byrow=TRUE)
+margin1 <- margin.table(SA.eim, margin=1)
+margin2 <- margin.table(SA.eim, margin=2)
+eimN <- margin1[2]
+eimP <- margin1[1]
+testP <- margin2[1]
+testN <- margin2[2]
+tN <- margin2[2]
+tP <- margin2[1]
+tP <- SA.eim[1,1]
+fP <- SA.eim[2,1]
+tN <- SA.eim[2,2]
+fN <- SA.eim[1,2]
+print("Sensitivity:")
+print(tP/eimP)
+print("Specificity")
+print(tN/eimN)
+print("positive predictive value")
+print(tP/testP)
+print("negative predictive value")
+print(tN/testN)
+}
 
-## Single amplicon 18S
-sin.PS18S <- readRDS("tmp/PS_18Swang.Rds")
-sin.PS18S.slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
+#sensitivity for the 3 datasets filtered and not filtered
+sensit(SA.e.g)
 
-## Single amplicon "pooled"
-sin.PS <- readRDS("tmp/PhyloSeqData18S.Rds")
-sin.PS.slv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
+sensit(nfSA.e.g)
 
-source("bin/PlottingCor.R")
-# let's filter
-f.sin18 <- fil(sin.PS18S)
-f.all <- fil(all.PS)
-f.allwang <- fil(all.PSwang)
-f.sin18.slv <- fil(sin.PS18S.slv)
-## Single amplicon "pooled"
-f.sin <- fil(sin.PS)
-f.sin.slv <- fil(sin.PS.slv)
-# and transform
-T.sin18 <- f.sin18
-T.all <- f.all
-T.allwang <-f.allwang
-T.sin18.slv <- f.sin18.slv
-T.sin <-f.sin
-T.sin.slv <-f.sin.slv
-otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$DNA_g_feces
-otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$DNA_g_feces
-otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
-otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
-otu_table(T.sin) <- otu_table(T.sin)*sample_data(T.sin)$DNA_g_feces
-otu_table(T.sin.slv) <- otu_table(T.sin.slv)*sample_data(T.sin.slv)$DNA_g_feces
+sensit(MA.e.g)
+sensit(nfMA.e.g)
 
-#all.TSS <- transform_sample_counts(f.all, function(x) x / sum(x))
+sensit(MA.e.g.w)
+sensit(nfMA.e.g.w)
 
-## OK, now we want all the Eimeria sequences
-Eim <- subset_taxa(T.all, family%in%"Eimeriidae")
-Eim2 <- subset_taxa(T.sin18, family%in%"Eimeriidae")
-Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
+tP/testP
 
-# load silva taxonomic annotation
-#PSslv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
-#PS18slv <- readRDS("tmp/PS_18Swang_SILVA.Rds")
+testP
 
-# now plotting
+#### for MA
+# GC- Eim -
+summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces==0)
+# GC+ Eim -
+summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces>0)
+# GC+ Eim+
+summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces>0)
+# GC- Eim+
+summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces==0)
+# GC+ GC-
+summary(Eim_nf@sam_data$Genome_copies_gFaeces==0)
+# Eim + Eim -
+summary(sample_sums(Eim_nf@otu_table)==0)
+
+e.s
+
+e.s <- matrix(c(53, 3, 50, 129), ncol=2, byrow=TRUE)
+colnames(e.s) <- c("Eim-","Eim+")
+rownames(e.s) <- c("GC-", "GC+")
+margin1 <- margin.table(e.s, margin=1)
+margin2 <- margin.table(e.s, margin=2)
+
+#sensitivity
+e.s[2,2]/margin1[2]*100
+#specificity
+e.s[1,1]/margin1[1]*100
+#ppv
+e.s[2,2]/margin2[2]*100
+#npv
+e.s[1,1]/margin2[1]*100
+
+#### for SA
+# GC- Eim -
+summary(sample_sums(Eim2@otu_table)==0&Eim2@sam_data$Genome_copies_gFaeces==0)
+# GC+ Eim -
+summary(sample_sums(Eim2@otu_table)==0&Eim2@sam_data$Genome_copies_gFaeces>0)
+# GC+ Eim+
+summary(sample_sums(Eim2@otu_table)>0&Eim2@sam_data$Genome_copies_gFaeces>0)
+# GC- Eim+
+summary(sample_sums(Eim2@otu_table)>0&Eim2@sam_data$Genome_copies_gFaeces==0)
+# GC+ GC-
+summary(Eim2@sam_data$Genome_copies_gFaeces==0)
+# Eim + Eim -
+summary(sample_sums(Eim2@otu_table)==0)
+
+e.sa <- matrix(c(23, 14, 10 152), ncol=2, byrow=TRUE)
+colnames(e.sa) <- c("Eim-","Eim+")
+rownames(e.sa) <- c("GC-", "GC+")
+margin1 <- margin.table(e.sa, margin=1)
+margin2 <- margin.table(e.sa, margin=2)
+
+#sensitivity
+e.sa[2,2]/margin1[2]*100
+#specificity
+e.sa[1,1]/margin1[1]*100
+#ppv
+e.sa[2,2]/margin2[2]*100
+#npv
+e.sa[1,1]/margin2[1]*100
+
+# now plotting and doing correlation analysis and comparisons
+## for "pooled" MA
 Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
+# Seqf, TSS, RLE, CLR, ACS
+p <- c(0.0208, 0.0134, 0.1037, 0.00001, 0.00001)
+p.adjust(p, method="BH")
 
+#only for wang
 Plotting_cor(ps=all.PSwang, "MA_wang", dir="fig/MA/")
+# seq-f,tss,rle,clr,acs
+p <- c(0.00001, 0.0138, 0.0880, 0.0030, 0.00001)
+p.adjust(p, method="BH")
 
+## for single amplicon
 Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
+# seq-f,tss,rle,clr,acs
+p <- c(0.0117, 0.1045, 0.00001, 0.00001, 0.0024)
+p.adjust(p, method="BH")
 
-## now plotting SA silva
-#Plotting_cor(ps=PSslv, "SA_slv", dir="fig/SA/")
+# for MA but individually filtered
+Plotting_cor_MA.l(ps=all.PS, ps.f=f.all.lp, "MA_individually_filtered", dir="fig/MA/")
 
-#Plotting_cor(ps=PSwang, name="wang1141_13_F.Nem_0425_6_3_R", dir="fig/MA/")
+# seq-f,tss,rle,clr,acs
+p <- c(0.00001, 0.0146, 0.1003, 0.00001, 0.00001)
+p.adjust(p, method="BH")
 
-for (i in 1:48) {
-    nm <- names(all.PS.l)[i]
-    ps <- all.PS.l[[i]]
-    print(nm)
-    try(Plotting_cor(ps, name=nm, dir="fig/MA/"))
-}
+##################################################################
+### OK, so let's remove food
+# First we prepare the datasets for MA
+plant <- subset_taxa(f.all.lp, !phylum%in%"Streptophyta")
+plant <- subPS(plant)
+Mus <- subset_taxa(f.all.lp, !phylum%in%"Chordata")
+Mus <- subPS(Mus)
+worms <- subset_taxa(f.all.lp, !phylum%in%"Nematoda")
+worms <- subPS(worms)
+TSS <- subPS(f.all.lp)
+PlantMus <-  subset_taxa(f.all.lp, !(phylum%in%"Streptophyta"|phylum%in%"Chordata"))
+PlantMus <- subPS(PlantMus)
 
-for (i in 1:48) {
-    nm <- names(all.PS.l)[i]
-    ps <- all.PS.l[[i]]
-    try(NoFilPlotting_cor(ps, name=nm, dir="fig/MA/NoFil/"))
-}
+## Now for SA
+plant18 <- subset_taxa(f.sin18, !phylum%in%"Streptophyta")
+plant18 <- subPS(plant18)
+#No Mus in fPS18S
+worms18 <- subset_taxa(f.sin18, !phylum%in%"Nematoda")
+worms18 <- subPS(worms18)
+TSS18 <- subPS(f.sin18)
+PlantMusWorms18 <-  subset_taxa(f.sin18, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
+PlantMusWorms18 <- subPS(PlantMusWorms18)
+
+##########################################################
+###########################################################
+# plotting TSS correlation
+a <- p_tss(TSS, "a)", "MA-TSS")
+b <- p_tss(plant, "b)", "MA-TSS: -Streptophyta")
+c <- p_tss(Mus, "c)", "MA-TSS: -Chordata")
+d <- p_tss(worms, "d)", "MA-TSS: -Nematoda")
+#e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
+e <- p_tss(PlantMus, "e)", "MA no plants or host")
+
+plot_grid(a,b,c,d,e) -> p_cor
+
+MA.a <- lm(data=TSS,logGC~logA)
+MA.b <- lm(data=plant,logGC~logA)
+MA.c <- lm(data=Mus,logGC~logA)
+MA.d <- lm(data=worms,logGC~logA)
+MA.e <- lm(data=PlantMus,logGC~logA)
+
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA.pdf", p_cor, width = 15, height = 8, dpi = 600)
+ggplot2::ggsave(file="fig/MA/Biological_rem_MA.png", p_cor, width = 15, height = 8, dpi = 600)
+
+a1 <- p_tss(TSS18, "a)", "SA-TSS")
+b1 <- p_tss(plant18, "b)", "SA-TSS: -Streptophyta")
+#c1 <- p_tss(Mus18, "c)", "SA no host")
+c1 <- p_tss(worms18, "c)", "SA-TSS: -Nematoda")
+#e1 <- p_tss(PlantMusWorms18, "d)", "SA no plants or nematodes")
+
+SA.a <- lm(data=TSS18,logGC~logA)
+SA.b <- lm(data=plant18,logGC~logA)
+SA.d <- lm(data=worms18,logGC~logA)
+
+plot_grid(a1,b1,c1) -> p_cor1
+ggplot2::ggsave(file="fig/SA/Biological_rem_SA.pdf", p_cor1, width = 15, height = 10, dpi = 600)
+ggplot2::ggsave(file="fig/SA/Biological_rem_SA.png", p_cor1, width = 15, height = 10, dpi = 600)
+
+##################################################################
+######### pearson tests
+# for MA
+cor.test(TSS$logGC, TSS$logA, method="pearson")
+cor.test(plant$logGC, plant$logA, method="pearson")
+cor.test(worms$logGC, worms$logA, method="pearson")
+cor.test(Mus$logGC, Mus$logA, method="pearson")
+cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
+# for SA
+cor.test(TSS18$logGC, TSS18$logA, method="pearson")
+cor.test(plant18$logGC, plant18$logA, method="pearson")
+cor.test(worms18$logGC, worms18$logA, method="pearson")
+#cor.test(PlantMusWorms18$logGC, PlantMusWorms18$logA, method="pearson")
+
+## Now we need to pool into the same dataset for the cocor function
+# First for MA
+plant <- plant[,c("labels", "logA")]
+names(plant) <- c("labels", "logA_plant")
+tss.df <- merge(TSS, plant, by="labels")
+worms <- worms[,c("labels", "logA")]
+names(worms) <- c("labels", "logA_worms")
+tss.df <- merge(tss.df, worms, by="labels")
+Mus <- Mus[,c("labels", "logA")]
+names(Mus) <- c("labels", "logA_Mus")
+tss.df <- merge(tss.df, Mus, by="labels")
+PlantMus <- PlantMus[,c("labels", "logA")]
+names(PlantMus) <- c("labels", "logA_PlantMus")
+tss.df <- merge(tss.df, PlantMus, by="labels")
+# We need to add Eimeria sums from Seq together with the above data frame
+PSeimf <-subset_taxa(all.PS, genus%in%"Eimeria")
+df <- data.frame(sample_sums(otu_table(PSeimf)))
+df$labels <- rownames(df)
+names(df) <- c("Eimeriidae", "labels")
+df$logEimeriidae <- log(df$Eimeriidae)
+df$logEimeriidae
+tss.df <- tss.df[,c("labels", "logGC", "logA", "logA_plant", "logA_worms", "logA_Mus", "logA_PlantMus")]
+df <- merge(df, tss.df, by="labels")
+
+# cool, now we test differences of correlations with the default Seq
+#cocor(~logGC + logEimeriidae | logGC + logA, data = df,
+#            test = c("hittner2003", "zou2007"))
+cocor(~logGC +  logEimeriidae| logGC + logA_Mus, data = df,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logEimeriidae| logGC + logA_plant, data = df,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logEimeriidae| logGC + logA_worms, data = df,
+      test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logEimeriidae| logGC + logA_PlantMus, data = df,
+            test = c("hittner2003", "zou2007"))
+
+# Adjust for multiple testing
+## those are the corresponding p values from the other correlations above plus the sub TSS).
+# seq-f,tss,rle,clr,acs,tss-mus, tss-plant, tss-worms, tss-plant-mus
+p <- c(0.00001, 0.0146, 0.1003, 0.00001, 0.00001, 0.0055, 0.1010, 0.0173, 0.461)
+round(p.adjust(p, method="BH"), 3)
+
+#### comparison between TSS and TSS-removal
+cocor(~logGC +  logA| logGC + logA_plant, data = df,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logA| logGC + logA_Mus, data = df,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logA| logGC + logA_worms, data = df,
+      test = c("hittner2003", "zou2007"))
+
+#cocor(~logGC +  logA| logGC + logA_PlantMus, data = df,
+#            test = c("hittner2003", "zou2007"))
+
+p <- c(0.0012, 0.0163, 0.7727)
+round(p.adjust(p, method="BH"), 3)
+
+######################################################
+# Then for SA
+plant18 <- plant18[,c("labels", "logA")]
+names(plant18) <- c("labels", "logA_plant")
+tss.df18 <- merge(TSS18, plant18, by="labels")
+worms18 <- worms18[,c("labels", "logA")]
+names(worms18) <- c("labels", "logA_worms")
+tss.df18 <- merge(tss.df18, worms18, by="labels")
+
+# We need to add Eimeria sums from Seq together with the above data frame
+PSeimf18 <-subset_taxa(sin.PS18S, genus%in%"Eimeria")
+df18 <- data.frame(sample_sums(otu_table(PSeimf18)))
+df18$labels <- rownames(df18)
+names(df18) <- c("Eimeriidae", "labels")
+df18$logEimeriidae <- log(df18$Eimeriidae)
+tss.df18 <- tss.df18[,c("labels", "logGC", "logA", "logA_plant", "logA_worms")]
+df18 <- merge(df18, tss.df18, by="labels", all=TRUE)
+
+################## comparing to TSS
+cocor(~logGC + logA | logGC + logA_plant, data = df18,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC + logA | logGC + logA_worms, data = df18,
+            test = c("hittner2003", "zou2007"))
+
+p <- c(0.00001, 0.0225)
+round(p.adjust(p, method="BH"),3)
+
+## Comparing to Seq
+cocor(~logGC + logEimeriidae | logGC + logA_plant, data = df18,
+            test = c("hittner2003", "zou2007"))
+
+cocor(~logGC +  logEimeriidae | logGC + logA_worms, data = df18,
+            test = c("hittner2003", "zou2007"))
+
+# seq-f,tss,rle,clr,acs, tss-plant, tss-worms
+p <- c(0.0117, 0.1045, 0.00001, 0.00001, 0.0024, 0.0597, 0.0289)
+round(p.adjust(p, method="BH"),3)
+
+##################################################
 
 
-f.all.l <- list()
 
-for (i in 1:48) {
-    try(f.all.l[[i]] <- fil(all.PS.l[[i]]), silent=TRUE)
-}
-
-#how many primers amplify Apicomplexa and which families?
-for (i in 1:48) {
-#    print(names(PS.l)[i])
-    try(p <- subset_taxa(all.PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
-    try(get_taxa_unique(p, "family"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "family")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-
-for (i in 1:48) {
-#    print(names(all.PS.l)[i])
-    try(p <- subset_taxa(all.PS.l[[i]],family=="Eimeriidae"), silent=TRUE)
-    try(get_taxa_unique(p, "family"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "family")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
+##################### how many amplicons have mus?
 ################################### Mus sequences
 for (i in 1:48) {
     print(names(all.PS.l)[i])
@@ -141,8 +336,8 @@ for (i in 1:48) {
     rm(p)
 }
 
+### let's save the mus sequences
 mus.s <- c(rownames(subset_taxa(f.all.l[[12]]@tax_table, genus=="Mus")), rownames(subset_taxa(f.all.l[[33]]@tax_table, genus=="Mus")))
-
 
 library(ShortRead)
 writeFasta(DNAStringSet(mus.s), "tmp/Mus_ASV.fasta")
@@ -201,7 +396,6 @@ mp.clr <- ggplot(m.clr, aes(dpi, Abundance, color=EH_ID))+
 
 
 mp.clr
-
 
 # Are host abundance and Eimeria associated
 cor.test(log(1+m$Abundance), log(1+m$Genome_copies_gFaeces), method="spearman")
@@ -284,7 +478,6 @@ weighloss <- m$weightloss[as.numeric(rownames(m.ord))]
 weighloss.clr <- m.clr$weightloss[as.numeric(rownames(m.clr.ord))]
 
 adonis2(m.bray~dpi+weighloss, method="bray", permutations=10000)
-
 adonis2(m.clr.euc~dpi+weighloss.clr, method="euclidean", permutations=10000)
 
 #m.anosim <- anosim(m.bray,dpi, distance="bray", permutations=1000)
@@ -297,8 +490,6 @@ adonis2(m.clr.euc~dpi+weighloss.clr, method="euclidean", permutations=10000)
 
 ord.fit <- envfit(m.mds~dpi+weighloss)
 ord.fit
-
-
 
 ord.fit <- envfit(m.bray~dpi+weighloss)
 ord.fit
@@ -368,305 +559,5 @@ anova(mmmus,mmmus0)
 # how does DNA g/faeces change with infection
 cor.test(m$logA, log(1+m$weightloss), method="spearman")
 
-##################################################################
-### OK, so let's remove food
-plant <- subset_taxa(f.all, !phylum%in%"Streptophyta")
-plant <- subPS(plant)
 
-Mus <- subset_taxa(f.all, !phylum%in%"Chordata")
-Mus <- subPS(Mus)
 
-worms <- subset_taxa(f.all, !phylum%in%"Nematoda")
-worms <- subPS(worms)
-
-plant18 <- subset_taxa(f.sin18, !phylum%in%"Streptophyta")
-plant18 <- subPS(plant18)
-
-#no Mus in fPS18S
-worms18 <- subset_taxa(f.sin18, !phylum%in%"Nematoda")
-worms18 <- subPS(worms18)
-
-TSS <- subPS(f.all)
-TSS18 <- subPS(f.sin18)
-
-PlantMusWorms <-  subset_taxa(f.all, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
-PlantMusWorms <- subPS(PlantMusWorms)
-
-PlantMus <-  subset_taxa(f.all, !(phylum%in%"Streptophyta"|phylum%in%"Chordata"))
-PlantMus <- subPS(PlantMus)
-
-PlantMusWorms18 <-  subset_taxa(f.sin18, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda" | phylum%in%"Chordata"))
-PlantMusWorms18 <- subPS(PlantMusWorms18)
-
-plantw <- subset_taxa(f.allwang, !phylum%in%"Streptophyta")
-plantw <- subPS(plantw)
-
-wormsw <- subset_taxa(f.allwang, !phylum%in%"Nematoda")
-wormsw <- subPS(wormsw)
-
-TSSwang <- subPS(f.allwang)
-
-PlantWormsw <-  subset_taxa(f.allwang, !(phylum%in%"Streptophyta"| phylum%in%"Nematoda"))
-PlantWormsw <- subPS(PlantWormsw)
-
-## person tests
-cor.test(TSS$logGC, TSS$logA, method="pearson")
-cor.test(plant$logGC, plant$logA, method="pearson")
-cor.test(worms$logGC, worms$logA, method="pearson")
-cor.test(Mus$logGC, Mus$logA, method="pearson")
-#cor.test(PlantMusWorms$logGC, PlantMusWorms$logA, method="pearson")
-cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
-
-
-cor.test(TSS18$logGC, TSS18$logA, method="pearson")
-cor.test(plant18$logGC, plant18$logA, method="pearson")
-cor.test(worms18$logGC, worms18$logA, method="pearson")
-#cor.test(PlantMusWorms18$logGC, PlantMusWorms18$logA, method="pearson")
-
-cor.test(TSSwang$logGC, TSSwang$logA, method="pearson")
-cor.test(plantw$logGC, plantw$logA, method="pearson")
-cor.test(wormsw$logGC, wormsw$logA, method="pearson")
-#cor.test(PlantWormsw$logGC, PlantWormsw$logA, method="pearson")
-
-# plotting TSS correlation
-a <- p_tss(TSS, "a)", "MA")
-b <- p_tss(plant, "b)", "MA no plant")
-c <- p_tss(Mus, "c)", "MA no host")
-d <- p_tss(worms, "d)", "MA no nematodes")
-#e <- p_tss(PlantMusWorms, "e)", "MA no plants, host or nematodes")
-e <- p_tss(PlantMus, "e)", "MA no plants or host")
-
-plot_grid(a,b,c,d,e) -> p_cor
-
-MA.a <- lm(data=TSS,logGC~logA)
-MA.b <- lm(data=plant,logGC~logA)
-MA.c <- lm(data=Mus,logGC~logA)
-MA.d <- lm(data=worms,logGC~logA)
-MA.e <- lm(data=PlantMus,logGC~logA)
-
-
-
-summary(MA.e)
-
-
-ggplot2::ggsave(file="fig/MA/Biological_rem_MA.pdf", p_cor, width = 15, height = 8, dpi = 600)
-ggplot2::ggsave(file="fig/MA/Biological_rem_MA.png", p_cor, width = 15, height = 8, dpi = 600)
-
-a1 <- p_tss(TSS18, "a)", "SA")
-b1 <- p_tss(plant18, "b)", "SA no plant")
-#c1 <- p_tss(Mus18, "c)", "SA no host")
-d1 <- p_tss(worms18, "c)", "SA no nematodes")
-#e1 <- p_tss(PlantMusWorms18, "d)", "SA no plants or nematodes")
-
-SA.a <- lm(data=TSS18,logGC~logA)
-SA.b <- lm(data=plant18,logGC~logA)
-SA.d <- lm(data=worms18,logGC~logA)
-
-summary(SA.d)
-
-plot_grid(a1,b1,d1,e1) -> p_cor1
-ggplot2::ggsave(file="fig/SA/Biological_rem_SA.pdf", p_cor1, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/SA/Biological_rem_SA.png", p_cor1, width = 15, height = 10, dpi = 600)
-
-a2 <- p_tss(TSSwang, "a)", "MA wang")
-b2 <- p_tss(plantw, "b)", "MA wang no plant")
-#c1 <- p_tss(Mus18, "c)", "SA no host")
-d2 <- p_tss(wormsw, "c)", "MA wang no nematodes")
-e2 <- p_tss(PlantWormsw, "d)", "MA wang no plants or nematodes")
-
-MAw.a <- lm(data=TSSwang,logGC~logA)
-MAw.b <- lm(data=plantw,logGC~logA)
-MAw.d <- lm(data=wormsw,logGC~logA)
-
-summary(MAw.d)
-
-plot_grid(a2,b2,d2,e2) -> p_cor2
-ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.pdf", p_cor2, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/MA/Biological_rem_MA_wang.png", p_cor2, width = 15, height = 10, dpi = 600)
-
-################## comparing taxonomies
-Tslv <- psmelt(TPSslv)
-TSA <- psmelt(TPS_SA)
-
-library(forcats)
-
-TPSslv
-
-TPSslv@sam_data$glom <- "a"
-TPS_SA@sam_data$glom <- "a"
-
-Avgslv <- merge_samples(TPSslv, "glom")
-Avgbla <- merge_samples(TPS_SA, "glom")
-
-Tslv <- psmelt(Avgslv)
-TSA <- psmelt(Avgbla)
-
-
-silva_phy <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorder(Phylum, Abundance)))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_color_brewer(palette="Dark2")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-silva_phy
-
-blast_phy <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(phylum, Abundance)))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_color_brewer(palette="Dark2")+
-    theme_minimal()+
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-
-silva_gen <- ggplot(Tslv, aes(dpi, Abundance, fill=fct_reorderGenus, Abundance)))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_color_brewer(palette="Dark2")+
-    theme_minimal()+
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-silva_gen
-
-blast_gen <- ggplot(TSA, aes(dpi, Abundance, fill=fct_reorder(genus, Abundance)))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_color_brewer(palette="Dark2")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-
-
-ggplot2::ggsave(file="fig/phy_silva_Abundace.pdf", silva_phy, width = 5, height = 5, dpi = 600)
-ggplot2::ggsave(file="fig/phy_silva_Abundace.png", silva_phy, width = 5, height = 5, dpi = 600)
-ggplot2::ggsave(file="fig/phy_blast_Abundace.pdf", blast_phy, width = 5, height = 5, dpi = 600)
-ggplot2::ggsave(file="fig/phy_blast_Abundace.png", blast_phy, width = 5, height = 5, dpi = 600)
-
-ggplot2::ggsave(file="fig/gen_silva_Abundace.pdf", silva_gen, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/gen_silva_Abundace.png", silva_gen, width = 15, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/gen_blast_Abundace.pdf", blast_gen, width = 8, height = 10, dpi = 600)
-ggplot2::ggsave(file="fig/gen_blast_Abundace.png", blast_gen, width = 8, height = 10, dpi = 600)
-
-silva_gen
-
-Tpsa@sam_data$glom <- "a"
-TPSslv@sam_data$glom <- "a"
-
-Tpsa@sam_data$glom
-
-colnames(TPSslv@tax_table)
-
-psa <- merge_samples(Tpsa, "glom")
-PSslv <- merge_samples(TPSslv, "glom")
-
-Ebla <- subset_taxa(psa, superkingdom%in%"Eukaryota") 
-Bbla <- subset_taxa(psa, superkingdom%in%"Bacteria")
-
-Bslv <- subset_taxa(PSslv, Kingdom%in%"Bacteria")
-Eslv <- subset_taxa(PSslv, Kingdom%in%"Eukaryota")
-
-Ebla <-  psmelt(Ebla)
-Eslv <- psmelt(Eslv)
-
-Bbla <- psmelt(Bbla)
-Bslv <- psmelt(Bslv)
-
-library(RColorBrewer)
-
-Ebla_phy <- ggplot(Ebla, aes(dpi, Abundance, fill=phylum))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_fill_brewer(palette="Set3")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-Eslv_phy <- ggplot(Eslv, aes(dpi, Abundance,  fill=Order))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_fill_brewer(palette="Dark2")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-
-Bbla_phy <- ggplot(Bbla, aes(dpi, Abundance, fill=phylum))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-    scale_fill_brewer(palette="Set3")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-Bslv_phy <- ggplot(Bslv, aes(dpi, Abundance, fill=Phylum))+
-    geom_bar(stat="identity", position="stack")+
-    labs(y="ASV reads (per g of faeces)")+
-#    scale_fill_brewer(palette="Dark2")+
-    theme_minimal()+
-        theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-#          legend.position = "none",
-          axis.line = element_line(colour = "black"),
-          axis.title.x=element_blank(),
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank())
-
-Ebla_phy
-
-plot_grid(Ebla_phy, Eslv_phy) -> Euk_phy
-
-plot_grid(Bbla_phy, Bslv_phy) -> Bac_phy
-
-Euk_phy
-
-Bac_phy
-
-ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.pdf", Euk_phy, width = 7, height = 5, dpi = 600)
-
-ggplot2::ggsave(file="fig/Eukphy_blast_silva_Abundace.png", Euk_phy, width = 7, height = 5, dpi = 600)
-
-ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.pdf", Bac_phy, width = 7, height = 5, dpi = 600)
-
-ggplot2::ggsave(file="fig/Bacphy_blast_silva_Abundace.png", Bac_phy, width = 7, height = 5, dpi = 600)
-
-
-######################################################
