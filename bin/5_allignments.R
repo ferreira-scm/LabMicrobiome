@@ -275,7 +275,7 @@ plot_SA_5 <- ggplot(SA.e50, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), 
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_ASV <- plot_grid(plot_SA_all,plot_SA_1, plot_SA_2, plot_SA_3, plot_SA_4, plot_SA_5, nrow=1, labels="auto")
+plot_SA_ASV <- plot_grid(plot_SA_all,plot_SA_1, plot_SA_2, plot_SA_3, plot_SA_4, plot_SA_5, nrow=3, labels="auto")
 
 ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.pdf", plot_SA_ASV, width = 15, height = 15, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.png", plot_SA_ASV, width = 15, height = 15, dpi = 300)
