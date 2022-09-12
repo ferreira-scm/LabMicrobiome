@@ -12,96 +12,54 @@ library(phyloseq)
 
 ############################################
 ##############################################
-#### exploring MA
-#for (i in 1:48) {
-#    nm <- names(all.PS.l)[i]
-#    ps <- all.PS.l[[i]]
-#    print(nm)
-#    try(Plotting_cor(ps, name=nm, dir="fig/MA/"))
-#}
-
-#for (i in 1:48) {
-#    nm <- names(all.PS.l)[i]
-#    ps <- all.PS.l[[i]]
-#    try(NoFilPlotting_cor(ps, name=nm, dir="fig/MA/NoFil/"))
-#}
-
-
-#########################################################
-#how many primers amplify Apicomplexa and which families?
-for (i in 1:48) {
-#    print(names(all.PS.l)[[i]])
-    try(p <- subset_taxa(all.PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
-    try(get_taxa_unique(p, "family"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "family")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-##### and how many amplicons have eimeria?
-for (i in 1:48) {
-#    print(names(all.PS.l)[i])
-    try(p <- subset_taxa(all.PS.l[[i]],genus=="Eimeria"), silent=TRUE)
-#    try(get_taxa_unique(p, "genus"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "genus")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", nrow(p@tax_table), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-
-##### and how many amplicons have eimeria?
-for (i in 1:48) {
-#    print(names(all.PS.l)[i])
-    try(p <- subset_taxa(all.PS.l[[i]],genus=="Eimeria"), silent=TRUE)
-#    try(get_taxa_unique(p, "genus"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "genus")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", nrow(p@tax_table), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-
-### and what happens when we filter?
-for (i in 1:48) {
-#    print(names(all.PS.l)[i])
-    try(p <- subset_taxa(f.all.l[[i]],genus=="Eimeria"), silent=TRUE)
-#    try(get_taxa_unique(p, "genus"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "genus")
-        print(paste(i, "- ", names(f.all.l[i]), ": ", nrow(p@tax_table), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-
-## how many eimeria ASV reads do we have in single amplicon before and after filtering
-subset_taxa(sin.PS, genus=="Eimeria")
-# sanity check
-subset_taxa(sin.PS18S, genus=="Eimeria")
-# after filtering
-subset_taxa(f.sin, genus=="Eimeria")
-#sanity check
-subset_taxa(f.sin18, genus=="Eimeria")
-
-## OK, now we want all the Eimeria sequences
-Eim <- subset_taxa(T.all.l, genus%in%"Eimeria")
-Eim2 <- subset_taxa(T.sin18, genus%in%"Eimeria")
-#Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
-Eim_nf <- subset_taxa(all.PS, genus%in%"Eimeria")
-Eim_nf_wang <- subset_taxa(all.PS.l[[37]], genus%in%"Eimeria")
-Eim2_nf <- subset_taxa(sin.PS18S, genus%in%"Eimeria")
-
 
 #### sensitivity, specificity, positive predicted value and negative predictive value
+############# sensitivity and specificity
+#remove NA row
+SA.e.g <- SA.e.g[-which(is.na(SA.e.g$Genome_copies_gFaeces)),]
+nrow(SA.e.g)
+
+sensit <- function(SA.e.g){
+SA.eim <- matrix(as.numeric(c(summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces>0)[3],
+    summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces==0)[3],
+    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces==0)[3])), ncol=2, byrow=TRUE)
+margin1 <- margin.table(SA.eim, margin=1)
+margin2 <- margin.table(SA.eim, margin=2)
+eimN <- margin1[2]
+eimP <- margin1[1]
+testP <- margin2[1]
+testN <- margin2[2]
+tN <- margin2[2]
+tP <- margin2[1]
+tP <- SA.eim[1,1]
+fP <- SA.eim[2,1]
+tN <- SA.eim[2,2]
+fN <- SA.eim[1,2]
+print("Sensitivity:")
+print(tP/eimP)
+print("Specificity")
+print(tN/eimN)
+print("positive predictive value")
+print(tP/testP)
+print("negative predictive value")
+print(tN/testN)
+}
+
+#sensitivity for the 3 datasets filtered and not filtered
+sensit(SA.e.g)
+
+sensit(nfSA.e.g)
+
+sensit(MA.e.g)
+sensit(nfMA.e.g)
+
+sensit(MA.e.g.w)
+sensit(nfMA.e.g.w)
+
+tP/testP
+
+testP
 
 #### for MA
 # GC- Eim -

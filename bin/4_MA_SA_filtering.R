@@ -12,7 +12,7 @@ library(Hmisc)
 #library(grid_extra)
 require(cowplot)
 library(RColorBrewer)
-
+library(dplyr)
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 source("bin/PlottingCor.R")
@@ -45,7 +45,7 @@ for (i in 1:48) {
 f.all.lp <- f.all.l[[1]]
 for (i in 2:47){
     f.all.lp <- try(merge_phyloseq(f.all.lp,f.all.l[[i]]))
-    print(f.all.lp)}
+    }
 
 
 # sanity check

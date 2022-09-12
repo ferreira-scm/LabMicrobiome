@@ -56,7 +56,6 @@ MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[3])] <- "ASV3"
 MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[2])] <- "ASV2"
 MA.e$ASV[which(MA.e$OTU==colnames(Eim@otu_table)[1])] <- "ASV1"
 
-
 SA.e5 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[5]),]
 SA.e4 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[4]),]
 SA.e3 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[3]),]
@@ -75,6 +74,60 @@ SA.e.0 <-SA.e.0[!is.na(SA.e.0$Abundance),]
 MA.e.0 <- MA.e[MA.e$Genome_copies_gFaeces>0,]
 MA.e.0 <- MA.e.0[MA.e.0$Abundance>0,]
 MA.e.0 <-MA.e.0[!is.na(MA.e.0$Abundance),]
+
+## Let's do the correlations first
+SA.ASV <- SA.e[SA.e$Genome_copies_gFaeces>0,]
+SA.e.g0 <- SA.e.g[SA.e.g$Genome_copies_gFaeces>0,]
+SA.e.g0 <- SA.e.g0[SA.e.g0$Abundance>0,]
+SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_gFaeces),]
+
+# sanity test here
+cor.test(log(SA.e.g0$Abundance), log(SA.e.g0$Genome_copies_gFaeces))
+
+SA.e10 <- SA.e1[SA.e1$Genome_copies_gFaeces>0,]
+SA.e10 <- SA.e10[!is.na(SA.e10$Genome_copies_gFaeces),]
+SA.e10 <- SA.e10[SA.e10$Abundance>0,]
+
+SA.e20 <- SA.e2[SA.e2$Genome_copies_gFaeces>0,]
+SA.e20 <- SA.e20[!is.na(SA.e10$Genome_copies_gFaeces),]
+SA.e20 <- SA.e20[SA.e20$Abundance>0,]
+
+SA.e30 <- SA.e3[SA.e3$Genome_copies_gFaeces>0,]
+SA.e30 <- SA.e30[!is.na(SA.e30$Genome_copies_gFaeces),]
+SA.e30 <- SA.e30[SA.e30$Abundance>0,]
+
+SA.e40 <- SA.e4[SA.e4$Genome_copies_gFaeces>0,]
+SA.e40 <- SA.e40[!is.na(SA.e40$Genome_copies_gFaeces),]
+SA.e40 <- SA.e40[SA.e40$Abundance>0,]
+
+SA.e50 <- SA.e5[SA.e5$Genome_copies_gFaeces>0,]
+SA.e50 <- SA.e50[!is.na(SA.e50$Genome_copies_gFaeces),]
+SA.e50 <- SA.e50[SA.e50$Abundance>0,]
+
+### they are correlate pretty well, ASV1 being the best
+cor.test(log(SA.e10$Genome_copies_gFaeces), log(SA.e10$Abundance))
+cor.test(log(SA.e20$Genome_copies_gFaeces), log(SA.e20$Abundance))
+cor.test(log(SA.e30$Genome_copies_gFaeces), log(SA.e30$Abundance))
+cor.test(log(SA.e40$Genome_copies_gFaeces), log(SA.e40$Abundance))
+cor.test(log(SA.e50$Genome_copies_gFaeces), log(SA.e50$Abundance))
+
+### now same for MA
+MA.e10 <- MA.e1[MA.e1$Genome_copies_gFaeces>0,]
+MA.e10 <- MA.e10[!is.na(MA.e10$Genome_copies_gFaeces),]
+MA.e10 <- MA.e10[MA.e10$Abundance>0,]
+
+MA.e20 <- MA.e2[MA.e2$Genome_copies_gFaeces>0,]
+MA.e20 <- MA.e20[!is.na(MA.e10$Genome_copies_gFaeces),]
+MA.e20 <- MA.e20[MA.e20$Abundance>0,]
+
+MA.e30 <- MA.e3[MA.e3$Genome_copies_gFaeces>0,]
+MA.e30 <- MA.e30[!is.na(MA.e30$Genome_copies_gFaeces),]
+MA.e30 <- MA.e30[MA.e30$Abundance>0,]
+
+## ASV1 is also best for MA
+cor.test(log(MA.e10$Genome_copies_gFaeces), log(MA.e10$Abundance))
+cor.test(log(MA.e20$Genome_copies_gFaeces), log(MA.e20$Abundance))
+cor.test(log(MA.e30$Genome_copies_gFaeces), log(MA.e30$Abundance))
 
 ############### Which ASV explains Eimeria genome copies?
 ################ preparing dataset for regressions
@@ -137,6 +190,95 @@ anova(MA.gau, test="LRT")
 
 #plot(MA.gau) # not great!
 
+# ploting ASV ~ GC by dpi
+plot_SA_all <- ggplot(SA.e.0, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV abundance (log)")+
+    ggtitle("SA")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_1 <- ggplot(SA.e10, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV1 abundance (log)")+
+    ggtitle("SA - ASV1")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV2 abundance (log)")+
+    ggtitle("SA - ASV2")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_3 <- ggplot(SA.e30, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV3 abundance (log)")+
+    ggtitle("SA - ASV3")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_4 <- ggplot(SA.e40, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV4 abundance (log)")+
+    ggtitle("SA - ASV4")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_5 <- ggplot(SA.e50, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV5 abundance (log)")+
+    ggtitle("SA - ASV5")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_SA_ASV <- plot_grid(plot_SA_all,plot_SA_1, plot_SA_2, plot_SA_3, plot_SA_4, plot_SA_5, nrow=1, labels="auto")
+
+ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.pdf", plot_SA_ASV, width = 15, height = 15, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.png", plot_SA_ASV, width = 15, height = 15, dpi = 300)
 
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
@@ -314,15 +456,13 @@ ASV.c <- ggplot(ma.sa.t, aes(x=log(Abundance.x), y=log(Abundance.y), fill=ASV))+
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
-ASV.c
-
 SA_Eimeiria.ASVs <- ggplot(SA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2",
                                "#D55E00", "#E63C9A"))+
     geom_smooth(method=lm, colour="black", aes(colour="ASV"))+
     xlab("Genome copies g/faeces (log)")+
-    guides(fill=guide_legend(nrow=1, byrow=TRUE))+
+#    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
     ylab("ASV abundance (log)")+
 #    annotate(geom="text", x=12, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
@@ -342,7 +482,7 @@ MA_Eimeiria.ASVs <- ggplot(MA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abund
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
+          text=element_text(size=11),
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
@@ -492,8 +632,6 @@ cor.test(ASV2$Abundance.x, ASV2$Abundance.y)
 cor.test(log(1+ASV1$Abundance.x), log(1+ASV1$Abundance.y))
 cor.test(log(1+ASV2$Abundance.x), log(1+ASV2$Abundance.y))
 cor.test(log(1+ASV3$Abundance.x), log(1+ASV3$Abundance.y))
-
-
 
 
 ############################
