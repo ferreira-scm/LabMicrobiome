@@ -55,21 +55,15 @@ for (i in 2:47){
 ## Single amplicon "pooled"
 f.sin <- fil(sin.PS)
 f.sin.slv <- fil(sin.PS.slv)
+
 # and transform
-T.sin18 <- f.sin18
-T.all <- f.all
-T.all.l <- f.all.lp
-T.allwang <-f.allwang
-T.sin18.slv <- f.sin18.slv
-T.sin <-f.sin
-T.sin.slv <-f.sin.slv
-otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$DNA_g_feces
-otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$DNA_g_feces
-otu_table(T.all.l) <- otu_table(T.all.l)*sample_data(T.all.l)$DNA_g_feces
-otu_table(T.allwang) <- otu_table(T.allwang)*sample_data(T.allwang)$DNA_g_feces
-otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$DNA_g_feces
-otu_table(T.sin) <- otu_table(T.sin)*sample_data(T.sin)$DNA_g_feces
-otu_table(T.sin.slv) <- otu_table(T.sin.slv)*sample_data(T.sin.slv)$DNA_g_feces
+sin18TSS  <- transform_sample_counts(f.sin18, function(x) x / sum(x))
+#sinTSS <- transform_sample_counts(f.sin, function(x) x / sum(x))
+allTSS <-  transform_sample_counts(f.all.lp, function(x) x / sum(x))
+T.sin18 <- sin18TSS
+T.all <- allTSS
+otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$Total_DNA
+otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$Total_DNA
 
 #### exploring MA
 #for (i in 1:48) {
@@ -91,7 +85,7 @@ otu_table(T.sin.slv) <- otu_table(T.sin.slv)*sample_data(T.sin.slv)$DNA_g_feces
 for (i in 1:48) {
 #    print(names(all.PS.l)[[i]])
     try(p <- subset_taxa(all.PS.l[[i]],phylum=="Apicomplexa"), silent=TRUE)
-    try(get_taxa_unique(p, "family"), silent=TRUE)
+#    try(get_taxa_unique(p, "family"), silent=TRUE)
     if (exists("p")) {
         a <- get_taxa_unique(p, "family")
         print(paste(i, "- ", names(all.PS.l[i]), ": ", length(a), sep=""))
@@ -152,7 +146,7 @@ subset_taxa(f.sin, genus=="Eimeria")
 subset_taxa(f.sin18, genus=="Eimeria")
 
 ## OK, now we want all the Eimeria sequences
-Eim <- subset_taxa(T.all.l, genus%in%"Eimeria")
+Eim <- subset_taxa(T.all, genus%in%"Eimeria")
 Eim2 <- subset_taxa(T.sin18, genus%in%"Eimeria")
 #Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
 Eim_nf <- subset_taxa(all.PS, genus%in%"Eimeria")

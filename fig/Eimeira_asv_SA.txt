@@ -1,35 +1,35 @@
 
 Call:
-lm(formula = log(Eim2.0@sam_data$Genome_copies_gFaeces) ~ log(1 + 
+lm(formula = log(Eim2.0@sam_data$Genome_copies_ngDNA) ~ log(1 + 
     Eim2.0@otu_table[, 1]) + log(1 + Eim2.0@otu_table[, 2]) + 
     log(1 + Eim2.0@otu_table[, 3]) + log(1 + Eim2.0@otu_table[, 
     4]) + log(1 + Eim2.0@otu_table[, 5]) + Eim2.0@sam_data$dpi)
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--2.97095 -0.57615  0.00211  0.63033  2.70930 
+-3.10632 -0.61486 -0.08726  0.59359  2.63557 
 
 Coefficients:
                                Estimate Std. Error t value Pr(>|t|)    
-(Intercept)                    10.67097    0.68641  15.546  < 2e-16 ***
-log(1 + Eim2.0@otu_table[, 1])  0.09813    0.02848   3.446 0.000742 ***
-log(1 + Eim2.0@otu_table[, 2])  0.08197    0.03699   2.216 0.028243 *  
-log(1 + Eim2.0@otu_table[, 3]) -0.02982    0.02075  -1.437 0.152839    
-log(1 + Eim2.0@otu_table[, 4])  0.01485    0.01914   0.776 0.439096    
-log(1 + Eim2.0@otu_table[, 5])  0.04328    0.02989   1.448 0.149835    
-Eim2.0@sam_data$dpi2            0.92786    0.79258   1.171 0.243619    
-Eim2.0@sam_data$dpi3            1.79717    0.75878   2.368 0.019161 *  
-Eim2.0@sam_data$dpi4            5.81334    0.88457   6.572 8.08e-10 ***
-Eim2.0@sam_data$dpi5            7.38201    0.89730   8.227 9.40e-14 ***
-Eim2.0@sam_data$dpi6            7.02374    0.89938   7.810 9.98e-13 ***
-Eim2.0@sam_data$dpi7            5.74377    0.89320   6.431 1.68e-09 ***
-Eim2.0@sam_data$dpi8            3.10526    0.85460   3.634 0.000386 ***
-Eim2.0@sam_data$dpi9            1.62301    0.82359   1.971 0.050643 .  
-Eim2.0@sam_data$dpi10           0.54365    0.77903   0.698 0.486371    
+(Intercept)                      1.4802     0.5843   2.533 0.012345 *  
+log(1 + Eim2.0@otu_table[, 1])   1.9223     0.3784   5.080 1.13e-06 ***
+log(1 + Eim2.0@otu_table[, 2])   3.0282     1.7257   1.755 0.081379 .  
+log(1 + Eim2.0@otu_table[, 3])  -1.3184    14.1268  -0.093 0.925773    
+log(1 + Eim2.0@otu_table[, 4])   2.9697    19.7574   0.150 0.880728    
+log(1 + Eim2.0@otu_table[, 5])  16.5201    21.8953   0.755 0.451753    
+Eim2.0@sam_data$dpi2             0.4779     0.6851   0.698 0.486583    
+Eim2.0@sam_data$dpi3             2.2491     0.6268   3.588 0.000452 ***
+Eim2.0@sam_data$dpi4             6.5702     0.6916   9.500  < 2e-16 ***
+Eim2.0@sam_data$dpi5             6.9236     0.7647   9.054 7.75e-16 ***
+Eim2.0@sam_data$dpi6             6.1884     0.7957   7.777 1.20e-12 ***
+Eim2.0@sam_data$dpi7             5.3854     0.7240   7.439 7.82e-12 ***
+Eim2.0@sam_data$dpi8             4.1449     0.6430   6.446 1.55e-09 ***
+Eim2.0@sam_data$dpi9             2.4075     0.6329   3.804 0.000208 ***
+Eim2.0@sam_data$dpi10            1.3814     0.6401   2.158 0.032557 *  
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 1.166 on 147 degrees of freedom
-Multiple R-squared:  0.8977,	Adjusted R-squared:  0.8879 
-F-statistic: 92.09 on 14 and 147 DF,  p-value: < 2.2e-16
+Residual standard error: 1.012 on 147 degrees of freedom
+Multiple R-squared:  0.9128,	Adjusted R-squared:  0.9045 
+F-statistic:   110 on 14 and 147 DF,  p-value: < 2.2e-16
 

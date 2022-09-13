@@ -22,9 +22,9 @@ ps <- subset_taxa(ps, genus%in%"Eimeria")
 ps <-aggregate_taxa(ps, level="genus")
 ps <- psmelt(ps)
 ps <- ps[ps$Abundance>0,]
-ps <- ps[ps$Genome_copies_gFaeces>0,]
+ps <- ps[ps$Genome_copies_ngDNA>0,]
 ps$logA <- log(ps$Abundance)
-ps$logGC <- log(ps$Genome_copies_gFaeces)
+ps$logGC <- log(ps$Genome_copies_ngDNA)
 return(ps)
 }
 
@@ -34,7 +34,7 @@ ps <- subset_taxa(ps, Family%in%"Eimeriorina")
 ps <-aggregate_taxa(ps, level="Family")
 ps <- psmelt(ps)
 ps$logA <- log(1+ps$Abundance)
-ps$logGC <- log(1+ps$Genome_copies_gFaeces)
+ps$logGC <- log(1+ps$Genome_copies_ngDNA)
 return(ps)
 }
 
@@ -46,7 +46,7 @@ ggplot(df, aes(x=logA, y=logGC))+
     geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
+    ylab("Genome copies/ng DNA (log)")+
     xlab(paste(name, "Eimeria (log)", sep=" "))+
     ggtitle(name)+
     labs(tag=lb)+
@@ -58,13 +58,10 @@ ggplot(df, aes(x=logA, y=logGC))+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 }
 
-
 Plotting_cor <- function(ps, name, dir){
 #No filters
 library("ggpmisc")
 
-set.seed(500)
-    
 sam <- data.frame(sample_data(ps))
 PSeimf <- subset_taxa(ps, genus%in%"Eimeria")
 
@@ -82,12 +79,14 @@ sdt <- merge(df,sam, by="labels")
 
 #correlation tests
 sdt$logOPG <- log(1+sdt$OPG)
-sdt$logGC <- log(sdt$Genome_copies_gFaeces)
+#sdt$logGC <- log(sdt$Genome_copies_gFaeces)
+sdt$logGC <- log(sdt$Genome_copies_ngDNA)
 sdt$logEimeriaSums <- log(sdt$EimeriaSums)
 sdt$logTotalSums <- log(sdt$TotalSums)
 
 sdta <- sdt[sdt$EimeriaSums>0,]
-sdta <- sdta[sdta$Genome_copies_gFaeces>0,]
+#sdta <- sdta[sdta$Genome_copies_gFaeces>0,]
+sdta <- sdta[sdta$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdta$logGC, sdta$logEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logEimeriaSums, method="pearson"))
@@ -105,7 +104,7 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(aes(y=logGC, x=logEimeriaSums),method = "lm", se=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
-    ylab("Genome copies gFaeces(log)")+
+    ylab("Genome copies ngDNA(log)")+
     xlab("Eimeria (log)")+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
@@ -134,7 +133,8 @@ sdt <- merge(bdf,sdt, by="labels", all=TRUE)
 sdt$logFilEimeriaSums <- log(sdt$FilEimeriaSums)
 
 sdtb <- sdt[sdt$FilEimeriaSums>0,]
-sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
+#sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
+sdtb <- sdtb[sdtb$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdtb$logGC, sdtb$logFilEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logFilEimeriaSums, method="pearson"))
@@ -153,7 +153,7 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces(log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Raw counts filtered")+
     labs(tag= "b)")+
@@ -182,7 +182,8 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 sdt$logTSS_Eim <- log(sdt$TSS_Eim)
 
 sdtc <- sdt[sdt$TSS_Eim>0,]
-sdtc <- sdtc[sdtc$Genome_copies_gFaeces>0,]
+#sdtc <- sdtc[sdtc$Genome_copies_gFaeces>0,]
+sdtc <- sdtc[sdtc$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdtc$logGC, sdtc$logTSS_Eim, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logTSS_Eim, method="pearson"))
@@ -199,7 +200,7 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Total sum scaling")+
         labs(tag= "c)")+
@@ -229,6 +230,7 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 #correlation tests
 sdtd <- sdt[sdt$FilEimeriaSums>0,]
 sdtd <- sdtd[sdtd$Genome_copies_gFaeces>0,]
+sdtd <- sdtd[sdtd$Genome_copies_ngDNA>0,]
 #print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
 print(cor.test(sdtd$logGC, sdtd$REL_Eim, method="pearson"))
 
@@ -243,7 +245,7 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces log")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria")+
     ggtitle("Relative log expression")+
         labs(tag= "d)")+
@@ -296,11 +298,13 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
 #### experimental quantification
 #ABsolute Count Scaling: scaled to DNA/g/faeces
 
-sdt$ACS_Eim <- sdt$TSS_Eim*sdt$DNA_g_feces
+#sdt$ACS_Eim <- sdt$TSS_Eim*sdt$DNA_g_feces
+sdt$ACS_Eim <- sdt$TSS_Eim*sdt$Total_DNA
 sdt$logACS_Eim <- log(sdt$ACS_Eim)
 
 sdtf <- sdt[sdt$ACS_Eim>0,]
 sdtf <- sdtf[sdtf$Genome_copies_gFaeces>0,]
+sdtf <- sdtf[sdtf$Genome_copies_ngDNA>0,]
 
 #correlation tests
 print(cor.test(sdtf$logGC, sdtf$logACS_Eim, method="pearson"))
@@ -315,7 +319,7 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Absolute count scaling")+
         labs(tag= "f)")+
@@ -554,12 +558,11 @@ ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 14, heig
 #dev.off()
 }
 
+
 Plotting_cor_MA.l <- function(ps, ps.f, name, dir){
 #No filters
 library("ggpmisc")
 
-set.seed(500)
-    
 sam <- data.frame(sample_data(ps))
 PSeimf <- subset_taxa(ps, genus%in%"Eimeria")
 
@@ -577,12 +580,14 @@ sdt <- merge(df,sam, by="labels")
 
 #correlation tests
 sdt$logOPG <- log(1+sdt$OPG)
-sdt$logGC <- log(sdt$Genome_copies_gFaeces)
+#sdt$logGC <- log(sdt$Genome_copies_gFaeces)
+sdt$logGC <- log(sdt$Genome_copies_ngDNA)
 sdt$logEimeriaSums <- log(sdt$EimeriaSums)
 sdt$logTotalSums <- log(sdt$TotalSums)
 
 sdta <- sdt[sdt$EimeriaSums>0,]
-sdta <- sdta[sdta$Genome_copies_gFaeces>0,]
+#sdta <- sdta[sdta$Genome_copies_gFaeces>0,]
+sdta <- sdta[sdta$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdta$logGC, sdta$logEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logEimeriaSums, method="pearson"))
@@ -600,7 +605,7 @@ a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(aes(y=logGC, x=logEimeriaSums),method = "lm", se=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
-    ylab("Genome copies gFaeces(log)")+
+    ylab("Genome copies ngDNA(log)")+
     xlab("Eimeria (log)")+
     ggtitle("Raw counts unfiltered")+
     labs(tag= "a)")+
@@ -629,7 +634,8 @@ sdt <- merge(bdf,sdt, by="labels", all=TRUE)
 sdt$logFilEimeriaSums <- log(sdt$FilEimeriaSums)
 
 sdtb <- sdt[sdt$FilEimeriaSums>0,]
-sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
+#sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
+sdtb <- sdtb[sdtb$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdtb$logGC, sdtb$logFilEimeriaSums, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logFilEimeriaSums, method="pearson"))
@@ -648,7 +654,7 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     scale_fill_brewer(palette="Spectral")+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces(log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Raw counts filtered")+
     labs(tag= "b)")+
@@ -677,7 +683,8 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 sdt$logTSS_Eim <- log(sdt$TSS_Eim)
 
 sdtc <- sdt[sdt$TSS_Eim>0,]
-sdtc <- sdtc[sdtc$Genome_copies_gFaeces>0,]
+#sdtc <- sdtc[sdtc$Genome_copies_gFaeces>0,]
+sdtc <- sdtc[sdtc$Genome_copies_ngDNA>0,]
 
 print(cor.test(sdtc$logGC, sdtc$logTSS_Eim, method="pearson"))
 #print(cor.test(sdt$logOPG, sdt$logTSS_Eim, method="pearson"))
@@ -694,7 +701,7 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Total sum scaling")+
         labs(tag= "c)")+
@@ -724,6 +731,7 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 #correlation tests
 sdtd <- sdt[sdt$FilEimeriaSums>0,]
 sdtd <- sdtd[sdtd$Genome_copies_gFaeces>0,]
+sdtd <- sdtd[sdtd$Genome_copies_ngDNA>0,]
 #print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
 print(cor.test(sdtd$logGC, sdtd$REL_Eim, method="pearson"))
 
@@ -738,7 +746,7 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria")+
     ggtitle("Relative log expression")+
         labs(tag= "d)")+
@@ -791,11 +799,13 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
 #### experimental quantification
 #ABsolute Count Scaling: scaled to DNA/g/faeces
 
-sdt$ACS_Eim <- sdt$TSS_Eim*sdt$DNA_g_feces
+#sdt$ACS_Eim <- sdt$TSS_Eim*sdt$DNA_g_feces
+sdt$ACS_Eim <- sdt$TSS_Eim*sdt$Total_DNA
 sdt$logACS_Eim <- log(sdt$ACS_Eim)
 
 sdtf <- sdt[sdt$ACS_Eim>0,]
 sdtf <- sdtf[sdtf$Genome_copies_gFaeces>0,]
+sdtf <- sdtf[sdtf$Genome_copies_ngDNA>0,]
 
 #correlation tests
 print(cor.test(sdtf$logGC, sdtf$logACS_Eim, method="pearson"))
@@ -810,7 +820,7 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     scale_fill_brewer(palette="Spectral")+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
+    ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria (log)")+
     ggtitle("Absolute count scaling")+
         labs(tag= "f)")+
@@ -867,3 +877,4 @@ print(cocor(~logGC + logEimeriaSums | logGC + logACS_Eim, data = cor.df5,
 #fCor
 #dev.off()
 }
+

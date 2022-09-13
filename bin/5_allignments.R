@@ -62,100 +62,102 @@ SA.e3 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[3]),]
 SA.e2 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[2]),]
 SA.e1 <- SA.e[which(SA.e$OTU==colnames(Eim2@otu_table)[1]),]
 
+## dataset with asv1 and 2
+
 MA.e3 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[3]),]
 MA.e2 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[2]),]
 MA.e1 <- MA.e[which(MA.e$OTU==colnames(Eim@otu_table)[1]),]
 
 # No GC and ASV abundance zeros
-SA.e.0 <- SA.e[SA.e$Genome_copies_gFaeces>0,]
+SA.e.0 <- SA.e[SA.e$Genome_copies_ngDNA>0,]
 SA.e.0 <- SA.e.0[SA.e.0$Abundance>0,]
 SA.e.0 <-SA.e.0[!is.na(SA.e.0$Abundance),]
 
-MA.e.0 <- MA.e[MA.e$Genome_copies_gFaeces>0,]
+MA.e.0 <- MA.e[MA.e$Genome_copies_ngDNA>0,]
 MA.e.0 <- MA.e.0[MA.e.0$Abundance>0,]
 MA.e.0 <-MA.e.0[!is.na(MA.e.0$Abundance),]
 
 ## Let's do the correlations first
-SA.ASV <- SA.e[SA.e$Genome_copies_gFaeces>0,]
-SA.e.g0 <- SA.e.g[SA.e.g$Genome_copies_gFaeces>0,]
+SA.ASV <- SA.e[SA.e$Genome_copies_ngDNA>0,]
+SA.e.g0 <- SA.e.g[SA.e.g$Genome_copies_ngDNA>0,]
 SA.e.g0 <- SA.e.g0[SA.e.g0$Abundance>0,]
-SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_gFaeces),]
+SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_ngDNA),]
 
 # sanity test here
-cor.test(log(SA.e.g0$Abundance), log(SA.e.g0$Genome_copies_gFaeces))
+cor.test(log(SA.e.g0$Abundance), log(SA.e.g0$Genome_copies_ngDNA))
 
-SA.e10 <- SA.e1[SA.e1$Genome_copies_gFaeces>0,]
-SA.e10 <- SA.e10[!is.na(SA.e10$Genome_copies_gFaeces),]
+SA.e10 <- SA.e1[SA.e1$Genome_copies_ngDNA>0,]
+SA.e10 <- SA.e10[!is.na(SA.e10$Genome_copies_ngDNA),]
 SA.e10 <- SA.e10[SA.e10$Abundance>0,]
 
-SA.e20 <- SA.e2[SA.e2$Genome_copies_gFaeces>0,]
-SA.e20 <- SA.e20[!is.na(SA.e10$Genome_copies_gFaeces),]
+SA.e20 <- SA.e2[SA.e2$Genome_copies_ngDNA>0,]
+SA.e20 <- SA.e20[!is.na(SA.e10$Genome_copies_ngDNA),]
 SA.e20 <- SA.e20[SA.e20$Abundance>0,]
 
-SA.e30 <- SA.e3[SA.e3$Genome_copies_gFaeces>0,]
-SA.e30 <- SA.e30[!is.na(SA.e30$Genome_copies_gFaeces),]
+SA.e30 <- SA.e3[SA.e3$Genome_copies_ngDNA>0,]
+SA.e30 <- SA.e30[!is.na(SA.e30$Genome_copies_ngDNA),]
 SA.e30 <- SA.e30[SA.e30$Abundance>0,]
 
-SA.e40 <- SA.e4[SA.e4$Genome_copies_gFaeces>0,]
-SA.e40 <- SA.e40[!is.na(SA.e40$Genome_copies_gFaeces),]
+SA.e40 <- SA.e4[SA.e4$Genome_copies_ngDNA>0,]
+SA.e40 <- SA.e40[!is.na(SA.e40$Genome_copies_ngDNA),]
 SA.e40 <- SA.e40[SA.e40$Abundance>0,]
 
-SA.e50 <- SA.e5[SA.e5$Genome_copies_gFaeces>0,]
-SA.e50 <- SA.e50[!is.na(SA.e50$Genome_copies_gFaeces),]
+SA.e50 <- SA.e5[SA.e5$Genome_copies_ngDNA>0,]
+SA.e50 <- SA.e50[!is.na(SA.e50$Genome_copies_ngDNA),]
 SA.e50 <- SA.e50[SA.e50$Abundance>0,]
 
 ### they are correlate pretty well, ASV1 being the best
-cor.test(log(SA.e10$Genome_copies_gFaeces), log(SA.e10$Abundance))
-cor.test(log(SA.e20$Genome_copies_gFaeces), log(SA.e20$Abundance))
-cor.test(log(SA.e30$Genome_copies_gFaeces), log(SA.e30$Abundance))
-cor.test(log(SA.e40$Genome_copies_gFaeces), log(SA.e40$Abundance))
-cor.test(log(SA.e50$Genome_copies_gFaeces), log(SA.e50$Abundance))
+cor.test(log(SA.e10$Genome_copies_ngDNA), log(SA.e10$Abundance))
+cor.test(log(SA.e20$Genome_copies_ngDNA), log(SA.e20$Abundance))
+cor.test(log(SA.e30$Genome_copies_ngDNA), log(SA.e30$Abundance))
+cor.test(log(SA.e40$Genome_copies_ngDNA), log(SA.e40$Abundance))
+cor.test(log(SA.e50$Genome_copies_ngDNA), log(SA.e50$Abundance))
 
 ### now same for MA
-MA.e10 <- MA.e1[MA.e1$Genome_copies_gFaeces>0,]
-MA.e10 <- MA.e10[!is.na(MA.e10$Genome_copies_gFaeces),]
+MA.e10 <- MA.e1[MA.e1$Genome_copies_ngDNA>0,]
+MA.e10 <- MA.e10[!is.na(MA.e10$Genome_copies_ngDNA),]
 MA.e10 <- MA.e10[MA.e10$Abundance>0,]
 
-MA.e20 <- MA.e2[MA.e2$Genome_copies_gFaeces>0,]
-MA.e20 <- MA.e20[!is.na(MA.e10$Genome_copies_gFaeces),]
+MA.e20 <- MA.e2[MA.e2$Genome_copies_ngDNA>0,]
+MA.e20 <- MA.e20[!is.na(MA.e10$Genome_copies_ngDNA),]
 MA.e20 <- MA.e20[MA.e20$Abundance>0,]
 
-MA.e30 <- MA.e3[MA.e3$Genome_copies_gFaeces>0,]
-MA.e30 <- MA.e30[!is.na(MA.e30$Genome_copies_gFaeces),]
+MA.e30 <- MA.e3[MA.e3$Genome_copies_ngDNA>0,]
+MA.e30 <- MA.e30[!is.na(MA.e30$Genome_copies_ngDNA),]
 MA.e30 <- MA.e30[MA.e30$Abundance>0,]
 
 ## ASV1 is also best for MA
-cor.test(log(MA.e10$Genome_copies_gFaeces), log(MA.e10$Abundance))
-cor.test(log(MA.e20$Genome_copies_gFaeces), log(MA.e20$Abundance))
-cor.test(log(MA.e30$Genome_copies_gFaeces), log(MA.e30$Abundance))
+cor.test(log(MA.e10$Genome_copies_ngDNA), log(MA.e10$Abundance))
+cor.test(log(MA.e20$Genome_copies_ngDNA), log(MA.e20$Abundance))
+cor.test(log(MA.e30$Genome_copies_ngDNA), log(MA.e30$Abundance))
 
 ############### Which ASV explains Eimeria genome copies?
 ################ preparing dataset for regressions
 # removeing zeros from qPCR
 # can't remove zeros from indidual ASV's since then I end up with a handful of samples
-Eim2.0 = phyloseq::prune_samples(Eim2@sam_data$Genome_copies_gFaeces>0, Eim2)
-Eim.0 = phyloseq::prune_samples(Eim@sam_data$Genome_copies_gFaeces>0, Eim)
+Eim2.0 = phyloseq::prune_samples(Eim2@sam_data$Genome_copies_ngDNA>0, Eim2)
+Eim.0 = phyloseq::prune_samples(Eim@sam_data$Genome_copies_ngDNA>0, Eim)
 
 # First for SA, we di a glm nb with without log transformation to see if has better fit than the lm with log transformed data.
-SA.eim.m <- glm.nb(Eim2.0@sam_data$Genome_copies_gFaeces~Eim2.0@otu_table[,1]+Eim2.0@otu_table[,2]+Eim2.0@otu_table[,3]+Eim2.0@otu_table[,4]+Eim2.0@otu_table[,5]*Eim2.0@sam_data$dpi)
+SA.eim.m <- glm.nb(Eim2.0@sam_data$Genome_copies_ngDNA~Eim2.0@otu_table[,1]+Eim2.0@otu_table[,2]+Eim2.0@otu_table[,3]+Eim2.0@otu_table[,4]+Eim2.0@otu_table[,5]+Eim2.0@sam_data$dpi)
 
-gau.m <- lm(log(Eim2.0@sam_data$Genome_copies_gFaeces)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3])+log(1+Eim2.0@otu_table[,4])+log(1+Eim2.0@otu_table[,5])+Eim2.0@sam_data$dpi)
+gau.m <- lm(log(Eim2.0@sam_data$Genome_copies_ngDNA)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3])+log(1+Eim2.0@otu_table[,4])+log(1+Eim2.0@otu_table[,5])+Eim2.0@sam_data$dpi)
 
-sink("fig/Eimeira_asv_SA.txt")
+#sink("fig/Eimeira_asv_SA.txt")
 summary(gau.m)
-sink()
+#sink()
 
 summary(SA.eim.m) # not good based on the null deviance
 
 #plot(gau.m) # it looks not bad, not bad at all. Improved by removing the zeros
 
 #### for multiamplicon
-gau.m.ma <- lm(log(Eim.0@sam_data$Genome_copies_gFaeces)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3])+Eim.0@sam_data$dpi)
+gau.m.ma <- lm(log(Eim.0@sam_data$Genome_copies_ngDNA)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3])+Eim.0@sam_data$dpi)
 #plot(gau.m.ma) # also acceptable. cool!!
 
-sink("fig/Eimeira_asv_MA.txt")
+#sink("fig/Eimeira_asv_MA.txt")
 print(summary(gau.m.ma))
-sink()
+#sink()
 
 # LR tests for significance
 anova(gau.m, test="LRT")
@@ -176,8 +178,8 @@ cor.test(log(1+SA.e2$Abundance), log(1+SA.e2$Genome_copies_gFaeces))
 summary(gau.o)
 
 ### only ASV model
-MA.gau <- lm(log(Eim.0@sam_data$Genome_copies_gFaeces)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3]))
-SA.gau <- lm(log(Eim2.0@sam_data$Genome_copies_gFaeces)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3]))
+MA.gau <- lm(log(Eim.0@sam_data$Genome_copies_ngDNA)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3]))
+SA.gau <- lm(log(Eim2.0@sam_data$Genome_copies_ngDNA)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3]))
 
 summary(MA.gau)
 summary(SA.gau)
@@ -191,10 +193,10 @@ anova(MA.gau, test="LRT")
 #plot(MA.gau) # not great!
 
 # ploting ASV ~ GC by dpi
-plot_SA_all <- ggplot(SA.e.0, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_all <- ggplot(SA.e.0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV abundance (log)")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV abundance (log)")+
     ggtitle("SA")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -205,10 +207,10 @@ plot_SA_all <- ggplot(SA.e.0, aes(x=log(Abundance), y=log(Genome_copies_gFaeces)
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_1 <- ggplot(SA.e10, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_1 <- ggplot(SA.e10, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV1 abundance (log)")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV1 abundance (log)")+
     ggtitle("SA - ASV1")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -219,10 +221,10 @@ plot_SA_1 <- ggplot(SA.e10, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), 
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV2 abundance (log)")+
+    labs(y="Eimeria Genome copies/ngDNA (log)", x="Eimeria ASV2 abundance (log)")+
     ggtitle("SA - ASV2")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -233,10 +235,10 @@ plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), 
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_3 <- ggplot(SA.e30, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_3 <- ggplot(SA.e30, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV3 abundance (log)")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV3 abundance (log)")+
     ggtitle("SA - ASV3")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -247,10 +249,10 @@ plot_SA_3 <- ggplot(SA.e30, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), 
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_4 <- ggplot(SA.e40, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_4 <- ggplot(SA.e40, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV4 abundance (log)")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV4 abundance (log)")+
     ggtitle("SA - ASV4")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -261,10 +263,10 @@ plot_SA_4 <- ggplot(SA.e40, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), 
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-plot_SA_5 <- ggplot(SA.e50, aes(x=log(Abundance), y=log(Genome_copies_gFaeces), fill=dpi))+
+plot_SA_5 <- ggplot(SA.e50, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
      scale_fill_brewer(palette="Spectral")+
-    labs(y="Eimeria Genome copies/g of faeces (log)", x="Eimeria ASV5 abundance (log)")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV5 abundance (log)")+
     ggtitle("SA - ASV5")+
     geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
     theme_bw()+
@@ -456,14 +458,14 @@ ASV.c <- ggplot(ma.sa.t, aes(x=log(Abundance.x), y=log(Abundance.y), fill=ASV))+
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
-SA_Eimeiria.ASVs <- ggplot(SA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abundance), fill=ASV))+
+SA_Eimeiria.ASVs <- ggplot(SA.e.0, aes(y=log(Genome_copies_ngDNA), x=log(Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2",
                                "#D55E00", "#E63C9A"))+
     geom_smooth(method=lm, colour="black", aes(colour="ASV"))+
-    xlab("Genome copies g/faeces (log)")+
+    ylab("Genome copies/ng DNA (log)")+
 #    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
-    ylab("ASV abundance (log)")+
+    xlab("ASV abundance (log)")+
 #    annotate(geom="text", x=12, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -472,12 +474,12 @@ SA_Eimeiria.ASVs <- ggplot(SA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abund
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
-MA_Eimeiria.ASVs <- ggplot(MA.e.0, aes(x=log(Genome_copies_gFaeces), y=log(Abundance), fill=ASV))+
+MA_Eimeiria.ASVs <- ggplot(MA.e.0, aes(x=log(Genome_copies_ngDNA), y=log(Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2"))+
     geom_smooth(method=lm, colour="black", aes(colour="ASV"))+
-    xlab("Genome copies g/faeces (log)")+
-    ylab("ASV abundance (log)")+
+    ylab("Genome copies/ng DNA (log)")+
+    xlab("ASV abundance (log)")+
 #    annotate(geom="text", x=12, y=19, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -518,12 +520,12 @@ SA.e$EH_ID
 p.ID <- function(i){
     SA.e%>%
     dplyr::filter(EH_ID%in%SA.e$EH_ID[i])%>%
-    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_ngDNA, Abundance)%>%
     ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
     geom_line(aes(group=ASV), color="gray", alpha=0.5)+
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+
-    scale_y_log10("log10 (Eimeira /gFaeces + 1) (qPCR)",
+    scale_y_log10("log10 (Eimeira /ng DNA + 1) (qPCR)",
       breaks = scales::trans_breaks("log10", function(x) 10^x),
       labels = scales::trans_format("log10", scales::math_format(10^.x)))+
     theme_bw()+
@@ -547,7 +549,7 @@ dev.off()
 p.ID <- function(i){
     SA.e%>%
     dplyr::filter(EH_ID%in%SA.e$EH_ID[i])%>%
-    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_ngDNA, Abundance)%>%
     ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
     geom_line(aes(group=ASV), color="gray", alpha=0.5)+
@@ -577,7 +579,7 @@ head(MA.e)
 p.ID.MA <- function(i){
     MA.e%>%
     dplyr::filter(EH_ID%in%MA.e$EH_ID[i])%>%
-    dplyr::select(EH_ID, dpi, ASV, Genome_copies_gFaeces, Abundance)%>%
+    dplyr::select(EH_ID, dpi, ASV, Genome_copies_ngDNA, Abundance)%>%
     ggplot(aes(x=dpi, Abundance+1, fill=ASV))+
     geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.7, aes(fill=ASV), color="black")+
     geom_line(aes(group=ASV), color="gray", alpha=0.5)+
@@ -608,7 +610,7 @@ dev.off()
 
 
 
-ggplot(SA.e, aes(x=log(1+Abundance), y=ASV))+
+ggplot(SA.e, aes(x=Abundance, y=ASV))+
     geom_point(aes(fill=ASV), size=4, shape=21, apha=0.5, position=position_jitter(height=0.2))+
 #      geom_density(aes(color = ASV), size = 1) +
     scale_fill_manual(values=c("#009E73", "#F0E442", "#0072B2", "#D55E00", "#E63C9A"))+

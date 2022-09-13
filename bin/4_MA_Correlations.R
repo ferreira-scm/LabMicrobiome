@@ -1,4 +1,3 @@
-source("bin/4_MA_SA_filtering.R")
 
 library(relaimpo)
 library(lme4)
@@ -7,144 +6,125 @@ library(DescTools)
 library(cocor)
 library(reshape2)
 library(microbiome)
-
 library(phyloseq)
+
+source("bin/4_MA_SA_filtering.R")
 
 ############################################
 ##############################################
 
 #### sensitivity, specificity, positive predicted value and negative predictive value
 ############# sensitivity and specificity
-#remove NA row
-SA.e.g <- SA.e.g[-which(is.na(SA.e.g$Genome_copies_gFaeces)),]
-nrow(SA.e.g)
 
-sensit <- function(SA.e.g){
-SA.eim <- matrix(as.numeric(c(summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces>0)[3],
-    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces>0)[3],
-    summary(SA.e.g$Abundance>0 & SA.e.g$Genome_copies_gFaeces==0)[3],
-    summary(SA.e.g$Abundance==0 & SA.e.g$Genome_copies_gFaeces==0)[3])), ncol=2, byrow=TRUE)
-margin1 <- margin.table(SA.eim, margin=1)
-margin2 <- margin.table(SA.eim, margin=2)
-eimN <- margin1[2]
-eimP <- margin1[1]
-testP <- margin2[1]
-testN <- margin2[2]
-tN <- margin2[2]
-tP <- margin2[1]
-tP <- SA.eim[1,1]
-fP <- SA.eim[2,1]
-tN <- SA.eim[2,2]
-fN <- SA.eim[1,2]
-print("Sensitivity:")
-print(tP/eimP)
-print("Specificity")
-print(tN/eimN)
-print("positive predictive value")
-print(tP/testP)
-print("negative predictive value")
-print(tN/testN)
-}
-
-#sensitivity for the 3 datasets filtered and not filtered
-sensit(SA.e.g)
-
-sensit(nfSA.e.g)
-
-sensit(MA.e.g)
-sensit(nfMA.e.g)
-
-sensit(MA.e.g.w)
-sensit(nfMA.e.g.w)
-
-tP/testP
-
-testP
-
-#### for MA
+sensit <- function(Eim_nf){
 # GC- Eim -
-summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces==0)
+tneg <- summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces==0)[[3]]
+
 # GC+ Eim -
-summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces>0)
+fneg <- summary(sample_sums(Eim_nf@otu_table)==0&Eim_nf@sam_data$Genome_copies_gFaeces>0)[[3]]
+
 # GC+ Eim+
-summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces>0)
+tpos <- summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces>0)[[3]]
+
 # GC- Eim+
-summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces==0)
+fpos <- summary(sample_sums(Eim_nf@otu_table)>0&Eim_nf@sam_data$Genome_copies_gFaeces==0)[[3]]
+
 # GC+ GC-
-summary(Eim_nf@sam_data$Genome_copies_gFaeces==0)
+gcpos <- summary(Eim_nf@sam_data$Genome_copies_gFaeces==0)[[2]]
+gcneg <- summary(Eim_nf@sam_data$Genome_copies_gFaeces==0)[[3]]
+
 # Eim + Eim -
-summary(sample_sums(Eim_nf@otu_table)==0)
+epos <- summary(sample_sums(Eim_nf@otu_table)==0)[[2]]
+eneg <- summary(sample_sums(Eim_nf@otu_table)==0)[[3]]
 
-e.s
-
-e.s <- matrix(c(53, 3, 50, 129), ncol=2, byrow=TRUE)
+e.s <- matrix(as.numeric(c(tneg, fpos, fneg, tpos)), ncol=2, byrow=TRUE)
 colnames(e.s) <- c("Eim-","Eim+")
 rownames(e.s) <- c("GC-", "GC+")
 margin1 <- margin.table(e.s, margin=1)
 margin2 <- margin.table(e.s, margin=2)
 
 #sensitivity
-e.s[2,2]/margin1[2]*100
+print("Sensitivity:")
+print(e.s[2,2]/margin1[2]*100)
 #specificity
-e.s[1,1]/margin1[1]*100
+print("Specificity:")
+print(e.s[1,1]/margin1[1]*100)
 #ppv
-e.s[2,2]/margin2[2]*100
+print("positive predictive value")
+print(e.s[2,2]/margin2[2]*100)
 #npv
-e.s[1,1]/margin2[1]*100
+print("negative predictive value")
+print(e.s[1,1]/margin2[1]*100)
+}
+
+#### for MA
+sensit(Eim_nf)
+sensit(Eim)
+MA.asv1 <- prune_taxa(rownames(tax_table(Eim2))[1], Eim)
+MA.asv12 <- prune_taxa(rownames(tax_table(Eim2))[c(1,2)], Eim)
+MA.asv13 <- prune_taxa(rownames(tax_table(Eim2))[c(1,3)], Eim)
+MA.asv2 <- prune_taxa(rownames(tax_table(Eim2))[2], Eim)
+
+MA.asv3 <- prune_taxa(rownames(tax_table(Eim2))[3], Eim)
+
+
+sensit(MA.asv1)
+
+sensit(MA.asv13)
+
+sensit(MA.asv12)
+
+sensit(MA.asv2)
+
+sensit(MA.asv3)
 
 #### for SA
-# GC- Eim -
-summary(sample_sums(Eim2@otu_table)==0&Eim2@sam_data$Genome_copies_gFaeces==0)
-# GC+ Eim -
-summary(sample_sums(Eim2@otu_table)==0&Eim2@sam_data$Genome_copies_gFaeces>0)
-# GC+ Eim+
-summary(sample_sums(Eim2@otu_table)>0&Eim2@sam_data$Genome_copies_gFaeces>0)
-# GC- Eim+
-summary(sample_sums(Eim2@otu_table)>0&Eim2@sam_data$Genome_copies_gFaeces==0)
-# GC+ GC-
-summary(Eim2@sam_data$Genome_copies_gFaeces==0)
-# Eim + Eim -
-summary(sample_sums(Eim2@otu_table)==0)
+sensit(Eim2_nf)
+sensit(Eim2)
 
-e.sa <- matrix(c(23, 14, 10 152), ncol=2, byrow=TRUE)
-colnames(e.sa) <- c("Eim-","Eim+")
-rownames(e.sa) <- c("GC-", "GC+")
-margin1 <- margin.table(e.sa, margin=1)
-margin2 <- margin.table(e.sa, margin=2)
+SA.asv1 <- prune_taxa(rownames(tax_table(Eim2))[1], Eim2)
+SA.asv12 <- prune_taxa(rownames(tax_table(Eim2))[c(1,2)], Eim2)
+SA.asv123 <- prune_taxa(rownames(tax_table(Eim2))[c(1,2,3)], Eim2)
+SA.asv13 <- prune_taxa(rownames(tax_table(Eim2))[c(1,3)], Eim2)
+SA.asv2 <- prune_taxa(rownames(tax_table(Eim2))[2], Eim2)
+SA.asv3 <- prune_taxa(rownames(tax_table(Eim2))[3], Eim2)
+SA.asv4 <- prune_taxa(rownames(tax_table(Eim2))[4], Eim2)
+SA.asv5 <- prune_taxa(rownames(tax_table(Eim2))[5], Eim2)
 
-#sensitivity
-e.sa[2,2]/margin1[2]*100
-#specificity
-e.sa[1,1]/margin1[1]*100
-#ppv
-e.sa[2,2]/margin2[2]*100
-#npv
-e.sa[1,1]/margin2[1]*100
+sensit(SA.asv1)
+
+sensit(SA.asv2)
+
+sensit(SA.asv12)
+
+sensit(SA.asv13)
+
+sensit(SA.asv123)
+
+sensit(SA.asv3)
+
+sensit(SA.asv4)
+
+sensit(SA.asv5)
 
 # now plotting and doing correlation analysis and comparisons
 ## for "pooled" MA
-Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
+#Plotting_cor(ps=all.PS, "MA", dir="fig/MA/")
 # Seqf, TSS, RLE, CLR, ACS
-p <- c(0.0208, 0.0134, 0.1037, 0.00001, 0.00001)
-p.adjust(p, method="BH")
-
-#only for wang
-Plotting_cor(ps=all.PSwang, "MA_wang", dir="fig/MA/")
-# seq-f,tss,rle,clr,acs
-p <- c(0.00001, 0.0138, 0.0880, 0.0030, 0.00001)
-p.adjust(p, method="BH")
+#p <- c(0.0208, 0.0134, 0.1037, 0.00001, 0.00001)
+#p.adjust(p, method="BH")
 
 ## for single amplicon
 Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
 # seq-f,tss,rle,clr,acs
-p <- c(0.0117, 0.1045, 0.00001, 0.00001, 0.0024)
+p <- c(0.0406, 0.1725, 0.00001, 0.00001, 0.6218)
 p.adjust(p, method="BH")
 
 # for MA but individually filtered
 Plotting_cor_MA.l(ps=all.PS, ps.f=f.all.lp, "MA_individually_filtered", dir="fig/MA/")
 
 # seq-f,tss,rle,clr,acs
-p <- c(0.00001, 0.0146, 0.1003, 0.00001, 0.00001)
+p <- c(0.0001, 0.0052, 0.0037, 0.00001, 0.0006)
 p.adjust(p, method="BH")
 
 ##################################################################
@@ -212,7 +192,7 @@ cor.test(TSS$logGC, TSS$logA, method="pearson")
 cor.test(plant$logGC, plant$logA, method="pearson")
 cor.test(worms$logGC, worms$logA, method="pearson")
 cor.test(Mus$logGC, Mus$logA, method="pearson")
-cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
+#cor.test(PlantMus$logGC, PlantMus$logA, method="pearson")
 # for SA
 cor.test(TSS18$logGC, TSS18$logA, method="pearson")
 cor.test(plant18$logGC, plant18$logA, method="pearson")
@@ -255,13 +235,11 @@ cocor(~logGC +  logEimeriidae| logGC + logA_plant, data = df,
 cocor(~logGC +  logEimeriidae| logGC + logA_worms, data = df,
       test = c("hittner2003", "zou2007"))
 
-cocor(~logGC +  logEimeriidae| logGC + logA_PlantMus, data = df,
-            test = c("hittner2003", "zou2007"))
 
 # Adjust for multiple testing
 ## those are the corresponding p values from the other correlations above plus the sub TSS).
-# seq-f,tss,rle,clr,acs,tss-mus, tss-plant, tss-worms, tss-plant-mus
-p <- c(0.00001, 0.0146, 0.1003, 0.00001, 0.00001, 0.0055, 0.1010, 0.0173, 0.461)
+# seq-f,tss,rle,clr,acs,tss-mus, tss-plant, tss-worms
+p <- c(0.0001, 0.0052, 0.0037, 0.00001, 0.0006, 0.0023, 0.0337, 0.0064)
 round(p.adjust(p, method="BH"), 3)
 
 #### comparison between TSS and TSS-removal
@@ -277,7 +255,7 @@ cocor(~logGC +  logA| logGC + logA_worms, data = df,
 #cocor(~logGC +  logA| logGC + logA_PlantMus, data = df,
 #            test = c("hittner2003", "zou2007"))
 
-p <- c(0.0012, 0.0163, 0.7727)
+p <- c(0.0068, 0.1203, 0.7691)
 round(p.adjust(p, method="BH"), 3)
 
 ######################################################
@@ -305,7 +283,7 @@ cocor(~logGC + logA | logGC + logA_plant, data = df18,
 cocor(~logGC + logA | logGC + logA_worms, data = df18,
             test = c("hittner2003", "zou2007"))
 
-p <- c(0.00001, 0.0225)
+p <- c(0.0001, 0.0109)
 round(p.adjust(p, method="BH"),3)
 
 ## Comparing to Seq
@@ -316,17 +294,15 @@ cocor(~logGC +  logEimeriidae | logGC + logA_worms, data = df18,
             test = c("hittner2003", "zou2007"))
 
 # seq-f,tss,rle,clr,acs, tss-plant, tss-worms
-p <- c(0.0117, 0.1045, 0.00001, 0.00001, 0.0024, 0.0597, 0.0289)
+p <- c(0.0406, 0.1725, 0.00001, 0.00001, 0.6218, 0.0597, 0.0289)
 round(p.adjust(p, method="BH"),3)
 
 ##################################################
 
-
-
 ##################### how many amplicons have mus?
 ################################### Mus sequences
 for (i in 1:48) {
-    print(names(all.PS.l)[i])
+#    print(names(all.PS.l)[i])
     try(p <- subset_taxa(f.all.l[[i]],genus=="Mus"), silent=TRUE)
     if (exists("p")) {
         try(a <- rownames(p@tax_table), silent=TRUE)
@@ -345,16 +321,15 @@ writeFasta(DNAStringSet(mus.s), "tmp/Mus_ASV.fasta")
 #######################
 # how does host DNA change with infection
 # no Mus reads in SA
-PSclr = microbiome::transform(f.all, transform="clr")
-#PSeimf <- subset_taxa(PSclr, family%in%"Eimeriidae")
-
 Mus <- subset_taxa(T.all, genus%in%"Mus")
-
-Mus@tax_table
+MusTSS <- subset_taxa(allTSS, genus%in%"Mus")
 
 Mus <-aggregate_taxa(Mus, level="genus")
-Mus.clr <- subset_taxa(PSclr, genus%in%"Mus")
-Mus.clr <-aggregate_taxa(Mus.clr, level="genus")
+MusTSS <-aggregate_taxa(MusTSS, level="genus")
+
+m <- psmelt(Mus)
+mTSS <- psmelt(MusTSS)
+
 
 nb <- length(levels(as.factor(m$EH_ID)))
 
@@ -362,16 +337,12 @@ coul <- colorRampPalette(brewer.pal(8, "Accent"))(nb)
 
 mycol <- coul[as.numeric(as.factor(m$EH_ID))]
 
-m <- psmelt(Mus)
-m.clr <- psmelt(Mus.clr)
-
-
 mp.acs <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
     geom_point(aes(fill=EH_ID), shape=21, size=4, position=position_jitter(0.1), alpha=0.6)+
     scale_color_manual(values=coul)+
         scale_fill_manual(values=coul)+           
     geom_line(aes(group=EH_ID))+
-    labs(x="Days post infection", y="Host reads (per g of faeces)")+
+    labs(x="Days post infection", y="Host reads (per ngDNA)")+
     labs(tag= "a)")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -380,12 +351,12 @@ mp.acs <- ggplot(m, aes(dpi, Abundance, color=EH_ID))+
            legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-mp.clr <- ggplot(m.clr, aes(dpi, Abundance, color=EH_ID))+
+mp.tss <- ggplot(mTSS, aes(dpi, Abundance, color=EH_ID))+
     geom_point(aes(fill=EH_ID), shape=21, size=4, position=position_jitter(0.1), alpha=0.6)+
     scale_color_manual(values=coul)+
         scale_fill_manual(values=coul)+           
     geom_line(aes(group=EH_ID))+
-    labs(x="Days post infection", y="Host reads (per g of faeces)")+
+    labs(x="Days post infection", y="Host reads (relative abundance)")+
     labs(tag= "a)")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -395,24 +366,28 @@ mp.clr <- ggplot(m.clr, aes(dpi, Abundance, color=EH_ID))+
           axis.line = element_line(colour = "black"))
 
 
-mp.clr
+mp.tss
+
+mp.acs
 
 # Are host abundance and Eimeria associated
-cor.test(log(1+m$Abundance), log(1+m$Genome_copies_gFaeces), method="spearman")
+cor.test(m$Abundance, m$Genome_copies_ngDNA, method="spearman")
 
-cor.test(log(1+m$Abundance), log(1+m$OPG), method="spearman")
+cor.test(m$Abundance, m$OPG, method="spearman")
 
-cor.test(m.clr$Abundance, log(1+m.clr$Genome_copies_gFaeces), method="spearman")
+cor.test(m$Abundance, m$weightloss, method="spearman")
+
+cor.test(mTSS$Abundance, mTSS$Genome_copies_ngDNA, method="spearman")
 #cor.test(m.clr$Abundance, log(1+m.clr$OPG), method="spearman")
 
-m.host <- ggplot(m, aes(log(1+Abundance), log(1+Genome_copies_gFaeces)))+
+m.host <- ggplot(m, aes(log(1+Abundance), log(1+Genome_copies_ngDNA)))+
     geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
     scale_fill_brewer(palette="Spectral")+           
-    labs(x="Host reads per g of Faeces, log(+1)", y="Genome copies per g of faeces log(1+)")+
+    labs(x="Host reads/ngDNA, log(+1)", y="Genome copies/ngDNA log(1+)")+
     labs(tag= "b)")+
 #    geom_smooth(method = "lm", se=FALSE, na.rm=TRUE) +
 #    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE,  label.x=0.1, label.y=0.9) +  
-    annotate(geom="text", x=5, y=19, label="Spearman rho=0.41, p<0.001")+
+    annotate(geom="text", x=0.7, y=5, label="Spearman rho=0.36, p<0.001")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -421,8 +396,7 @@ m.host <- ggplot(m, aes(log(1+Abundance), log(1+Genome_copies_gFaeces)))+
           axis.line = element_line(colour = "black"))+
     guides(fill=guide_legend(nrow=1, byrow=TRUE))
 
-
-m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
+m.tss.host <- ggplot(mTSS, aes(Abundance, log(1+Genome_copies_ngDNA)))+
     geom_point(aes(fill=dpi), shape=21, size=4, alpha=0.6)+
 #    scale_color_brewer(palette="Accent")+
     scale_fill_brewer(palette="Spectral")+
@@ -431,9 +405,9 @@ m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
 #                                   ..rr.label..,
 #                                   sep = "~~~")),
 #                 parse = TRUE, label.x=0.85, label.y=0.23) + 
-    annotate(geom="text", x=6, y=3, label="Spearman rho=0.44, p<0.001")+
+    annotate(geom="text", x=0.4, y=5, label="Spearman rho=0.37, p<0.001")+
 #    geom_line(aes(group=EH_ID), alpha=0.3)+
-    labs(x="Host reads per g of Faeces, clr(+1)", y="Genome copies per g of faeces log(1+)")+
+    labs(x="Host reads relative abundace", y="Genome copies/ngDNAg log(1+)")+
     labs(tag= "b)")+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
@@ -445,10 +419,10 @@ m.clr.host <- ggplot(m.clr, aes(Abundance, log(1+Genome_copies_gFaeces)))+
 
 # save plots of what we have so far
 plot_grid(mp.acs, m.host, nrow=2) -> m.acsCor
-plot_grid(mp.clr,m.clr.host, nrow=2) -> m.clrCor
+plot_grid(mp.tss,m.tss.host, nrow=2) -> m.tssCor
 
-ggplot2::ggsave(file="fig/Mus_Eimeria.clr.pdf", m.clrCor, width = 8, height = 8, dpi = 600)
-ggplot2::ggsave(file="fig/Mus_Eimeria.clr.png", m.clrCor, width = 8, height = 8, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.tss.pdf", m.tssCor, width = 8, height = 8, dpi = 600)
+ggplot2::ggsave(file="fig/Mus_Eimeria.tss.png", m.tssCor, width = 8, height = 8, dpi = 600)
 
 ggplot2::ggsave(file="fig/Mus_Eimeria.acs.pdf", m.acsCor, width = 8, height = 8, dpi = 600)
 ggplot2::ggsave(file="fig/Mus_Eimeria.acs.png", m.acsCor, width = 8, height = 8, dpi = 600)
@@ -460,25 +434,33 @@ ggplot2::ggsave(file="fig/Mus_Eimeria.acs.png", m.acsCor, width = 8, height = 8,
 
 m.ord <- m[,c("Genome_copies_gFaeces", "Abundance", "OPG")][rowSums(m[,c("Genome_copies_gFaeces", "Abundance", "OPG")])>0,]
 
-m.clr.ord <- m.clr[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")][rowSums(m[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")])>0,]
-
+m.tss.ord <- mTSS[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")][rowSums(m[,c("Genome_copies_gFaeces", "Abundance", "OPG", "DNA_g_feces")])>0,]
 
 library(vegan)
 
 m.mds <- metaMDS(m.ord)
-m.clr.euc <- vegdist(m.clr.ord, method="euclidean")
+
+m.tss.euc <- vegdist(m.tss.ord, method="euclidean")
+
 m.bray <- vegdist(m.ord, "bray")
-#sanity check
-rownames(mAxis)==rownames(m.ord)
+
+m.tss.bray <- vegdist(m.tss.ord, "bray")
+
 
 dpi <- as.factor(m$dpi[as.numeric(rownames(m.ord))])
-dpi.clr <- as.factor(m.clr$dpi[as.numeric(rownames(m.clr.ord))])
+dpi.tss <- as.factor(mTSS$dpi[as.numeric(rownames(m.tss.ord))])
 
 weighloss <- m$weightloss[as.numeric(rownames(m.ord))]
-weighloss.clr <- m.clr$weightloss[as.numeric(rownames(m.clr.ord))]
+
+weighloss.tss <- mTSS$weightloss[as.numeric(rownames(m.tss.ord))]
 
 adonis2(m.bray~dpi+weighloss, method="bray", permutations=10000)
-adonis2(m.clr.euc~dpi+weighloss.clr, method="euclidean", permutations=10000)
+
+adonis2(m.tss.bray~dpi.tss+weighloss.tss, method="euclidean", permutations=10000)
+
+#sanity check
+rownames(m)==rownames(m.ord)
+
 
 #m.anosim <- anosim(m.bray,dpi, distance="bray", permutations=1000)
 #summary(m.anosim)
@@ -496,40 +478,49 @@ ord.fit
 
 #mmus <- lm(Abundance~Genome_copies_gFaeces+ DNA_g_feces+dpi, data=m.clr)
 
-m.clr$logGC <- log(1+m.clr$Genome_copies_gFaeces)
+mTSS$logGC <- log(1+mTSS$Genome_copies_ngDNA)
 
 m$logA <- log(1+m$Abundance)
-m$logGC <- log(1+m$Genome_copies_gFaeces)
+m$logGC <- log(1+m$Genome_copies_ngDNA)
 
-##CLR
-mmus <- lm(Abundance~logGC+ DNA_g_feces, data=m.clr)
+##TSS
+mmus <- lm(Abundance~logGC + Total_DNA, data=mTSS)
 summary(mmus)
-mwl <- lm(weightloss~Abundance+Genome_copies_gFaeces+ DNA_g_feces, data=m.clr)
+
+mwl <- lm(weightloss~Abundance+Genome_copies_ngDNA+ Total_DNA, data=mTSS)
 summary(mwl)
 anova(mwl)
 
-cm1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m.clr)
-cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=m.clr)
-cm3 <- lmer(weightloss~Abundance+dpi+(1|EH_ID), data=m.clr)
-cm4 <- lmer(weightloss~Genome_copies_gFaeces +dpi+(1|EH_ID), data=m.clr)
+histogram(m$weightloss)
+
+cm1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=mTSS)
+cm2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID), data=mTSS)
+cm3 <- lmer(weightloss~Abundance+dpi+(1|EH_ID), data=mTSS)
+cm4 <- lmer(weightloss~Genome_copies_gFaeces +dpi+(1|EH_ID), data=mTSS)
 
 ## ACS
 #mwl.acs <- lm(weightloss~logA+logGC, data=m)
 #plot(mwl.acs)
-mwl.acs <- lm(weightloss~Abundance+Genome_copies_gFaeces, data=m)
+
+
+
+
+mwl.acs <- lm(weightloss~Abundance+Genome_copies_ngDNA, data=m)
 
 calc.relimp(mwl.acs)
 
-mmwl.acs1 <- lmer(weightloss~Abundance+Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
+mmwl.acs1 <- lmer(weightloss~Abundance+Genome_copies_ngDNA +dpi+(1|EH_ID), data=m)
 
-mmwl.acs2 <- lmer(weightloss~Abundance+Genome_copies_gFaeces+(1|EH_ID), data=m)
+mmwl.acs2 <- lmer(weightloss~Abundance+Genome_copies_ngDNA+(1|EH_ID), data=m)
 
 mmwl.acs3 <- lmer(weightloss~Abundance +dpi+(1|EH_ID), data=m)
 
-mmwl.acs4 <- lmer(weightloss~Genome_copies_gFaeces +dpi+(1|EH_ID), data=m)
+mmwl.acs4 <- lmer(weightloss~Genome_copies_ngDNA +dpi+(1|EH_ID), data=m)
 
 sink("fig/weightLoss_lmm.txt")
+
 summary(mmwl.acs1)
+
 sink()
 
 mmwl.acs <- lmer(weightloss~Abundance+Genome_copies_gFaeces +(1|EH_ID)+(1|dpi), data=m)
@@ -556,7 +547,7 @@ ranova(mmmus)
 anova(mmmus,mmmus0)
 
 
-# how does DNA g/faeces change with infection
+# how does Mus DNA change with infection
 cor.test(m$logA, log(1+m$weightloss), method="spearman")
 
 

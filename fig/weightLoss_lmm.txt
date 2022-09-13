@@ -1,36 +1,33 @@
-Linear mixed model fit by REML. t-tests use Satterthwaite's method [
-lmerModLmerTest]
-Formula: weightloss ~ Abundance + Genome_copies_gFaeces + dpi + (1 | EH_ID)
+Linear mixed model fit by REML ['lmerMod']
+Formula: weightloss ~ Abundance + Genome_copies_ngDNA + dpi + (1 | EH_ID)
    Data: m
 
-REML criterion at convergence: 1232.3
+REML criterion at convergence: 1174.3
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--2.1218 -0.6117 -0.0670  0.5936  3.3682 
+-2.0731 -0.6398 -0.0392  0.5757  3.5252 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- EH_ID    (Intercept)  8.785   2.964   
- Residual             10.456   3.234   
-Number of obs: 219, groups:  EH_ID, 22
+ EH_ID    (Intercept)  9.073   3.012   
+ Residual             10.711   3.273   
+Number of obs: 218, groups:  EH_ID, 22
 
 Fixed effects:
-                        Estimate Std. Error         df t value Pr(>|t|)    
-(Intercept)            3.337e-01  9.639e-01  7.961e+01   0.346  0.73008    
-Abundance             -7.295e-09  1.597e-08  1.937e+02  -0.457  0.64831    
-Genome_copies_gFaeces  9.311e-10  3.000e-10  1.903e+02   3.104  0.00220 ** 
-dpi1                  -1.030e+00  1.043e+00  1.857e+02  -0.988  0.32465    
-dpi2                  -1.050e+00  1.029e+00  1.856e+02  -1.021  0.30873    
-dpi3                  -4.581e-01  1.028e+00  1.855e+02  -0.446  0.65626    
-dpi4                   1.856e+00  1.031e+00  1.855e+02   1.800  0.07342 .  
-dpi5                   3.911e+00  1.165e+00  1.864e+02   3.358  0.00095 ***
-dpi6                   2.460e+00  1.142e+00  1.869e+02   2.153  0.03256 *  
-dpi7                  -3.987e-01  1.048e+00  1.860e+02  -0.380  0.70403    
-dpi8                  -2.004e+00  1.003e+00  1.853e+02  -1.998  0.04713 *  
-dpi9                  -2.421e+00  1.045e+00  1.857e+02  -2.316  0.02163 *  
-dpi10                 -2.925e+00  1.072e+00  1.855e+02  -2.730  0.00695 ** 
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+                      Estimate Std. Error t value
+(Intercept)          3.413e-01  9.767e-01   0.349
+Abundance           -6.682e-01  1.276e+00  -0.524
+Genome_copies_ngDNA  2.990e-05  1.299e-05   2.301
+dpi1                -1.029e+00  1.056e+00  -0.974
+dpi2                -1.053e+00  1.041e+00  -1.011
+dpi3                -4.702e-01  1.040e+00  -0.452
+dpi4                 1.592e+00  1.067e+00   1.492
+dpi5                 3.930e+00  1.275e+00   3.082
+dpi6                 2.901e+00  1.150e+00   2.523
+dpi7                -3.189e-01  1.054e+00  -0.303
+dpi8                -1.994e+00  1.018e+00  -1.959
+dpi9                -2.462e+00  1.075e+00  -2.289
+dpi10               -2.920e+00  1.087e+00  -2.685
 fit warnings:
 Some predictor variables are on very different scales: consider rescaling
