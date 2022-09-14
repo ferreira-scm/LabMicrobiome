@@ -12,30 +12,122 @@ require(grid_extra)
 require(cowplot)
 library(microbiome)
 library(DESeq2)
+
+remotes::install_github("microsud/microbiomeutilities")
+
+library(microbiomeutilities) # messes up with ggplot2::alpha
+
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
-source("bin/4_MA_Correlations.R")
-source("bin/PlottingCor.R")
+source("bin/4_MA_SA_filtering.R")
+
+allTSS
+
+T.all
+
+## going to plot with ACS
+tall <- psmelt(T.all)
+
+head(tall)
+f.all.lp
+
+phyTSS <- aggregate_top_taxa2(allTSS, level="phylum", 11)
+
+genTSS <- aggregate_top_taxa2(allTSS, level="genus", 11)
+
+genPS <- aggregate_top_taxa2(T.all, level="genus", 11)
+
+gen <- psmelt(genPS)
+
+genTSS <- psmelt(genTSS)
+
+ggplot(gen, aes(x=Sample, y=Abundance, fill=fct_reorder(genus, Abundance)))+
+    geom_bar(position="stack", stat="identity")+
+    scale_x_discrete(labels=gen$EH_ID, breaks=gen$Sample)+
+    scale_fill_brewer("genus", palette="Paired")+
+    facet_grid(~dpi, scales="free")+
+#    rremove("x.text")+
+    theme_bw()
+
+gen$Abundance
+
+gen$Abundance
+
+heat_gen <- ggplot(gen, aes(x=Sample, y=genus))+
+    geom_tile(aes(fill=Abundance))+
+    scale_fill_distiller("Abundance/ngDNA", palette = "Spectral") + theme_bw()+
+    facet_grid(~dpi, scales="free")+
+    theme()+
+    theme(axis.text.y = element_text(colour = 'black', size = 10, face = 'italic'),
+        axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          legend.key = element_blank(),
+          strip.background = element_rect(colour="black", fill="white")) 
+
+heat_genTSS <- ggplot(genTSS, aes(x=Sample, y=genus))+
+    geom_tile(aes(fill=Abundance))+
+    scale_fill_distiller("Abundance", palette = "Spectral") + theme_bw()+
+    facet_grid(~dpi, scales="free")+
+    theme()+
+    theme(axis.text.y = element_text(colour = 'black', size = 10, face = 'italic'),
+        axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          legend.key = element_blank(),
+          strip.background = element_rect(colour="black", fill="white")) 
+
+heat_genTSS
+
+ggsave("fig/Genus_heat_composition.pdf", heat_gen, height=10, width=10, dpi=400)
+ggsave("fig/Genus_heat_compositionTSS.pdf", heat_genTSS, height=10, width=10, dpi=400)
+
+# 20 most abundant ASV's
+
+phylum_comp <- plot_composition(phyTSS, sample.sort="dpi", x.label="dpi", otu.sort="abundance")+
+    scale_fill_brewer("phylum", palette="Paired")+theme_bw()
+
+ggsave("fig/Phylum_composition.pdf", phylum_comp, height=6, width=10, dpi=400)
+
+gen_comp <- plot_composition(genTSS, sample.sort="dpi", x.label="dpi", otu.sort="abundance")+
+    scale_fill_brewer("genus", palette="Paired")+theme_bw()
+ggsave("fig/Genus_composition.pdf", gen_comp, height=6, width=10, dpi=400)
+
+gen_comp$data
+
+#T.all@otu_table
+
+ggplot(tall, aes(x=reorder(labels, -as.numeric(tall$dpi)), y=Abundance, fill=phylum))+
+#    coord_flip()+
+#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
+    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
+    scale_fill_manual(values=mycolors)+
+    labs(fill="Phylum", x="Samples", y="Abundance (per g of faeces)")+
+    theme_bw()+
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+#          panel.border = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+#          axis.line = element_line(colour = "black"))
 
 
-ps.ord <- ordinate(Tps, "NMDS", "bray")
 
-p1 <- plot_ordination(Tps, ps.ord, type="samples", color="dpi", shape="HybridStatus")
+## plotting ordinations
+ps.ord <- ordinate(T.all, "NMDS", "bray")
+p1 <- plot_ordination(T.all, ps.ord, type="samples", color="dpi")
 print(p1)
-
-p3 <- plot_ordination(Tps, ps.ord, type="taxa", color="phylum")
+p3 <- plot_ordination(allTSS, ps.ord, type="taxa", color="phylum")
 print(p3)
 
-plot(sample_data(Tps)$DNA_g_feces ~ as.numeric(sample_data(Tps)$dpi))
+p1
 
-ps18S.ord <- ordinate(Tps18S, "NMDS", "bray")
-p2 <- plot_ordination(Tps18S, ps18S.ord, type="samples", color="dpi")
-print(p2)
+#plot(sample_data(T.all)$DNA_g_feces ~ as.numeric(sample_data(T.all)$dpi))
 
-
-dpiPS <- merge_samples(Tps, "dpi")
-
+dpiPS <- merge_samples(T.all, "dpi")
 phyDPI <- aggregate_taxa(dpiPS, level = "phylum")
 
 phy.melt <- psmelt(phyDPI)
@@ -69,56 +161,16 @@ PHYdpi <- ggplot(phy.melt, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abun
 
 PHYdpi
 
-#quick dirty fix
-sample_data(Tps18S) <- sample_data(Tps)
-
-dpi18 <- merge_samples(Tps18S, "dpi")
-
-phyDPI18 <- aggregate_taxa(dpi18, level = "phylum")
-
-dpi.melt18 <- psmelt(phyDPI18)
-
-dpi.melt18$phylum <- factor(dpi.melt18$phylum)
-
-nb.c <-length(levels(dpi.melt18$phylum))
-
-mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
-
-PHYdpi18 <- ggplot(dpi.melt18, aes(x=dpi, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
-#    coord_flip()+
-#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
-    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
-    scale_fill_manual(values=mycolors)+
-    labs(fill="Phylum")+
-#    scale_color_brewer(palette="Set2")+
-    theme_minimal()
-
-PHYdpi18
-
-# save
-
-ggplot2::ggsave(file="fig/phylum_abundance_DPI.pdf", PHYdpi, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/phylum_abundance_DPI.png", PHYdpi, width = 5, height = 5, dpi = 300)
-
-ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.pdf", PHYdpi18, width = 5, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/phylum_abundance_DPI18S.png", PHYdpi18, width = 5, height = 5, dpi = 300)
-
-
 ##### intra individual abundance
 
-sample_data(Tps)$EH_ID <- as.factor(sample_data(Tps)$EH_ID)
-sample_data(Tps18S)$EH_ID <- as.factor(sample_data(Tps18S)$EH_ID)
+sample_data(T.all)$EH_ID <- as.factor(sample_data(T.all)$EH_ID)
 
-ID <- merge_samples(Tps, "EH_ID")
-ID18 <- merge_samples(Tps18S, "EH_ID")
+ID <- merge_samples(T.all, "EH_ID")
 
 phyID <- aggregate_taxa(ID, level = "phylum")
-phyID18 <- aggregate_taxa(ID18, level = "phylum")
 
-IDmelt18 <- psmelt(phyID18)
 IDmelt <- psmelt(phyID)
 
-IDmelt18$phylum <- factor(IDmelt18$phylum)
 IDmelt$phylum <- factor(IDmelt$phylum)
 
 nb.c <-length(levels(IDmelt$phylum))
@@ -132,21 +184,9 @@ ID <- ggplot(IDmelt, aes(x=EH_ID, y=Abundance, fill=fct_reorder(phylum, Abundanc
 #    scale_color_brewer(palette="Set2")+
     theme_minimal()
 
+ID
 
-nb.c <-length(levels(IDmelt18$phylum))
-mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.c)
-ID18 <- ggplot(IDmelt18, aes(x=EH_ID, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
-#    coord_flip()+
-#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
-    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
-    scale_fill_manual(values=mycolors)+
-    labs(fill="Phylum")+
-#    scale_color_brewer(palette="Set2")+
-    theme_minimal()
-
-ID18
-
-pTps <- aggregate_taxa(Tps, level = "phylum")
+pTps <- aggregate_taxa(T.all, level = "phylum")
 pTps.mel <- psmelt(pTps)
 
 pTps.mel$phylum <- as.factor(pTps.mel$phylum)
@@ -169,37 +209,5 @@ abps <- ggplot(pTps.mel, aes(x=labels, y=Abundance, fill=fct_reorder(phylum, Abu
           panel.grid.minor = element_blank())
 #          axis.line = element_line(colour = "black"))
 
-
-pTps18 <- aggregate_taxa(Tps18S, level = "phylum")
-pTps18.mel <- psmelt(pTps18)
-
-pTps18.mel$phylum <- as.factor(pTps18.mel$phylum)
-nb.c <-length(levels(pTps18.mel$phylum))
-mycolors <- colorRampPalette(brewer.pal(8, "Set3"))(nb.c)
-
-abps18 <- ggplot(pTps18.mel, aes(x=labels, y=Abundance, fill=fct_reorder(phylum, Abundance)))+
-#    coord_flip()+
-#    geom_jitter(shape=21, alpha = 0.7, position=position_jitter(0.2), size=4, aes(fill=phylum))+
-    geom_bar(stat="identity", position="stack", color="black", size=0.02)+
-    scale_fill_manual(values=mycolors)+
-    labs(fill="Phylum", x="Samples", y="Abundance (per g of faeces)")+
-    theme_bw()+
-    theme(axis.text.x = element_blank(),
-          axis.ticks.x = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-#          panel.border = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
-#          axis.line = element_line(colour = "black"))
-
-
-abps18
-
-ggplot2::ggsave(file="fig/phylum_abundance_18S.pdf", abps18, width = 7, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/phylum_abundance_all.pdf", abps, width = 7, height = 5, dpi = 300)
-
-ggplot2::ggsave(file="fig/phylum_abundance_18S.png", abps18, width = 7, height = 5, dpi = 300)
-ggplot2::ggsave(file="fig/phylum_abundance_all.png", abps, width = 7, height = 5, dpi = 300)
-
+abps
 

@@ -47,7 +47,6 @@ for (i in 2:47){
     f.all.lp <- try(merge_phyloseq(f.all.lp,f.all.l[[i]]))
     }
 
-
 # sanity check
 #merge_phyloseq(f.all.l[[45]], f.all.l[[44]], f.all.l[[47]], f.all.l[[37]],f.all.l[[1]], f.all.l[[7]],
 #               f.all.l[[12]], f.all.l[[13]], f.all.l[[13]], f.all.l[[22]], f.all.l[[23]], f.all.l[[28]],
@@ -108,20 +107,6 @@ for (i in 1:48) {
 }
 
 
-##### and how many amplicons have eimeria?
-for (i in 1:48) {
-#    print(names(all.PS.l)[i])
-    try(p <- subset_taxa(all.PS.l[[i]],genus=="Eimeria"), silent=TRUE)
-#    try(get_taxa_unique(p, "genus"), silent=TRUE)
-    if (exists("p")) {
-        a <- get_taxa_unique(p, "genus")
-        print(paste(i, "- ", names(all.PS.l[i]), ": ", nrow(p@tax_table), sep=""))
-        print(a)
-}
-    rm(p)
-}
-
-
 ### and what happens when we filter?
 for (i in 1:48) {
 #    print(names(all.PS.l)[i])
@@ -135,6 +120,7 @@ for (i in 1:48) {
     rm(p)
 }
 
+names(all.PS.l)
 
 ## how many eimeria ASV reads do we have in single amplicon before and after filtering
 subset_taxa(sin.PS, genus=="Eimeria")

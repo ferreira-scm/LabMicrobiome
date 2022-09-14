@@ -1,35 +1,33 @@
 
 Call:
-lm(formula = log(Eim2.0@sam_data$Genome_copies_ngDNA) ~ log(1 + 
-    Eim2.0@otu_table[, 1]) + log(1 + Eim2.0@otu_table[, 2]) + 
-    log(1 + Eim2.0@otu_table[, 3]) + log(1 + Eim2.0@otu_table[, 
-    4]) + log(1 + Eim2.0@otu_table[, 5]) + Eim2.0@sam_data$dpi)
+lm(formula = log(Genome_copies) ~ log(1 + ASV1) + log(1 + ASV2) + 
+    log(1 + ASV3) + log(1 + ASV4) + log(1 + ASV5) + dpi, data = SA.df)
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--3.10632 -0.61486 -0.08726  0.59359  2.63557 
+-3.02800 -0.63406 -0.08795  0.62064  2.53034 
 
 Coefficients:
-                               Estimate Std. Error t value Pr(>|t|)    
-(Intercept)                      1.4802     0.5843   2.533 0.012345 *  
-log(1 + Eim2.0@otu_table[, 1])   1.9223     0.3784   5.080 1.13e-06 ***
-log(1 + Eim2.0@otu_table[, 2])   3.0282     1.7257   1.755 0.081379 .  
-log(1 + Eim2.0@otu_table[, 3])  -1.3184    14.1268  -0.093 0.925773    
-log(1 + Eim2.0@otu_table[, 4])   2.9697    19.7574   0.150 0.880728    
-log(1 + Eim2.0@otu_table[, 5])  16.5201    21.8953   0.755 0.451753    
-Eim2.0@sam_data$dpi2             0.4779     0.6851   0.698 0.486583    
-Eim2.0@sam_data$dpi3             2.2491     0.6268   3.588 0.000452 ***
-Eim2.0@sam_data$dpi4             6.5702     0.6916   9.500  < 2e-16 ***
-Eim2.0@sam_data$dpi5             6.9236     0.7647   9.054 7.75e-16 ***
-Eim2.0@sam_data$dpi6             6.1884     0.7957   7.777 1.20e-12 ***
-Eim2.0@sam_data$dpi7             5.3854     0.7240   7.439 7.82e-12 ***
-Eim2.0@sam_data$dpi8             4.1449     0.6430   6.446 1.55e-09 ***
-Eim2.0@sam_data$dpi9             2.4075     0.6329   3.804 0.000208 ***
-Eim2.0@sam_data$dpi10            1.3814     0.6401   2.158 0.032557 *  
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     1.6855     1.0189   1.654 0.100375    
+log(1 + ASV1)   1.9226     0.3809   5.047 1.40e-06 ***
+log(1 + ASV2)   2.9958     1.7376   1.724 0.086946 .  
+log(1 + ASV3)  -1.8450    14.2262  -0.130 0.897000    
+log(1 + ASV4)   3.6162    19.8952   0.182 0.856036    
+log(1 + ASV5)  16.4356    22.0439   0.746 0.457196    
+dpi2            0.5897     1.1161   0.528 0.598125    
+dpi3            2.2349     1.0486   2.131 0.034838 *  
+dpi4            6.3700     1.0846   5.873 3.08e-08 ***
+dpi5            6.7230     1.1331   5.933 2.30e-08 ***
+dpi6            5.9878     1.1544   5.187 7.52e-07 ***
+dpi7            5.1882     1.1056   4.693 6.46e-06 ***
+dpi8            3.9452     1.0540   3.743 0.000267 ***
+dpi9            2.2042     1.0479   2.104 0.037248 *  
+dpi10           1.0980     1.0574   1.038 0.300924    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 1.012 on 147 degrees of freedom
-Multiple R-squared:  0.9128,	Adjusted R-squared:  0.9045 
-F-statistic:   110 on 14 and 147 DF,  p-value: < 2.2e-16
+Residual standard error: 1.019 on 137 degrees of freedom
+Multiple R-squared:  0.9048,	Adjusted R-squared:  0.8951 
+F-statistic: 93.05 on 14 and 137 DF,  p-value: < 2.2e-16
 

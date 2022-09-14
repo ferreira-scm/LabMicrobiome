@@ -15,9 +15,7 @@ library(ggtree)
 library(magrittr)
 
 trainingSet <- readRDS("/SAN/Susanas_den/AmpMarkers/wildEimeria18S/EimrefTrainingSet.RDS")
-
 source("bin/4_MA_SA_filtering.R")
-
 
 # Do ASV match beween MA and SA?
 #unfiltered
@@ -138,30 +136,52 @@ cor.test(log(MA.e30$Genome_copies_ngDNA), log(MA.e30$Abundance))
 Eim2.0 = phyloseq::prune_samples(Eim2@sam_data$Genome_copies_ngDNA>0, Eim2)
 Eim.0 = phyloseq::prune_samples(Eim@sam_data$Genome_copies_ngDNA>0, Eim)
 
-# First for SA, we di a glm nb with without log transformation to see if has better fit than the lm with log transformed data.
-SA.eim.m <- glm.nb(Eim2.0@sam_data$Genome_copies_ngDNA~Eim2.0@otu_table[,1]+Eim2.0@otu_table[,2]+Eim2.0@otu_table[,3]+Eim2.0@otu_table[,4]+Eim2.0@otu_table[,5]+Eim2.0@sam_data$dpi)
+## OK, I will now do a linear model with only postive PCR samples and positive sequencing reads (total Eimeria sums) and include the sum of all Eimeria ASV's.
 
-gau.m <- lm(log(Eim2.0@sam_data$Genome_copies_ngDNA)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3])+log(1+Eim2.0@otu_table[,4])+log(1+Eim2.0@otu_table[,5])+Eim2.0@sam_data$dpi)
+SA.df <- data.frame(Eim2.0@sam_data$Genome_copies_ngDNA, Eim2.0@otu_table[,1], Eim2.0@otu_table[,2],Eim2.0@otu_table[,3],Eim2.0@otu_table[,4],Eim2.0@otu_table[,5],Eim2.0@sam_data$dpi)
+names(SA.df) <- c("Genome_copies", "ASV1", "ASV2", "ASV3", "ASV4", "ASV5", "dpi")
+SA.df$TotalE <- SA.df$ASV1+SA.df$ASV2+SA.df$ASV3+SA.df$ASV4+SA.df$ASV5
+SA.df <- SA.df[SA.df$TotalE>0,]
+nrow(SA.df)
+
+gau.m.0 <- lm(data=SA.df, log(Genome_copies)~log(1+ASV1)+log(1+ASV2)+log(1+ASV3)+log(1+ASV4)+log(1+ASV5)+dpi)
+
+## is using negative binomial better than transforming?
+gau.m.0.nb <- glm.nb(data=SA.df, Genome_copies~ASV1+ASV2+ASV3+ASV4+ASV5+dpi)
+
+summary(gau.m.0.nb) # no, not based on the null deviance
+
+summary(gau.m.0)
+
+#plot(gau.m.0) # residuals look good
+
+## same model but in long format
+gau.m.l <- lm(data=SA.e.0, log(Genome_copies_ngDNA)~log(Abundance)*ASV+dpi)
+summary(gau.m.l)
 
 #sink("fig/Eimeira_asv_SA.txt")
-summary(gau.m)
-#sink()
-
-summary(SA.eim.m) # not good based on the null deviance
-
-#plot(gau.m) # it looks not bad, not bad at all. Improved by removing the zeros
+summary(gau.m.0)
+äsink()
 
 #### for multiamplicon
-gau.m.ma <- lm(log(Eim.0@sam_data$Genome_copies_ngDNA)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3])+Eim.0@sam_data$dpi)
-#plot(gau.m.ma) # also acceptable. cool!!
+MA.df <- data.frame(Eim.0@sam_data$Genome_copies_ngDNA, Eim.0@otu_table[,1], Eim.0@otu_table[,2],Eim.0@otu_table[,3],Eim.0@sam_data$dpi)
+names(MA.df) <- c("Genome_copies", "ASV1", "ASV2", "ASV3", "dpi")
+MA.df$TotalE <- MA.df$ASV1+MA.df$ASV2+MA.df$ASV3
+MA.df <- MA.df[MA.df$TotalE>0,]
+nrow(MA.df)
+
+gau.m.0.ma <- lm(data=MA.df, log(Genome_copies)~log(1+ASV1)+log(1+ASV2)+log(1+ASV3)+dpi)
+
+## is using negative binomial better than transforming?
+gau.m.0.ma.nb <- glm.nb(data=MA.df, Genome_copies~ASV1+ASV2+ASV3+dpi)
 
 #sink("fig/Eimeira_asv_MA.txt")
-print(summary(gau.m.ma))
+print(summary(gau.m.0.ma))
 #sink()
 
 # LR tests for significance
-anova(gau.m, test="LRT")
-anova(gau.m.ma, test="LRT")
+anova(gau.m.0, test="LRT")
+anova(gau.m.0.ma, test="LRT")
 
 ### testing Victor's hypothesis for oocysts
 gau.o <- lm(log(1+Eim2@sam_data$OPG)~log(1+Eim2@otu_table[,1])+log(1+Eim2@otu_table[,2])+log(1+Eim2@otu_table[,3])+log(Eim2@otu_table[,4]+1)+log(1+Eim2@otu_table[,5]))
@@ -178,17 +198,10 @@ cor.test(log(1+SA.e2$Abundance), log(1+SA.e2$Genome_copies_gFaeces))
 summary(gau.o)
 
 ### only ASV model
-MA.gau <- lm(log(Eim.0@sam_data$Genome_copies_ngDNA)~log(1+Eim.0@otu_table[,1])+log(1+Eim.0@otu_table[,2])+log(1+Eim.0@otu_table[,3]))
-SA.gau <- lm(log(Eim2.0@sam_data$Genome_copies_ngDNA)~log(1+Eim2.0@otu_table[,1])+log(1+Eim2.0@otu_table[,2])+log(1+Eim2.0@otu_table[,3]))
+calc.relimp(gau.m.0)
 
-summary(MA.gau)
-summary(SA.gau)
+calc.relimp(gau.m.0.ma)
 
-calc.relimp(SA.gau)
-calc.relimp(MA.gau)
-
-anova(SA.gau, test="LRT")
-anova(MA.gau, test="LRT")
 
 #plot(MA.gau) # not great!
 
