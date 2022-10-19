@@ -295,6 +295,68 @@ plot_SA_ASV <- plot_grid(plot_SA_all,plot_SA_1, plot_SA_2, plot_SA_3, plot_SA_4,
 ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.pdf", plot_SA_ASV, width = 15, height = 15, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_GC_ASVs_dpi.png", plot_SA_ASV, width = 15, height = 15, dpi = 300)
 
+plot_MA_all <- ggplot(MA.e.0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV abundance (log)")+
+    ggtitle("SA")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_MA_1 <- ggplot(MA.e10, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV1 abundance (log)")+
+    ggtitle("SA - ASV1")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_MA_2 <- ggplot(MA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/ngDNA (log)", x="Eimeria ASV2 abundance (log)")+
+    ggtitle("SA - ASV2")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_MA_3 <- ggplot(MA.e30, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), fill=dpi))+
+    geom_point(shape=21, position=position_jitter(0.2), size=4, alpha=0.5)+
+     scale_fill_brewer(palette="Spectral")+
+    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV3 abundance (log)")+
+    ggtitle("SA - ASV3")+
+    geom_smooth(method=lm, colour="black", aes(colour="dpi"))+
+    theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+#          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+plot_MA_ASV <- plot_grid(plot_MA_all,plot_MA_1, plot_MA_2, plot_MA_3, plot_SA_4, plot_SA_5, nrow=3, labels="auto")
+
+ggplot2::ggsave(file="fig/Eimeria_MA_GC_ASVs_dpi.pdf", plot_MA_ASV, width = 15, height = 15, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_MA_GC_ASVs_dpi.png", plot_MA_ASV, width = 15, height = 15, dpi = 300)
+
+
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
 #### Plot by EH_ID, only positive animals
@@ -448,6 +510,38 @@ qpcr <- ggplot(MA.e1, aes(x=dpi, y=log(1+Genome_copies_gFaeces), fill=EH_ID))+
           legend.position = "none",
           axis.line = element_line(colour = "black"))
 
+nrow(MA.e.g)
+
+MA.all <- ggplot(MA.e.g, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
+    scale_fill_manual(values=coul)+
+    ggtitle("multi-amplicon")+
+    labs(y="Genome copies log(1+)", x="Days post infection")+
+        theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+SA.all <- ggplot(SA.e.g, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
+    geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
+    geom_line(aes(group=EH_ID), alpha=0.2)+
+    scale_fill_manual(values=coul)+
+    ggtitle("single amplicon")+
+    labs(y="Genome copies log(1+)", x="Days post infection")+
+        theme_bw()+
+    theme(plot.title=element_text(hjust=0.5, face="bold"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+MA.all
+
 ma.sa <- SA.e[, c("ASV", "Abundance", "EH_ID", "dpi", "labels")]
 ma.sa.t <- MA.e[, c("ASV", "Abundance", "labels")]
 ma.sa <- merge(ma.sa, ma.sa.t, by=c("ASV", "labels"))
@@ -512,6 +606,11 @@ row2 <- plot_grid(SA2,MA2, nrow=1, labels=c("d", "e"))
 row3 <- plot_grid(SA3,MA3, nrow=1, labels=c("f", "g"))
 
 SAMA.asv <- plot_grid(qpcr, row1, row2, row3, labels=c("a", "", "", ""), ncol=1)
+
+SAMA.all <- plot_grid(qpcr, MA.all, SA.all, labels="auto", ncol=3)
+
+SAMA.asv
+
 
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.pdf", SAMA.asv, width = 10, height = 15, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.png", SAMA.asv, width = 10, height = 15, dpi = 300)
@@ -770,6 +869,8 @@ alignment <- AlignSeqs(seqs2, anchor=NA, verbose=FALSE, iterations=10, refinemen
 Allal <- AlignSeqs(allSeqs, anchor=NA, verbose=FALSE, iterations=10, refinements=10, processors=90)
 Allal <- AdjustAlignment(Allal)
 
+names(seqs2) <- c("Lab_single-multi-amplicon_ASV1", "Lab_single-multi-amplicon_ASV2", "Lab_single-multi-amplicon_ASV3", "Lab_single-amplicon_ASV4", "Lab_single-amplicon_ASV5")
+writeFasta(seqs2, "tmp/Eimeria_lab_ASV.fa")
 writeFasta(allSeqs, "tmp/Eimeria_seqs.fa")
 writeFasta(Allal, "tmp/Eimeria_alignment.fa")
 writeFasta(alignment, "tmp/Eimeria_reads_alignment.fa")

@@ -1,8 +1,7 @@
 library(DECIPHER)
 library(taxonomizr)
 
-
-#Make our training sets 16S
+#Make training sets for ID taxa
 seqs <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/silva_nr99_v138.1_wSpecies_train_set.fa.gz", format="fasta")
 
 # specific name for the classifier
@@ -161,15 +160,14 @@ for (i in seq_len(maxIterations)) {
 saveRDS(trainingSet,"/SAN/Susanas_den/AmpMarkers/ITS_UNITETrainingSet.RDS")
 
 
-
+ITS <- readRDS("/SAN/Susanas_den/AmpMarkers/ITS_UNITETrainingSet.RDS")
 
 ### For LSU
-
 seqs <- DNAStringSet(readRNAStringSet("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/SILVA_138.1_LSURef_NR99_tax_silva.fasta.gz"))
 
 head(names(seqs))
 
-                                        #enaTax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
+#enaTax <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/taxmap_embl-ebi_ena_ssu_ref_nr99_138.1.txt", sep="\t", header=T)
 
 ACC <- read.csv("/SAN/Susanas_den/AmpMarkers/SILVAdb/slv_lsu138.1/tax_slv_lsu_138.1.acc_taxid.gz", sep="\t")
 

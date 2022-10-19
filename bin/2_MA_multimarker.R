@@ -267,21 +267,112 @@ MA <- blastTaxAnnot(MA,
                     num_threads = 90) ##Change for use more power!!
 saveRDS(MA, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1.Rds")
 } else {
+
     MA1 <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_TestRun_1.Rds")
     MA2 <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1.Rds")  
+
 }
+
+
+primerL <- read.table("/SAN/Susanas_den/gitProj/HMHZ/data/primerInputUnique.csv", head=T, sep=",")
+ptable$Primer_name <- paste(ptable$corrected.NameF, ptable$corrected.NameR, sep=".")
+
+which(!ptable$Primer_name %in% primerL$Primer_name)
+
+## some primers are not on the list 
+Primer_name <- c(ptable$Primer_name[6],
+ptable$Primer_name[24],
+ptable$Primer_name[40],
+ptable$Primer_name[44],
+ptable$Primer_name[45])
+Target <- c("Eimeria", "Bacteria", "Eimeria", "Eimeria", "Eimeria")
+Gen <- c("COX0", "16S", "COX1", "EfaB_31746", "EfaB_31746")
+
+Pdf <- data.frame(Primer_name, Gen, Target)
+
+# manual correction
+#ptable$Primer_name[16] <- "16S.1100.F16_100_F.1492R_100_R"
+#ptable$Primer_name[29] <- "NLF184cw_74_F.NL818cw_74_R"
+
+primerL$Primer_name[4] <- "16S.1100.F16_100_for.1492R_100_rev"
+primerL$Primer_name[122] <- "27M_F_98_F.Klin0341_CR_18_R"
+primerL$Primer_name[70] <-  "LSU_Fwd_2_3Mod_55_F.LSU_R_4_54_R"
+primerL$Primer_name[6] <- "18S_0067a_deg_3Mod_53_F.NSR399_3Mod_53_R"
+primerL$Primer_name[7] <-  "18S_0067a_deg_5Mod_52_F.NSR399_5Mod_52_R"
+primerL$Primer_name[120] <- "Bgf_132_F.Bgr_132_R"
+primerL$Primer_name[86] <- "NLF184cw _74_F.NL818cw_74_R"
+
+
+p.df <- primerL[which(primerL$Primer_name %in%ptable$Primer_name),c(2, 10, 11)]
+p.df <- rbind(p.df, Pdf)
+p.df <- p.df[match(names(MA1@PrimerPairsSet), p.df$Primer_name),]
+
+which(ptable$Primer_name == p.df$Primer_name)
+
+
+names(MA1@PrimerPairsSet)==p.df$Primer_name
+
+nrow(p.df)
+
+table(p.df$Gen, p.df$Target)
+
+p.df$Gen
+
+taxT <- list()
+
+for (i in 1:3){
+    if (p.df$Gen[i]=="16S"){
+        taxT[[i]] <- assignTaxonomy(seqs[[i]],
+                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                   verbose=TRUE)
+    }
+    else if (p.df$Gen[i]=="18S"){
+        taxT[[i]] <- assignTaxonomy(seqs[[i]],
+                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }
+    else if (p.df$Gen[i]=="28S"){
+        taxT[[i]] <- assignTaxonomy(seqs[[i]],
+                                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/silva-138.1-lsu-nr99-",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }   
+    else if (p.df$Gen[i]=="ITS"){
+     taxT[[i]] <- assignTaxonomy(seqs[[i]],
+                    "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_mod.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }
+    else {
+     taxT[[i]] <- assignTaxonomy(seqs[[i]],
+                    "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_mod.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE)
+    }   
+
+
+}
+
+
+
+
+
+
 
 ### Add sample information
 if(!exists("sample.data")){
-
     source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_Data_preparation.R")
-
 }
 
 if(!exists("sdt")){
-
     source("/SAN/Susanas_den/gitProj/LabMicrobiome/bin/1_qPCR_data_preparation.R")
-
 }
 
 #little fix
@@ -289,59 +380,146 @@ rownames(sdt) <- sdt$labels
 rownames(sdt)==rownames(sample.data)
 
 ##To phyloseq
-
 source("bin/toPhyloseq.R")
-
 PS1 <- TMPtoPhyloseq(MA1, colnames(MA1))
 PS2<- TMPtoPhyloseq(MA2, colnames(MA2))
 
-PS <- merge_phyloseq(PS1, PS2) ###Works!
-#removing negatives
-PS <- subset_samples(PS, !grepl("NEGATIVE",rownames(PS@otu_table)))
-#reordering metadata
-sdt <- sdt[match(rownames(PS@sam_data), sdt$labels),]
-#sanity check
-rownames(PS@otu_table) == rownames(sdt)
-# adding sample data slot
-PS@sam_data <- sample_data(sdt)
-# sanity check
-rownames(PS@sam_data)==rownames(PS@otu_table)
+PS1.l <- TMPtoPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
+PS2.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
 
+#reordering metadata
+sdt <- sdt[match(rownames(PS1@sam_data), sdt$labels),]
+
+#sanity check
+rownames(PS1@otu_table) == rownames(sdt)
+
+# adding sample data slot
+PS1@sam_data <- sample_data(sdt)
+
+# sanity check
+rownames(PS1@sam_data)==rownames(PS1@otu_table)
+rownames(PS1@otu_table)==sample_names(PS1)
+PS1@sam_data[which(!rownames(PS1@sam_data)==rownames(PS1@otu_table))]
+
+rownames(PS1@sam_data) <- rownames(PS1@otu_table)
+
+PS_neg <- subset_samples(PS1, grepl("NEGATIVE",rownames(PS1@otu_table)))
+
+PS1@sam_data$Control <- FALSE
+PS1@sam_data$Control[which(sample_names(PS1)%in%sample_names(PS_neg))] <- TRUE
+# sanity check
+PS1@sam_data$labels[PS1@sam_data$Control==FALSE]
+rownames(PS1@sam_data)[PS1@sam_data$Control==TRUE]
+library("decontam")
+###### removing contaminants
+## assuming that negative controls have 0 DNA
+PS1@sam_data$Total_DNA[PS1@sam_data$Control==TRUE] <- 0.0001
+## ----see-depths---------------------------------------------------------------
+#df <- as.data.frame(sample_data(PS1)) # Put sample_data into a ggplot-friendly data.frame
+#df$LibrarySize <- sample_sums(PS1)
+#df <- df[order(df$LibrarySize),]
+#df$Index <- seq(nrow(df))
+#ggplot(data=df, aes(x=Index, y=LibrarySize, color=Control)) + geom_point()
+ps <- phyloseq::prune_samples(sample_sums(PS1)>0, PS1)
+contamdf.freq <- isContaminant(ps, method="either", conc="Total_DNA", neg="Control", threshold=c(0.1,0.5), normalize=TRUE)
+table(contamdf.freq$contaminant)
+### taxa to remove
+ps@tax_table[rownames(contamdf.freq[contamdf.freq$contaminant==TRUE,]),5]
+## let's remove them now and negative controls
+Keep <- rownames(contamdf.freq[contamdf.freq$contaminant==FALSE,])
+PS1 <- prune_samples(sample_data(PS1)$Control == FALSE, PS1)
+PS1 <- prune_taxa(Keep, PS1)  
+#plot_bar(PS_neg, fill="phylum")
+
+## adding metadata, removing contaminants and controls
+pos <- sample_names(subset_samples(PS1.l[[1]], !grepl("NEGATIVE",rownames(PS1.l[[1]]@otu_table))))
+
+for (i in 1:48) {
+    try(PS1.l[[i]]@sam_data <- sample_data(sdt), silent=TRUE)
+    try(rownames(PS1.l[[i]]@sam_data) <- rownames(PS1.l[[i]]@otu_table), silent=TRUE)
+}
+
+for (i in 1:48) {
+    try(PS1.l[[i]] <- prune_taxa(Keep, PS1.l[[i]]), silent=TRUE)
+    try(PS1.l[[i]] <- prune_samples(pos, PS1.l[[i]]), silent=TRUE)
+}
+
+
+##### for PS2
+# I know it's annoying, but I want to remove contaminants before merging
+
+#reordering metadata
+sdt <- sdt[match(rownames(PS2@sam_data), sdt$labels),]
+
+#sanity check
+rownames(PS2@otu_table) == rownames(sdt)
+
+# adding sample data slot
+PS2@sam_data <- sample_data(sdt)
+
+# sanity check
+rownames(PS2@sam_data)==rownames(PS2@otu_table)
+rownames(PS2@otu_table)==sample_names(PS2)
+PS2@sam_data[which(!rownames(PS2@sam_data)==rownames(PS2@otu_table))]
+rownames(PS2@sam_data) <- rownames(PS2@otu_table)
+PS_neg <- subset_samples(PS2, grepl("NEGATIVE",rownames(PS2@otu_table)))
+PS2@sam_data$Control <- FALSE
+PS2@sam_data$Control[which(sample_names(PS2)%in%sample_names(PS_neg))] <- TRUE
+# sanity check
+PS2@sam_data$labels[PS2@sam_data$Control==FALSE]
+rownames(PS2@sam_data)[PS2@sam_data$Control==TRUE]
+
+
+###### removing contaminants
+## assuming that negative controls have 0 DNA
+PS2@sam_data$Total_DNA[PS2@sam_data$Control==TRUE] <- 0.0001
+
+## ----see-depths---------------------------------------------------------------
+#df <- as.data.frame(sample_data(PS2)) # Put sample_data into a ggplot-friendly data.frame
+#df$LibrarySize <- sample_sums(PS2)
+#df <- df[order(df$LibrarySize),]
+#df$Index <- seq(nrow(df))
+#ggplot(data=df, aes(x=Index, y=LibrarySize, color=Control)) + geom_point()
+
+ps <- phyloseq::prune_samples(sample_sums(PS2)>0, PS2)
+contamdf.freq <- isContaminant(ps, method="either", conc="Total_DNA", neg="Control", threshold=c(0.1,0.5), normalize=TRUE)
+table(contamdf.freq$contaminant)
+### taxa to remove
+ps@tax_table[rownames(contamdf.freq[contamdf.freq$contaminant==TRUE,]),5]
+## let's remove them now and negative controls
+Keep <- rownames(contamdf.freq[contamdf.freq$contaminant==FALSE,])
+PS2 <- prune_samples(sample_data(PS2)$Control == FALSE, PS2)
+PS2 <- prune_taxa(Keep, PS2)  
+#plot_bar(PS_neg, fill="phylum")
+
+## adding metadata, removing contaminants and controls
+pos <- sample_names(subset_samples(PS2.l[[1]], !grepl("NEGATIVE",rownames(PS2.l[[1]]@otu_table))))
+
+for (i in 1:48) {
+    try(PS2.l[[i]]@sam_data <- sample_data(sdt), silent=TRUE)
+    try(rownames(PS2.l[[i]]@sam_data) <- rownames(PS2.l[[i]]@otu_table), silent=TRUE)
+}
+
+
+for (i in 1:48) {
+    try(PS2.l[[i]] <- prune_taxa(Keep, PS2.l[[i]]), silent=TRUE)
+    try(PS2.l[[i]] <- prune_samples(pos, PS2.l[[i]]), silent=TRUE)
+}
+
+PS <- merge_phyloseq(PS1, PS2) ###Works!
 
 saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
 
-##Primer data
-## just sorting out primers whithout any taxannot
-
-##Makethe next function work 
-#MA1 <- MA1[which(!unlist(lapply(MA1@taxonTable, is.null))), ] 
-PS1.l <- TMPtoPhyloseq(MA1, colnames(MA1),  multi2Single=FALSE)
-#MA2 <- MA2[which( !unlist(lapply(MA2@taxonTable, is.null))), ]
-PS2.l <- TMPtoPhyloseq(MA2, colnames(MA2),  multi2Single=FALSE) 
-
-#sanity check
 names(PS1.l)== names(PS2.l)
 
 along<- names(PS2.l) ## Run with less primers working
 # 7 amplicons are empty.
+
 PS.l <- lapply(along, function(i) try(merge_phyloseq(PS1.l[[i]], PS2.l[[i]]))) ##Merge all the information from both experiments
 names(PS.l) <- names(PS2.l) ###Use the names from test list
 
-#removing negatives
-for (i in 1:length(PS.l))
-{
-PS.l[[i]] <- subset_samples(PS.l[[i]], !grepl("NEGATIVE",rownames(PS.l[[i]]@otu_table)))
-}
 #sanity check
-rownames(PS.l[[1]]@otu_table)==rownames(sdt)
-
-# adding sample data
-for (i in 1:length(PS.l))
-{
-    try(sam_data(PS.l[[i]]) <- sdt)
-}
-
-head(sam_data(PS.l[[1]]))
+rownames(PS.l[[1]]@otu_table)%in%rownames(sdt)
 
 saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList_All.Rds") ###For primer analysis
 

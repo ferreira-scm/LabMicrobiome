@@ -37,10 +37,14 @@ f.all <- fil(all.PS)
 f.allwang <- fil(all.PSwang)
 f.sin18.slv <- fil(sin.PS18S.slv)
 ## filtering MA by amplicon
+
 f.all.l <- list()
+
 for (i in 1:48) {
     try(f.all.l[[i]] <- fil(all.PS.l[[i]]), silent=TRUE)
 }
+
+f.all.l
 
 f.all.lp <- f.all.l[[1]]
 for (i in 2:47){
@@ -139,3 +143,14 @@ Eim_nf <- subset_taxa(all.PS, genus%in%"Eimeria")
 Eim_nf_wang <- subset_taxa(all.PS.l[[37]], genus%in%"Eimeria")
 Eim2_nf <- subset_taxa(sin.PS18S, genus%in%"Eimeria")
 
+#### remove unknowns, this is for Emanuel presentation
+
+sin.p <- subset_taxa(f.sin18, !phylum%in%NA)
+
+sin.p <- subset_taxa(sin.p, !phylum%in%"Unknown")
+
+sin.pp  <- transform_sample_counts(sin.p, function(x) x / sum(x))
+
+all.p <- subset_taxa(f.all.lp, !phylum%in%NA)
+
+all.pp  <- transform_sample_counts(all.p, function(x) x / sum(x))
