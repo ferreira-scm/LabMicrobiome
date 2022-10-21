@@ -8,7 +8,7 @@ library(ggplot2)
 library(metagMisc)
 require(grid)
 library(Hmisc)
-
+library(phyloseq)
 #library(grid_extra)
 require(cowplot)
 library(RColorBrewer)
@@ -136,21 +136,5 @@ subset_taxa(f.sin, genus=="Eimeria")
 subset_taxa(f.sin18, genus=="Eimeria")
 
 ## OK, now we want all the Eimeria sequences
-Eim <- subset_taxa(T.all, genus%in%"Eimeria")
-Eim2 <- subset_taxa(T.sin18, genus%in%"Eimeria")
-#Eim.slv <- subset_taxa(T.sin18.slv, Family%in%"Eimeriorina")
-Eim_nf <- subset_taxa(all.PS, genus%in%"Eimeria")
-Eim_nf_wang <- subset_taxa(all.PS.l[[37]], genus%in%"Eimeria")
-Eim2_nf <- subset_taxa(sin.PS18S, genus%in%"Eimeria")
-
-#### remove unknowns, this is for Emanuel presentation
-
-sin.p <- subset_taxa(f.sin18, !phylum%in%NA)
-
-sin.p <- subset_taxa(sin.p, !phylum%in%"Unknown")
-
-sin.pp  <- transform_sample_counts(sin.p, function(x) x / sum(x))
-
-all.p <- subset_taxa(f.all.lp, !phylum%in%NA)
-
-all.pp  <- transform_sample_counts(all.p, function(x) x / sum(x))
+Eim2 <- subset_taxa(sin18TSS, genus%in%"Eimeria")
+Eim <- subset_taxa(allTSS, genus%in%"Eimeria")

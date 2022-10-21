@@ -2,8 +2,8 @@
 
 fil <- function(ps){
     x = phyloseq::taxa_sums(ps)
-    # abundance filtering at 0.001%
-    keepTaxa = (x / sum(x) > 0.00001)
+    # abundance filtering at 0.005%
+    keepTaxa = (x / sum(x) > 0.00005)
 #    keepTaxa = (x / sum(x) > 0.0005)
     summary(keepTaxa)
     ps = phyloseq::prune_taxa(keepTaxa, ps)
@@ -154,9 +154,9 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Raw counts filtered")+
-    labs(tag= "b)")+
+    xlab("Eimeria ASV counts (log)")+
+    ggtitle("ASV abundance")+
+    labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -201,9 +201,9 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Total sum scaling")+
-        labs(tag= "c)")+
+    xlab("Eimeria ASV relative abundance(log)")+
+    ggtitle("Total sum scaling normalization")+
+        labs(tag= "b)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -246,8 +246,8 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria")+
-    ggtitle("Relative log expression")+
+    xlab("Eimeria ASV counts")+
+    ggtitle("Relative log expression normalization")+
         labs(tag= "d)")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -285,9 +285,9 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces (log)")+
-    xlab("Eimeria")+
-    ggtitle("Centered log-ratio")+
-        labs(tag= "e)")+
+    xlab("Eimeria ASV counts")+
+    ggtitle("Centered log-ratio normalization")+
+        labs(tag= "d)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -320,9 +320,9 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Absolute count scaling")+
-        labs(tag= "f)")+
+    xlab("Eimeria counts (log)")+
+    ggtitle("Absolute count scaling normalization")+
+        labs(tag= "e)")+
     theme_bw()+
     theme(text = element_text(size=12),
 #          axis.title.x = element_blank(),
@@ -330,7 +330,7 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
 # save plots of what we have so far
-plot_grid(a,b,c,d,e,f) -> fCor
+plot_grid(b,c,d,e,f) -> fCor
 
 ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 12, height = 10, dpi = 600)
 
@@ -348,27 +348,22 @@ cor.df$REL_Eim <- cor.df$REL_Eim*-1
 cor.df1 <- na.omit(cor.df[!is.infinite(cor.df$logEimeriaSums),])
 
 #cor.df1 <- na.omit(cor.df1[cor.df1$logFilEimeriaSums>0,])
-cor.df1 <- cor.df1[!is.infinite(cor.df1$logGC),]
-cor.df1$logGC
-print(cocor(~logGC + logEimeriaSums | logGC + logFilEimeriaSums, data = cor.df1,
-            test = c("hittner2003", "zou2007")))
-
 cor.df2 <- na.omit(cor.df[!is.infinite(cor.df$logTSS_Eim),])
 cor.df2 <- cor.df2[!is.infinite(cor.df2$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + logTSS_Eim, data = cor.df2, test = c("hittner2003", "zou2007")))
+print(cocor(~logGC + logFilEimeriaSums | logGC + logTSS_Eim, data = cor.df2, test = c("hittner2003", "zou2007")))
 
 cor.df3 <- na.omit(cor.df[!is.infinite(cor.df$logFilEimeriaSums),])
 cor.df3 <- cor.df3[!is.infinite(cor.df3$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + REL_Eim, data = cor.df3,test = c("hittner2003", "zou2007")))
+print(cocor(~logGC + logFilEimeriaSums | logGC + REL_Eim, data = cor.df3,test = c("hittner2003", "zou2007")))
 
 cor.df4 <- na.omit(cor.df[!is.infinite(cor.df$logTSS_Eim),])
 cor.df4 <- cor.df4[!is.infinite(cor.df4$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + clr_Eim, data = cor.df4,
+print(cocor(~logGC + logFilEimeriaSums | logGC + clr_Eim, data = cor.df4,
             test = c("hittner2003", "zou2007")))
 
 cor.df5 <- na.omit(cor.df[!is.infinite(cor.df$logACS_Eim),])
 cor.df5 <- cor.df5[!is.infinite(cor.df5$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + logACS_Eim, data = cor.df5,
+print(cocor(~logGC + logFilEimeriaSums | logGC + logACS_Eim, data = cor.df5,
             test = c("hittner2003", "zou2007")))
     
 #png(filename=paste(dir, name, "COR.png", sep=""),
@@ -655,9 +650,9 @@ b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Raw counts filtered")+
-    labs(tag= "b)")+
+    xlab("Eimeria ASV counts(log)")+
+    ggtitle("No normalization")+
+    labs(tag= "a)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -702,9 +697,9 @@ c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Total sum scaling")+
-        labs(tag= "c)")+
+    xlab("Eimeria relative abundance (log)")+
+    ggtitle("Total sum scaling normalization")+
+        labs(tag= "b)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -747,9 +742,9 @@ d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria")+
-    ggtitle("Relative log expression")+
-        labs(tag= "d)")+
+    xlab("Eimeria ASV counts")+
+    ggtitle("Relative log expression normalization")+
+        labs(tag= "c)")+
     theme_bw()+
     theme(text = element_text(size=12),
 #          axis.title.x = element_blank(),
@@ -786,9 +781,9 @@ e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
                                           parse = TRUE) +  
     ylab("Genome copies gFaeces (log)")+
-    xlab("Eimeria")+
-    ggtitle("Centered log-ratio")+
-        labs(tag= "e)")+
+    xlab("Eimeria ASV counts")+
+    ggtitle("Centered log-ratio normalization")+
+        labs(tag= "d)")+
 #        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -821,8 +816,8 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
     stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
     ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Absolute count scaling")+
+    xlab("Eimeria ASV counts/ngDNA(log)")+
+    ggtitle("Absolute count scaling normalization")+
         labs(tag= "f)")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -831,7 +826,7 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
 # save plots of what we have so far
-plot_grid(a,b,c,d,e,f) -> fCor
+plot_grid(b,c,d,e,f) -> fCor
 
 ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 12, height = 10, dpi = 600)
 
@@ -849,27 +844,22 @@ cor.df$REL_Eim <- cor.df$REL_Eim*-1
 cor.df1 <- na.omit(cor.df[!is.infinite(cor.df$logEimeriaSums),])
 
 #cor.df1 <- na.omit(cor.df1[cor.df1$logFilEimeriaSums>0,])
-cor.df1 <- cor.df1[!is.infinite(cor.df1$logGC),]
-cor.df1$logGC
-print(cocor(~logGC + logEimeriaSums | logGC + logFilEimeriaSums, data = cor.df1,
-            test = c("hittner2003", "zou2007")))
-
 cor.df2 <- na.omit(cor.df[!is.infinite(cor.df$logTSS_Eim),])
 cor.df2 <- cor.df2[!is.infinite(cor.df2$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + logTSS_Eim, data = cor.df2, test = c("hittner2003", "zou2007")))
+print(cocor(~logGC + logFilEimeriaSums | logGC + logTSS_Eim, data = cor.df2, test = c("hittner2003", "zou2007")))
 
 cor.df3 <- na.omit(cor.df[!is.infinite(cor.df$logFilEimeriaSums),])
 cor.df3 <- cor.df3[!is.infinite(cor.df3$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + REL_Eim, data = cor.df3,test = c("hittner2003", "zou2007")))
+print(cocor(~logGC + logFilEimeriaSums | logGC + REL_Eim, data = cor.df3,test = c("hittner2003", "zou2007")))
 
 cor.df4 <- na.omit(cor.df[!is.infinite(cor.df$logTSS_Eim),])
 cor.df4 <- cor.df4[!is.infinite(cor.df4$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + clr_Eim, data = cor.df4,
+print(cocor(~logGC + logFilEimeriaSums | logGC + clr_Eim, data = cor.df4,
             test = c("hittner2003", "zou2007")))
 
 cor.df5 <- na.omit(cor.df[!is.infinite(cor.df$logACS_Eim),])
 cor.df5 <- cor.df5[!is.infinite(cor.df5$logGC),]
-print(cocor(~logGC + logEimeriaSums | logGC + logACS_Eim, data = cor.df5,
+print(cocor(~logGC + logFilEimeriaSums | logGC + logACS_Eim, data = cor.df5,
             test = c("hittner2003", "zou2007")))
     
 #png(filename=paste(dir, name, "COR.png", sep=""),

@@ -14,11 +14,13 @@ library(microbiome)
 library(DESeq2)
 
 remotes::install_github("microsud/microbiomeutilities")
-
+library(RColorBrewer)
 library(microbiomeutilities) # messes up with ggplot2::alpha
 
 ## using the devel
 #devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
+
+library(forcats)
 
 source("bin/4_MA_SA_filtering.R")
 
@@ -241,7 +243,7 @@ ggplot(dpi.melt, aes(x=dpi, y=Abundance, fill=phylum))+
 
 phy.melt$phylum <- factor(phy.melt$phylum)
 
-library(RColorBrewer)
+
 
 nb.c <-length(levels(phy.melt$phylum))
 

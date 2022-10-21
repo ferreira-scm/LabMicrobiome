@@ -318,53 +318,124 @@ table(p.df$Gen, p.df$Target)
 
 p.df$Gen
 
-taxT <- list()
+taxT1 <- list()
+seqs <- getSequencesFromTable(MA1)
+seqs <- lapply(seqs, DNAStringSet)
 
-for (i in 1:3){
+for (i in 1:48){
     if (p.df$Gen[i]=="16S"){
-        taxT[[i]] <- assignTaxonomy(seqs[[i]],
-                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
-                                    multithread=90,
+        try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
+          "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+          multithread=90,
                                     tryRC = TRUE,
-                                   verbose=TRUE)
+                                   verbose=TRUE))
     }
     else if (p.df$Gen[i]=="18S"){
-        taxT[[i]] <- assignTaxonomy(seqs[[i]],
-                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
-                                    multithread=90,
+        try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
+                 "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+                                     multithread=90,
                                     tryRC = TRUE,
-                                    verbose=TRUE)
+                                    verbose=TRUE))
     }
     else if (p.df$Gen[i]=="28S"){
-        taxT[[i]] <- assignTaxonomy(seqs[[i]],
-                                    "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/silva-138.1-lsu-nr99-",
-                                    multithread=90,
+        try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
+                      "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
+                                     multithread=90,
                                     tryRC = TRUE,
-                                    verbose=TRUE)
+                                    verbose=TRUE))
     }   
     else if (p.df$Gen[i]=="ITS"){
-     taxT[[i]] <- assignTaxonomy(seqs[[i]],
-                    "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_mod.fa",
-                                    multithread=90,
+     try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
+                                      "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
+                                     multithread=90,
                                     tryRC = TRUE,
-                                    verbose=TRUE)
+                                    verbose=TRUE))
     }
     else {
-     taxT[[i]] <- assignTaxonomy(seqs[[i]],
-                    "/SAN/Susanas_den/AmpMarkers/silva132.18Sdada2_mod.fa",
+     try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
+#           "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
+            "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/tmp/Fastas/other.dada2.fa",
+                                     multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE))
+    }   
+}
+taxT2 <- list()
+seqs <- getSequencesFromTable(MA2)
+seqs <- lapply(seqs, DNAStringSet)
+for (i in 1:48){
+    if (p.df$Gen[i]=="16S"){
+        try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
+          "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+          multithread=90,
+                                    tryRC = TRUE,
+                                   verbose=TRUE))
+    }
+    else if (p.df$Gen[i]=="18S"){
+        try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
+                 "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
                                     multithread=90,
                                     tryRC = TRUE,
-                                    verbose=TRUE)
+                                    verbose=TRUE))
+    }
+    else if (p.df$Gen[i]=="28S"){
+        try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
+                      "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE))
     }   
-
-
+    else if (p.df$Gen[i]=="ITS"){
+     try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
+                                      "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
+     taxLevels = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"),
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE))
+    }
+    else {
+     try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
+#           "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
+            "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/tmp/Fastas/other.dada2.fa",
+                                    multithread=90,
+                                    tryRC = TRUE,
+                                    verbose=TRUE))
+    }   
 }
 
 
+taxT2[[5]]
+
+## Little inspection
+taxa.print1 <- taxT1[[1]]
+taxa.print2 <- taxT1[[5]]
+taxa.print4 <- taxT1[[7]]
+
+taxa.print5 <- taxT2[[1]]
+taxa.print6 <- taxT2[[5]]
+taxa.print7 <- taxT2[[7]]
 
 
 
+rownames(taxa.print1) <- NULL
+rownames(taxa.print2) <- NULL
+rownames(taxa.print4) <- NULL
+rownames(taxa.print5) <- NULL
+rownames(taxa.print6) <- NULL
+rownames(taxa.print7) <- NULL
 
+
+
+taxa.print1[1:10,]
+taxa.print2
+taxa.print4[1:10,]
+
+taxa.print5[1:10,]
+taxa.print6[1:10,]
+taxa.print7[1:10,]
+
+MA1@taxonTable <- taxT1
+MA2@taxonTable <- taxT2
 
 ### Add sample information
 if(!exists("sample.data")){
@@ -444,7 +515,6 @@ for (i in 1:48) {
     try(PS1.l[[i]] <- prune_samples(pos, PS1.l[[i]]), silent=TRUE)
 }
 
-
 ##### for PS2
 # I know it's annoying, but I want to remove contaminants before merging
 
@@ -508,7 +578,10 @@ for (i in 1:48) {
 
 PS <- merge_phyloseq(PS1, PS2) ###Works!
 
-saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
+#saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All.Rds") ###Results from full + test run 
+
+saveRDS(PS, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqData_All_Tax_New.Rds") ###Results from full + test run 
+
 
 names(PS1.l)== names(PS2.l)
 
@@ -521,5 +594,5 @@ names(PS.l) <- names(PS2.l) ###Use the names from test list
 #sanity check
 rownames(PS.l[[1]]@otu_table)%in%rownames(sdt)
 
-saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList_All.Rds") ###For primer analysis
+saveRDS(PS.l, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/PhyloSeqList_All_Tax_New.Rds") ###For primer analysis
 

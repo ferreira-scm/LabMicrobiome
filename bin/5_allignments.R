@@ -81,8 +81,15 @@ SA.e.g0 <- SA.e.g[SA.e.g$Genome_copies_ngDNA>0,]
 SA.e.g0 <- SA.e.g0[SA.e.g0$Abundance>0,]
 SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_ngDNA),]
 
+MA.e.g0 <- MA.e.g[MA.e.g$Genome_copies_ngDNA>0,]
+MA.e.g0 <- MA.e.g0[MA.e.g0$Abundance>0,]
+MA.e.g0 <- MA.e.g0[!is.na(MA.e.g0$Genome_copies_ngDNA),]
+
+
+
 # sanity test here
 cor.test(log(SA.e.g0$Abundance), log(SA.e.g0$Genome_copies_ngDNA))
+cor.test(log(MA.e.g0$Abundance), log(MA.e.g0$Genome_copies_ngDNA))
 
 SA.e10 <- SA.e1[SA.e1$Genome_copies_ngDNA>0,]
 SA.e10 <- SA.e10[!is.na(SA.e10$Genome_copies_ngDNA),]
@@ -198,9 +205,9 @@ cor.test(log(1+SA.e2$Abundance), log(1+SA.e2$Genome_copies_gFaeces))
 summary(gau.o)
 
 ### only ASV model
-calc.relimp(gau.m.0)
+calc.relimp(gau.m.0, rela=TRUE)
 
-calc.relimp(gau.m.0.ma)
+calc.relimp(gau.m.0.ma, rela=TRUE)
 
 
 #plot(MA.gau) # not great!

@@ -60,11 +60,11 @@ print(e.s[1,1]/margin2[1]*100)
 #### for MA
 sensit(Eim_nf)
 sensit(Eim)
+
 MA.asv1 <- prune_taxa(rownames(tax_table(Eim2))[1], Eim)
 MA.asv12 <- prune_taxa(rownames(tax_table(Eim2))[c(1,2)], Eim)
 MA.asv13 <- prune_taxa(rownames(tax_table(Eim2))[c(1,3)], Eim)
 MA.asv2 <- prune_taxa(rownames(tax_table(Eim2))[2], Eim)
-
 MA.asv3 <- prune_taxa(rownames(tax_table(Eim2))[3], Eim)
 
 
@@ -80,6 +80,7 @@ sensit(MA.asv3)
 
 #### for SA
 sensit(Eim2_nf)
+
 sensit(Eim2)
 
 SA.asv1 <- prune_taxa(rownames(tax_table(Eim2))[1], Eim2)
@@ -116,6 +117,7 @@ sensit(SA.asv5)
 
 ## for single amplicon
 Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
+
 # seq-f,tss,rle,clr,acs
 p <- c(0.0406, 0.1725, 0.00001, 0.00001, 0.6218)
 p.adjust(p, method="BH")
@@ -124,6 +126,7 @@ p.adjust(p, method="BH")
 Plotting_cor_MA.l(ps=all.PS, ps.f=f.all.lp, "MA_individually_filtered", dir="fig/MA/")
 
 # seq-f,tss,rle,clr,acs
+
 p <- c(0.0001, 0.0052, 0.0037, 0.00001, 0.0006)
 p.adjust(p, method="BH")
 
@@ -235,6 +238,9 @@ cocor(~logGC +  logEimeriidae| logGC + logA_plant, data = df,
 cocor(~logGC +  logEimeriidae| logGC + logA_worms, data = df,
       test = c("hittner2003", "zou2007"))
 
+p <- c(0.0029, 0.0393, 0.0077)
+round(p.adjust(p, method="BH"), 3)
+
 
 # Adjust for multiple testing
 ## those are the corresponding p values from the other correlations above plus the sub TSS).
@@ -252,10 +258,10 @@ cocor(~logGC +  logA| logGC + logA_Mus, data = df,
 cocor(~logGC +  logA| logGC + logA_worms, data = df,
       test = c("hittner2003", "zou2007"))
 
-#cocor(~logGC +  logA| logGC + logA_PlantMus, data = df,
-#            test = c("hittner2003", "zou2007"))
+cocor(~logGC +  logA| logGC + logA_PlantMus, data = df,
+            test = c("hittner2003", "zou2007"))
 
-p <- c(0.0068, 0.1203, 0.7691)
+p <- c(0.0070, 0.1331, 0.781)
 round(p.adjust(p, method="BH"), 3)
 
 ######################################################
@@ -283,7 +289,7 @@ cocor(~logGC + logA | logGC + logA_plant, data = df18,
 cocor(~logGC + logA | logGC + logA_worms, data = df18,
             test = c("hittner2003", "zou2007"))
 
-p <- c(0.0001, 0.0109)
+p <- c(0.0001, 0.0107)
 round(p.adjust(p, method="BH"),3)
 
 ## Comparing to Seq
