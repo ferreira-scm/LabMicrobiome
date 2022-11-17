@@ -116,10 +116,10 @@ sensit(SA.asv5)
 #p.adjust(p, method="BH")
 
 ## for single amplicon
-Plotting_cor(ps=sin.PS18S, "SA", dir="fig/SA/")
+Plotting_cor_MA.l(ps=sin.PS18S, f.sin18, "SA", dir="fig/SA/")
 
 # seq-f,tss,rle,clr,acs
-p <- c(0.0406, 0.1725, 0.00001, 0.00001, 0.6218)
+p <- c(0.0406, 0.1725, 0.00001, 0.00001, 0.6218, 0.9807)
 p.adjust(p, method="BH")
 
 # for MA but individually filtered
@@ -127,7 +127,7 @@ Plotting_cor_MA.l(ps=all.PS, ps.f=f.all.lp, "MA_individually_filtered", dir="fig
 
 # seq-f,tss,rle,clr,acs
 
-p <- c(0.0001, 0.0052, 0.0037, 0.00001, 0.0006)
+p <- c(0.0001, 0.0052, 0.0037, 0.00001, 0.0006, 0.1941)
 p.adjust(p, method="BH")
 
 ##################################################################

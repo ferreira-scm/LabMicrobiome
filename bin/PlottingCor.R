@@ -818,7 +818,7 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
     ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria ASV counts/ngDNA(log)")+
     ggtitle("Absolute count scaling normalization")+
-        labs(tag= "f)")+
+        labs(tag= "e)")+
     theme_bw()+
     theme(text = element_text(size=12),
 #          axis.title.x = element_blank(),
@@ -863,7 +863,7 @@ g <- ggplot(sdtg, aes(y=logGC, x=logEim_rare))+
     ylab("Genome copies/ngDNA (log)")+
     xlab("Eimeria ASV counts(log)")+
     ggtitle("Rarefaction")+
-    labs(tag= "g)")+
+    labs(tag= "f)")+
 #    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
     theme_bw()+
     theme(text = element_text(size=12),
@@ -908,6 +908,12 @@ cor.df5 <- na.omit(cor.df[!is.infinite(cor.df$logACS_Eim),])
 cor.df5 <- cor.df5[!is.infinite(cor.df5$logGC),]
 print(cocor(~logGC + logFilEimeriaSums | logGC + logACS_Eim, data = cor.df5,
             test = c("hittner2003", "zou2007")))
+
+cor.df6 <- na.omit(cor.df[!is.infinite(cor.df$logEim_rare),])
+cor.df6 <- cor.df6[!is.infinite(cor.df6$logGC),]
+print(cocor(~logGC + logFilEimeriaSums | logGC + logEim_rare, data = cor.df6,
+            test = c("hittner2003", "zou2007")))
+
     
 #png(filename=paste(dir, name, "COR.png", sep=""),
 #    width =14, height = 14, units = "in", res= 300)
