@@ -14,8 +14,8 @@ library(parallel)
 devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 ## re-run or use pre-computed results for different parts of the pipeline:
-doFilter <- FALSE
-doMultiAmp <- FALSE
+doFilter <- TRUE
+doMultiAmp <- TRUE
 doTax <- FALSE
 
 ###################Test run Microbiome######################
@@ -58,7 +58,7 @@ dev.off()
 if(doFilter){
   lapply(seq_along(fastqF),  function (i) {
     filterAndTrim(fastqF[i], filtFs[i], fastqR[i], filtRs[i],
-                  truncLen=c(150,170), 
+                  truncLen=c(200,200), 
                   maxN=0, maxEE=2, truncQ=2, rm.phix = TRUE,
                   compress=TRUE, verbose=TRUE)
   })
@@ -91,16 +91,13 @@ if(doMultiAmp){
   errR <- learnErrors(unlist(getStratifiedFilesR(MA)), nbase=1e8,
                       verbose=0, multithread = 90)
   MA <- dadaMulti(MA, Ferr=errF, Rerr=errR,  pool=FALSE,
-                  verbose=0, mc.cores=12)
+                  verbose=0, mc.cores=90)
   MA <- mergeMulti(MA, mc.cores=90) 
   propMerged <- MultiAmplicon::calcPropMerged(MA)
-  MA <- mergeMulti(MA, mc.cores=90) 
-  MA <- makeSequenceTableMulti(MA, mc.cores=90) 
-  MA <- removeChimeraMulti(MA, mc.cores=90)
-  #saveRDS(MA, "/SAN/Victors_playground/Eimeria_microbiome/Multimarker/MA_Multi_TestRun.RDS")
+  MA <- makeSequenceTableMulti(MA, mc.cores=90)
+  MA <- removeChimeraMulti(MA, mc.cores=90)  
   saveRDS(MA, "/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MA_multi_testrun_1.RDS")
 } else{
-  #MA <- readRDS("/SAN/Victors_playground/Eimeria_microbiome/MA_Multi_TestRun.RDS")
   MA <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MA_multi_testrun_1.RDS")
 }
 
@@ -194,7 +191,7 @@ dev.off()
 if(doFilter){
   lapply(seq_along(fastqF),  function (i) {
     filterAndTrim(fastqF[i], filtFs[i], fastqR[i], filtRs[i],
-                  truncLen=c(150,170), 
+                  truncLen=c(200,200), 
                   maxN=0, maxEE=2, truncQ=2, rm.phix = TRUE,
                   compress=TRUE, verbose=TRUE)
   })
@@ -321,7 +318,6 @@ p.df$Gen
 taxT1 <- list()
 seqs <- getSequencesFromTable(MA1)
 seqs <- lapply(seqs, DNAStringSet)
-
 for (i in 1:48){
     if (p.df$Gen[i]=="16S"){
         try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
@@ -414,7 +410,6 @@ taxa.print4 <- taxT1[[7]]
 taxa.print5 <- taxT2[[1]]
 taxa.print6 <- taxT2[[5]]
 taxa.print7 <- taxT2[[7]]
-
 
 
 rownames(taxa.print1) <- NULL
@@ -532,7 +527,9 @@ rownames(PS2@sam_data)==rownames(PS2@otu_table)
 rownames(PS2@otu_table)==sample_names(PS2)
 PS2@sam_data[which(!rownames(PS2@sam_data)==rownames(PS2@otu_table))]
 rownames(PS2@sam_data) <- rownames(PS2@otu_table)
+
 PS_neg <- subset_samples(PS2, grepl("NEGATIVE",rownames(PS2@otu_table)))
+
 PS2@sam_data$Control <- FALSE
 PS2@sam_data$Control[which(sample_names(PS2)%in%sample_names(PS_neg))] <- TRUE
 # sanity check

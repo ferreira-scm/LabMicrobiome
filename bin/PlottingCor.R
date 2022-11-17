@@ -825,8 +825,55 @@ f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
           legend.position= "bottom")+
     guides(fill=guide_legend(nrow=2, byrow=TRUE))
 
+
+############### rarefaction
+rare <- rarefy_even_depth(f.all.lp)
+gPSeimf <- subset_taxa(rare, genus%in%"Eimeria")
+
+#create total sums and Eimeria sums data frame
+gdf <- data.frame(sample_sums(otu_table(rare)))
+gdf$labels <- rownames(gdf)
+gdf$eimf <-(sample_sums(otu_table(gPSeimf)))
+names(gdf) <- c("Fil_TotalSums_rare", "labels", "Eim_rare")
+
+#merge
+sdt <- merge(gdf,sdt, by="labels", all=TRUE) 
+#correlation tests
+sdt$logEim_rare <- log(sdt$Eim_rare)
+
+sdtg <- sdt[sdt$Eim_rare>0,]
+#sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
+sdtg <- sdtg[sdtg$Genome_copies_ngDNA>0,]
+
+print(cor.test(sdtg$logGC, sdtg$logEim_rare, method="pearson"))
+#print(cor.test(sdt$logOPG, sdt$logFilEimeriaSums, method="pearson"))
+
+# Linear models
+Glm <- lm(logGC ~ logEim_rare, sdtg)
+summary(Glm)
+
+# plotting with abundance and prevalence filter correlation
+
+g <- ggplot(sdtg, aes(y=logGC, x=logEim_rare))+
+    geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
+    geom_smooth(method = "lm", se=TRUE, colour="black") +
+    scale_fill_brewer(palette="Spectral")+
+    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+                                          parse = TRUE) +  
+    ylab("Genome copies/ngDNA (log)")+
+    xlab("Eimeria ASV counts(log)")+
+    ggtitle("Rarefaction")+
+    labs(tag= "g)")+
+#    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
+    theme_bw()+
+    theme(text = element_text(size=12),
+#          axis.title.x = element_blank(),
+          legend.position= "bottom")+
+    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+
+    
 # save plots of what we have so far
-plot_grid(b,c,d,e,f) -> fCor
+plot_grid(b,c,d,e,f,g) -> fCor
 
 ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 12, height = 10, dpi = 600)
 
@@ -837,7 +884,7 @@ ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, heig
 ### terrible coding here now...
 names(sdt)
 
-cor.df <- sdt[,c("logGC", "logEimeriaSums", "logFilEimeriaSums", "logTSS_Eim", "logACS_Eim", "clr_Eim", "REL_Eim")]
+cor.df <- sdt[,c("logGC", "logEimeriaSums", "logFilEimeriaSums", "logTSS_Eim", "logACS_Eim", "clr_Eim", "REL_Eim", "logEim_rare")]
 
 cor.df$REL_Eim <- cor.df$REL_Eim*-1
 
@@ -867,4 +914,5 @@ print(cocor(~logGC + logFilEimeriaSums | logGC + logACS_Eim, data = cor.df5,
 #fCor
 #dev.off()
 }
+
 

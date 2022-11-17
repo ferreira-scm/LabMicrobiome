@@ -1,7 +1,6 @@
 #!/usr/bin/Rscript
 
 ##Sequence cleaning and Multiamplicon pipeline for Access Array of Eimeria infection experiment
-
 library("lifecycle", lib.loc="/usr/local/lib/R/site-library") 
 library("ggplot2")
 library("reshape")
@@ -12,7 +11,7 @@ library("taxize")
 library("parallel")
 library(dada2)
 library(DECIPHER)
-library(Decontam)
+library(decontam)
 #library("MultiAmplicon", lib.loc="/usr/local/lib/R/site-library") 
 
 ## using the devel
@@ -21,8 +20,8 @@ devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 ## re-run or use pre-computed results for different parts of the pipeline:
 ## Set to FALSE to use pre-computed and saved results, TRUE to redo analyses.
-doFilter <- FALSE
-doMultiAmp <- FALSE
+doFilter <- TRUE
+doMultiAmp <- TRUE
 doTax <- FALSE
 
 ###################Full run Microbiome#######################

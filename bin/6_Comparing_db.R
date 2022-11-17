@@ -35,6 +35,7 @@ sin.PS.l <- readRDS("tmp/PhyloSeqList18S.Rds")
 sin.PS.l.slv <- readRDS("tmp/PhyloSeqList18S_SILVA.Rds")
 
 source("bin/PlottingCor.R")
+source("bin/4_MA_SA_filtering.R")
 
 # let's filter
 #f.sin18 <- fil(sin.PS18S)

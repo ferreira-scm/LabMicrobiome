@@ -2,7 +2,7 @@ library(Biostrings)
 library(ShortRead)
 
 #### geting qiime2 silva DB and fixing names for dada2
-Slv138.fa <- readDNAStringSet("/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/silva-138.1-ssu-nr99-seqs.fasta", format="fasta")
+Slv138.fa <- Biostrings::readDNAStringSet("/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/silva-138.1-ssu-nr99-seqs.fasta", format="fasta")
 Slv138.tax <- read.table("/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/silva-138.1-ssu-nr99-tax.tsv", sep='\t', header=TRUE)
 
 nrow(Slv138.tax)
@@ -19,7 +19,7 @@ Slv138.tax <- Slv138.tax[reorder_idx,]
 which(!names(Slv138.fa)==Slv138.tax$Feature.ID)
 
 # this is a quick fix until I download the database again without domain
-Slv138.tax$Taxon <- (gsub("^d__[A-Za-z]+;", "", Slv138.tax$Taxon))
+#Slv138.tax$Taxon <- (gsub("^d__[A-Za-z]+;", "", Slv138.tax$Taxon))
 
 # renaming
 names(Slv138.fa) <- gsub(" ", "", Slv138.tax$Taxon, fixed=TRUE)
@@ -45,7 +45,7 @@ Slv138LSU.tax <- Slv138LSU.tax[reorder_idx,]
 which(!names(Slv138LSU.fa)==Slv138LSU.tax$Feature.ID)
 
 # this is a quick fix until I download the database again without domain
-Slv138LSU.tax$Taxon <- (gsub("^d__[A-Za-z]+;", "", Slv138LSU.tax$Taxon))
+#Slv138LSU.tax$Taxon <- (gsub("^d__[A-Za-z]+;", "", Slv138LSU.tax$Taxon))
 
 # renaming
 names(Slv138LSU.fa) <- gsub(" ", "", Slv138LSU.tax$Taxon, fixed=TRUE)
