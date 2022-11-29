@@ -1,30 +1,29 @@
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: log(Genome_copies) ~ log(1 + ASV1) + log(1 + ASV2) + (1 | dpi)
+   Data: MA.df
 
-Call:
-lm(formula = log(Genome_copies) ~ log(1 + ASV1) + log(1 + ASV2) + 
-    log(1 + ASV3) + dpi, data = MA.df)
+REML criterion at convergence: 415.4
 
-Residuals:
+Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--3.6135 -0.6101 -0.0341  0.7488  2.8412 
+-3.2051 -0.5779 -0.0315  0.6799  2.5982 
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     2.2590     1.1112   2.033  0.04434 *  
-log(1 + ASV1)   2.4704     0.5276   4.682 7.76e-06 ***
-log(1 + ASV2)   2.7939     4.6489   0.601  0.54902    
-log(1 + ASV3)  16.0915    31.2587   0.515  0.60768    
-dpi3            1.7836     1.1654   1.530  0.12862    
-dpi4            5.7731     1.1474   5.032 1.79e-06 ***
-dpi5            6.8195     1.1778   5.790 6.12e-08 ***
-dpi6            6.3781     1.1873   5.372 4.07e-07 ***
-dpi7            5.4606     1.1658   4.684 7.71e-06 ***
-dpi8            3.7247     1.1426   3.260  0.00146 ** 
-dpi9            2.1835     1.1610   1.881  0.06251 .  
-dpi10           1.3587     1.1879   1.144  0.25508    
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ dpi      (Intercept) 5.382    2.32    
+ Residual             1.231    1.11    
+Number of obs: 128, groups:  dpi, 9
+
+Fixed effects:
+              Estimate Std. Error       df t value Pr(>|t|)    
+(Intercept)     6.0146     0.7975   7.6531   7.542 8.40e-05 ***
+log(1 + ASV1)   2.6836     0.5110 119.8055   5.252 6.62e-07 ***
+log(1 + ASV2)   4.2824     4.4432 117.8474   0.964    0.337    
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 1.111 on 116 degrees of freedom
-Multiple R-squared:  0.8419,	Adjusted R-squared:  0.8269 
-F-statistic: 56.14 on 11 and 116 DF,  p-value: < 2.2e-16
-
+Correlation of Fixed Effects:
+            (Intr) l(1+ASV1
+log(1+ASV1) -0.110         
+log(1+ASV2) -0.092 -0.191  
