@@ -26,6 +26,7 @@ MA.asv2 <- prune_taxa(rownames(tax_table(Eim2))[2], Eim)
 #MA.asv3 <- prune_taxa(rownames(tax_table(Eim2))[3], Eim)
 
 sensit(MA.asv1)
+
 sensit(MA.asv2)
 
 #### for SA
