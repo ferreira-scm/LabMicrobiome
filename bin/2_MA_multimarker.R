@@ -14,8 +14,8 @@ library(parallel)
 devtools::load_all("/SAN/Susanas_den/MultiAmplicon/")
 
 ## re-run or use pre-computed results for different parts of the pipeline:
-doFilter <- TRUE
-doMultiAmp <- TRUE
+doFilter <- FALSE
+doMultiAmp <- FALSE
 doTax <- FALSE
 
 ###################Test run Microbiome######################
@@ -264,10 +264,8 @@ MA <- blastTaxAnnot(MA,
                     num_threads = 90) ##Change for use more power!!
 saveRDS(MA, file="/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1.Rds")
 } else {
-
     MA1 <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_TestRun_1.Rds")
     MA2 <- readRDS("/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1.Rds")  
-
 }
 
 
@@ -305,14 +303,9 @@ p.df <- rbind(p.df, Pdf)
 p.df <- p.df[match(names(MA1@PrimerPairsSet), p.df$Primer_name),]
 
 which(ptable$Primer_name == p.df$Primer_name)
-
-
 names(MA1@PrimerPairsSet)==p.df$Primer_name
-
-nrow(p.df)
-
+rownames(p.df) <- seq(1,48,1)
 table(p.df$Gen, p.df$Target)
-
 p.df$Gen
 
 taxT1 <- list()
@@ -321,36 +314,35 @@ seqs <- lapply(seqs, DNAStringSet)
 for (i in 1:48){
     if (p.df$Gen[i]=="16S"){
         try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
-          "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+   "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
           multithread=90,
                                     tryRC = TRUE,
                                    verbose=TRUE))
     }
     else if (p.df$Gen[i]=="18S"){
         try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
-                 "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+   "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
                                      multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }
     else if (p.df$Gen[i]=="28S"){
         try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
-                      "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
+ "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
                                      multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }   
     else if (p.df$Gen[i]=="ITS"){
      try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
-                                      "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
+  "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
                                      multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }
     else {
      try(taxT1[[i]] <- assignTaxonomy(seqs[[i]],
-#           "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
-            "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/tmp/Fastas/other.dada2.fa",
+       "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
                                      multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
@@ -362,37 +354,35 @@ seqs <- lapply(seqs, DNAStringSet)
 for (i in 1:48){
     if (p.df$Gen[i]=="16S"){
         try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
-          "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+   "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
           multithread=90,
                                     tryRC = TRUE,
                                    verbose=TRUE))
     }
     else if (p.df$Gen[i]=="18S"){
         try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
-                 "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
+   "/SAN/Susanas_den/AmpMarkers/RESCRIPt/SSURef_NR99/Fastas/Slv138.dada2.fa",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }
     else if (p.df$Gen[i]=="28S"){
         try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
-                      "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
+ "/SAN/Susanas_den/AmpMarkers/RESCRIPt/LSURef_NR99/Fastas/Slv138LSU.dada2.fa",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }   
     else if (p.df$Gen[i]=="ITS"){
      try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
-                                      "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
-     taxLevels = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"),
+  "/SAN/Susanas_den/AmpMarkers/UNITE/sh_general_release_s_all_10.05.2021/sh_general_release_dynamic_s_all_10.05.2021.fasta",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
     }
     else {
      try(taxT2[[i]] <- assignTaxonomy(seqs[[i]],
-#           "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
-            "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/tmp/Fastas/other.dada2.fa",
+       "/SAN/Susanas_den/AmpMarkers/RESCRIPt/other/Fastas/other.dada2.fa",
                                     multithread=90,
                                     tryRC = TRUE,
                                     verbose=TRUE))
@@ -400,7 +390,7 @@ for (i in 1:48){
 }
 
 
-taxT2[[5]]
+taxT2[[44]]
 
 ## Little inspection
 taxa.print1 <- taxT1[[1]]
@@ -431,6 +421,11 @@ taxa.print7[1:10,]
 
 MA1@taxonTable <- taxT1
 MA2@taxonTable <- taxT2
+
+saveRDS(MA1, "/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_TestRun_1_NewTax.Rds")
+saveRDS(MA2, "/SAN/Susanas_den/gitProj/LabMicrobiome/tmp/MATax_FullRun_1_NewTax.Rds")  
+
+
 
 ### Add sample information
 if(!exists("sample.data")){
