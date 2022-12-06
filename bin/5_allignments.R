@@ -132,6 +132,42 @@ cor.test(log(MA.e10$Genome_copies_ngDNA), log(MA.e10$Abundance))
 cor.test(log(MA.e20$Genome_copies_ngDNA), log(MA.e20$Abundance))
 #cor.test(log(MA.e30$Genome_copies_ngDNA), log(MA.e30$Abundance))
 
+####
+## Let's do the correlations first
+SA.opg <- SA.e.g[SA.e.g$OPG>0,]
+#SA.e.g0 <- SA.e.g0[SA.e.g0$Abundance>0,]
+#SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_ngDNA),]
+
+#MA.e.g0 <- MA.e.g[MA.e.g$Genome_copies_ngDNA>0,]
+#MA.e.g0 <- MA.e.g0[MA.e.g0$Abundance>0,]
+#MA.e.g0 <- MA.e.g0[!is.na(MA.e.g0$Genome_copies_ngDNA),]
+
+### OPG correlation
+cor.test(log(SA.opg$OPG), log(SA.opg$Abundance))
+col7 <- c("#F1B6DA", "#C51B7D", "#DE77AE","#01665E", "#35978F", "#80CDC1","#C7EAE5")
+
+
+OPG_Abundance <- ggplot(SA.opg, aes(y=log(OPG), x=log(Abundance), fill=dpi))+
+    geom_point(shape=21, size=4, alpha=0.8)+
+    scale_fill_manual(values=col7)+
+#    geom_smooth(method=lm, colour="black", aes(colour="ASV"))+
+    ylab("Oocysts/g faeces")+
+#    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
+    xlab("Eimeria proportion within all ASVs/ng DNA (log)")+
+    annotate(geom="text", x=-6, y=14, label="Pearson rho=0.67, p<0.001", size=3)+
+    theme_bw()+
+    guides(fill = guide_legend(nrow = 1))+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          text=element_text(size=12),
+          legend.position = "top",
+          axis.line = element_line(colour = "black"))
+
+OPG_Abundance
+
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.pdf", OPG_Abundance, width = 6, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.png", OPG_Abundance, width = 6, height = 4, dpi = 300)
+
 ############### Which ASV explains Eimeria genome copies?
 ################ preparing dataset for regressions
 # removeing zeros from qPCR
@@ -536,9 +572,9 @@ cor.test((ma.sa$Abundance.x), (ma.sa$Abundance.y), method="pearson")
 ASV.c <- ggplot(ma.sa, aes(x=Abundance.x, y=Abundance.y, fill=ASV))+
     geom_point(size=4, shape=21, alpha=0.7)+
     scale_fill_manual(values=c("#009E73", "mediumvioletred"), name="")+
-    xlab("Single-amplicon ASV abundance")+
-    ylab("Multi-amplicon ASV abundance")+
-    annotate(geom="text", x=1.5, y=1.6, label="Pearson rho=0.92, p<0.001", size=3)+
+    xlab("Single-amplicon ASV abundance/ng DNA")+
+    ylab("Multi-amplicon ASV abundance/ng DNA")+
+    annotate(geom="text", x=1.6, y=1.6, label="Pearson rho=0.92, p<0.001", size=3)+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -556,10 +592,11 @@ sama <- rbind(sa, ma)
 ASV_sama <- ggplot(sama[sama$Abundance>0,], aes(x=Abundance, y=ASV, fill=amp))+
     geom_point(size=4, shape=21, alpha=0.7, position=position_jitterdodge(dodge.width=0.75, jitter.width=0.1))+
     geom_boxplot(alpha=0.3, colour="black", outlier.shape = NA)+
-    scale_fill_manual(values=c("#CC6677", "#DDCC77"))+
-#    scale_fill_manual(values=c("#009E73", "mediumvioletred"), name="")+
+    scale_fill_manual(values=c("#CC6677", "#DDCC77"), name="", labels=c("multi-amplicon", "single-amplicon"))+
     xlab("Eimeria ASV abundance /ngDNA")+
     ylab("")+
+    guides(fill = guide_legend(override.aes = list(linetype = 0)),
+           color = guide_legend(override.aes = list(linetype = 0)))+
     theme_bw()+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -567,6 +604,7 @@ ASV_sama <- ggplot(sama[sama$Abundance>0,], aes(x=Abundance, y=ASV, fill=amp))+
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
+ASV_sama
 
 SA_Eimeria.ASVs <- ggplot(SA.e.0, aes(y=log(Genome_copies_ngDNA), x=log(Abundance), fill=ASV))+
     geom_point(shape=21, size=4, alpha=0.7)+
