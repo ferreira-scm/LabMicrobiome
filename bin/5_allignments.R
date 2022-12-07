@@ -154,19 +154,19 @@ OPG_Abundance <- ggplot(SA.opg, aes(y=log(OPG), x=log(Abundance), fill=dpi))+
     ylab("Oocysts/g faeces")+
 #    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
     xlab("Eimeria proportion within all ASVs/ng DNA (log)")+
-    annotate(geom="text", x=-6, y=14, label="Pearson rho=0.67, p<0.001", size=3)+
-    theme_bw()+
+    annotate(geom="text", x=-5, y=14, label="Pearson rho=0.67, p<0.001", size=3)+
+    theme_bw(base_size=10)+
     guides(fill = guide_legend(nrow = 1))+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
+          text=element_text(size=10),
           legend.position = "top",
           axis.line = element_line(colour = "black"))
 
 OPG_Abundance
 
-ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.pdf", OPG_Abundance, width = 6, height = 4, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.png", OPG_Abundance, width = 6, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.pdf", OPG_Abundance, width = 4, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.png", OPG_Abundance, width = 4, height = 4, dpi = 300)
 
 ############### Which ASV explains Eimeria genome copies?
 ################ preparing dataset for regressions
@@ -329,7 +329,7 @@ plot_SA_all <- ggplot(SA.e.g0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA))
     ggtitle("Single-amplicon Eimeria ASV abundance")+
         coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
     theme_bw()+
-    annotate("text", x=-8, y=11, label="rho=0.93, p<0.001")+
+    annotate("text", x=-6, y=11, label="rho=0.93, p<0.001")+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -339,12 +339,12 @@ plot_SA_all <- ggplot(SA.e.g0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA))
 
 plot_MA_all <- ggplot(MA.e.g0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA)))+
     geom_point(aes(fill=dpi), shape=21, position=position_jitter(0.2), size=4, alpha=0.8)+
-    scale_fill_manual(values=coul)+
+    scale_fill_manual(values=coul1)+
     labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV abundance/ng DNA (log)")+
     ggtitle("Multi-amplicon Eimeria ASV abundance")+
     coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
     theme_bw()+
-    annotate("text", x=-8, y=11, label="rho=0.89, p<0.001")+
+    annotate("text", x=-6, y=11, label="rho=0.89, p<0.001")+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -368,8 +368,6 @@ plot_MA_1 <- ggplot(MA.e10, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), co
           text=element_text(size=12),
 #          legend.position = "none",
           axis.line = element_line(colour = "black"))
-
-plot_MA_1
 
 plot_MA_2 <-ggplot(MA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), colour=dpi))+
     geom_point(aes(fill=dpi), shape=21, colour="black", position=position_jitter(0.2), size=4, alpha=0.8)+
@@ -400,9 +398,11 @@ plot_MA_ASV <- plot_grid(plot_MA_all, plot_MA_1, plot_MA_2, nrow=3, labels=c("d"
 plot_MA_SA_ASV <- plot_grid(plot_SA_ASV, plot_MA_ASV, nrow=1)
 
 ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.pdf", plot_MA_SA_ASV, width = 11, height = 15, dpi = 300)
-
 ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.png", plot_MA_SA_ASV, width = 11, height = 15, dpi = 350)
 
+forPrese <- plot_grid(plot_SA_all, plot_MA_all, nrow=1)
+
+ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.png", forPrese, width = 8, height = 4, dpi = 300)
 
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
