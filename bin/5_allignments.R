@@ -402,7 +402,8 @@ ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.png", plot_MA_SA_ASV, width 
 
 forPrese <- plot_grid(plot_SA_all, plot_MA_all, nrow=1)
 
-ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.png", forPrese, width = 8, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.png", forPrese, width = 10, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.pdf", forPrese, width = 10, height = 4, dpi = 300)
 
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
@@ -413,7 +414,7 @@ SA.e4 <- SA.e4[which(SA.e4$EH_ID%in%keep),]
 SA4 <- ggplot(SA.e4, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
-    labs(y="ASV4 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV4 abundance/ng DNA, log(+1)", x="Days post infection")+
     #    scale_fill_manual(values=coul)+
     theme_bw()+
     ggtitle("SA")+
@@ -431,7 +432,7 @@ SA3 <- ggplot(SA.e3, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
-    labs(y="ASV3 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV3 abundance/ng DNA, log(+1)", x="Days post infection")+
     ggtitle("SA")+
     theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
@@ -448,7 +449,7 @@ SA2 <- ggplot(SA.e2, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
-    labs(y="ASV2 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV2 abundance/ng DNA, log(+1)", x="Days post infection")+
     ggtitle("SA")+
     theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
@@ -465,7 +466,7 @@ SA1 <- ggplot(SA.e1, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
-    labs(y="ASV1 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV1 abundance/ng DNA, log(+1)", x="Days post infection")+
     ggtitle("SA")+
     theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
@@ -483,7 +484,7 @@ MA2 <- ggplot(MA.e2, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
-    labs(y="ASV2 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV2 abundance/ng DNA, log(+1)", x="Days post infection")+
     ggtitle("MA")+
         theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
@@ -500,7 +501,7 @@ MA1 <- ggplot(MA.e1, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_point(shape=21, position=position_jitter(0.2), size=2, alpha=0.7)+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
-    labs(y="ASV1 abundance, log(+1)", x="Days post infection")+
+    labs(y="ASV1 abundance/ng DNA, log(+1)", x="Days post infection")+
     ggtitle("MA")+
     theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
@@ -516,7 +517,7 @@ qpcr <- ggplot(MA.e1, aes(x=dpi, y=log(1+Genome_copies_gFaeces), fill=EH_ID))+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
     ggtitle("qPCR")+
-    labs(y="Genome copies log(1+)", x="Days post infection")+
+    labs(y="Genome copies/ng DNA log(1+)", x="Days post infection")+
         theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
@@ -530,7 +531,7 @@ MA.all <- ggplot(MA.e.g, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
     ggtitle("Multi-amplicon")+
-    labs(y="Genome copies log(1+)", x="Days post infection")+
+    labs(y="ASV abundance/ngDNA( log(1+)", x="Days post infection")+
         theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
@@ -544,7 +545,7 @@ SA.all <- ggplot(SA.e.g, aes(x=dpi, y=log(1+Abundance), fill=EH_ID))+
     geom_line(aes(group=EH_ID), alpha=0.2)+
 #    scale_fill_manual(values=coul)+
     ggtitle("Single amplicon")+
-    labs(y="Genome copies log(1+)", x="Days post infection")+
+    labs(y="ASV abundance/ngDNA log(1+)", x="Days post infection")+
         theme_bw()+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
@@ -656,8 +657,8 @@ SAMA.all
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.pdf", SAMA.asv, width = 10, height = 15, dpi = 300)
 ggplot2::ggsave(file="fig/Eimeria_ASVs_dpi.png", SAMA.asv, width = 10, height = 15, dpi = 300)
 
-ggplot2::ggsave(file="fig/Eimeria_SA_MA_all_dpi.pdf", SAMA.all, width = 10, height = 15, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_SA_MA_all_dpi.png", SAMA.all, width = 10, height = 15, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_SA_MA_all_dpi.pdf", SAMA.all, width = 4, height = 10, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_SA_MA_all_dpi.png", SAMA.all, width = 4, height = 10, dpi = 300)
 
 ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.pdf", ASV.SA.MA, width = 13, height = 5, dpi = 300)
 ggplot2::ggsave(file="fig/MA_SA_Eimeria_ASVs.png", ASV.SA.MA, width = 13, height = 5, dpi = 300)

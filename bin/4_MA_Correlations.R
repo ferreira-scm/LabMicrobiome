@@ -61,20 +61,23 @@ sensit(SA.asv4)
 #p <- c(0.0208, 0.0134, 0.1037, 0.00001, 0.00001)
 #p.adjust(p, method="BH")
 
-## for single amplicon
+### for single amplicon
 Plotting_cor_MA.l(ps=sin.PS18S.slv, f.sin18.slv, "SA", dir="fig/SA/")
 
 # tss,rle,clr,acs, rare
 p <- c(0.3243, 0.00001, 0.00001, 0.9665, 0.3759)
 p.adjust(p, method="BH")
 
-# for MA but individually filtered
+### for MA but individually filtered
 Plotting_cor_MA.l(ps=all.PS.slv, ps.f=f.all.lp.slv, "MA_individually_filtered", dir="fig/MA/")
 
 # tss,rle,clr,acs, rare
-
 p <- c(0.0049, 0.00001, 0.0037, 0.0007, 0.0043)
 p.adjust(p, method="BH")
+
+### for MA but wang only
+
+Plotting_cor_MA.l(ps=all.PS.l.slv[[37]], ps.f=f.all.l.slv[[37]], "MA_wang_TSS", dir="fig/MA/")
 
 ##################################################################
 ### OK, so let's remove food

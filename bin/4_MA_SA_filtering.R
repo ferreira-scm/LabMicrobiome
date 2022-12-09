@@ -25,9 +25,6 @@ all.PS.slv <- readRDS("tmp/PhyloSeqData_All_Tax_New.Rds")
 all.PS.l <- readRDS("tmp/PhyloSeqList_All.Rds")
 all.PS.l.slv <- readRDS("tmp/PhyloSeqList_All_Tax_New.Rds")
 
-# single amplicon from MA run
-all.PSwang <- all.PS.l[[37]]
-
 ## Single amplicon 18S
 sin.PS18S <- readRDS("tmp/PhyloSeqList18S.Rds")
 sin.PS18S.slv <- readRDS("tmp/PhyloSeqList18S_SILVA.Rds")
@@ -46,8 +43,6 @@ f.sin18 <- fil(sin.PS18S)
 f.sin18.slv <- fil(sin.PS18S.slv)
 f.all <- fil(all.PS)
 f.all.slv <- fil(all.PS.slv)
-
-
 
 ## filtering MA by amplicon
 f.all.l <- list()
@@ -89,16 +84,19 @@ allTSS <-  transform_sample_counts(f.all.lp, function(x) x / sum(x))
 sin18TSS.slv  <- transform_sample_counts(f.sin18.slv, function(x) x / sum(x))
 #sinTSS <- transform_sample_counts(f.sin, function(x) x / sum(x))
 allTSS.slv <-  transform_sample_counts(f.all.lp.slv, function(x) x / sum(x))
+TSS.wang <- transform_sample_counts(f.all.l.slv[[37]], function(x) x / sum(x))
 
 T.sin18 <- sin18TSS
 T.all <- allTSS
 T.sin18.slv <- sin18TSS.slv
 T.all.slv <- allTSS.slv
+T.wang <- TSS.wang
+
 otu_table(T.sin18) <- otu_table(T.sin18)*sample_data(T.sin18)$Total_DNA
 otu_table(T.all) <- otu_table(T.all)*sample_data(T.all)$Total_DNA
 otu_table(T.sin18.slv) <- otu_table(T.sin18.slv)*sample_data(T.sin18.slv)$Total_DNA
 otu_table(T.all.slv) <- otu_table(T.all.slv)*sample_data(T.all.slv)$Total_DNA
-
+otu_table(T.wang) <- otu_table(T.wang)*sample_data(T.wang)$Total_DNA
 
 #### exploring MA
 #for (i in 1:48) {
@@ -125,9 +123,6 @@ get_taxa_unique(T.sin18, "genus")
 rank_names(T.sin18.slv)
 
 get_taxa_unique(f.all.lp.slv, "Phylum")
-
-
-
 
 #########################################################
 #how many primers amplify Apicomplexa and which families?
@@ -190,3 +185,6 @@ subset_taxa(f.sin18.slv, Genus=="g__Eimeria")
 
 Eim2 <- subset_taxa(T.sin18.slv, Genus%in%"g__Eimeria")
 Eim <- subset_taxa(T.all.slv, Genus%in%"g__Eimeria")
+
+Eim.TSSw <- subset_taxa(TSS.wang, Genus%in%"g__Eimeria")
+Eim.Tw <- subset_taxa(T.wang, Genus%in%"g__Eimeria")
