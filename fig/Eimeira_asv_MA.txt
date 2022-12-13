@@ -3,27 +3,27 @@ lmerModLmerTest]
 Formula: log(Genome_copies) ~ log(1 + ASV1) + log(1 + ASV2) + (1 | dpi)
    Data: MA.df
 
-REML criterion at convergence: 415.4
+REML criterion at convergence: 393.8
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--3.2051 -0.5779 -0.0315  0.6799  2.5982 
+-2.7514 -0.6828 -0.1085  0.7049  2.2183 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- dpi      (Intercept) 5.382    2.32    
- Residual             1.231    1.11    
+ dpi      (Intercept) 3.088    1.757   
+ Residual             1.039    1.019   
 Number of obs: 128, groups:  dpi, 9
 
 Fixed effects:
               Estimate Std. Error       df t value Pr(>|t|)    
-(Intercept)     6.0146     0.7975   7.6531   7.542 8.40e-05 ***
-log(1 + ASV1)   2.6836     0.5110 119.8055   5.252 6.62e-07 ***
-log(1 + ASV2)   4.2824     4.4432 117.8474   0.964    0.337    
+(Intercept)     5.4254     0.6224   7.5463   8.717 3.35e-05 ***
+log(1 + ASV1)   2.3315     0.2993 124.3147   7.791 2.27e-12 ***
+log(1 + ASV2)   5.0011     1.7745 120.1619   2.818  0.00565 ** 
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Correlation of Fixed Effects:
             (Intr) l(1+ASV1
-log(1+ASV1) -0.110         
-log(1+ASV2) -0.092 -0.191  
+log(1+ASV1) -0.211         
+log(1+ASV2) -0.160  0.031  
