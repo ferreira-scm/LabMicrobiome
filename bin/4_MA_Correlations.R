@@ -79,6 +79,14 @@ p.adjust(p, method="BH")
 
 Plotting_cor_MA.l(ps=all.PS.l.slv[[37]], ps.f=f.all.l.slv[[37]], "MA_wang_TSS", dir="fig/MA/")
 
+# tss,rle,clr,acs, rare
+p <- c(0.0046, 0.00001, 0.7266, 0.0002, 0.0009)
+
+round(p.adjust(p, method="BH"),3)
+
+
+fCor.l
+
 ##################################################################
 ### OK, so let's remove food
 # First we prepare the datasets for MA

@@ -87,12 +87,6 @@ print(e.s[2,2]/margin1[2]*100)
 #specificity
 print("Specificity:")
 print(e.s[1,1]/margin1[1]*100)
-#sensitivity
-print("Sensitivity:")
-print(e.s[2,2]/margin1[2]*100)
-#specificity
-print("Specificity:")
-print(e.s[1,1]/margin1[1]*100)
 #ppv
 print("positive predictive value")
 print(e.s[2,2]/margin2[2]*100)
@@ -132,33 +126,7 @@ sdta <- sdt[sdt$EimeriaSums>0,]
 #sdta <- sdta[sdta$Genome_copies_gFaeces>0,]
 sdta <- sdta[sdta$Genome_copies_ngDNA>0,]
 
-print(cor.test(sdta$logGC, sdta$logEimeriaSums, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logEimeriaSums, method="pearson"))
-#print(cor.test(sdt$logTotalSums, sdt$logEimeriaSums, method="pearson"))
-# Linear models
-
-Alm <- lm(logGC ~ logEimeriaSums+logTotalSums, sdta)
-Alm.0 <- lm(logGC ~ logEimeriaSums, sdta)
-summary(Alm)
-
-anova(Alm, Alm.0)
-
-a <- ggplot(sdta, aes(y=logGC, x=logEimeriaSums))+
-    geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    scale_fill_brewer(palette="Spectral")+
-    geom_smooth(aes(y=logGC, x=logEimeriaSums),method = "lm", se=TRUE, colour="black") +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
-    ylab("Genome copies ngDNA(log)")+
-    xlab("Eimeria (log)")+
-    ggtitle("Raw counts unfiltered")+
-    labs(tag= "a)")+
-#    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
-
+#print(cor.test(sdta$logGC, sdta$logEimeriaSums, method="pearson"))
 ##############now we filter
 ppPS <- ps.f
 
@@ -180,33 +148,23 @@ sdtb <- sdt[sdt$FilEimeriaSums>0,]
 #sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
 sdtb <- sdtb[sdtb$Genome_copies_ngDNA>0,]
 
-print(cor.test(sdtb$logGC, sdtb$logFilEimeriaSums, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logFilEimeriaSums, method="pearson"))
+sdtb <- sdtb[!is.na(sdtb$Genome_copies_ngDNA),]
 
-# Linear models
-Blm <- lm(logGC ~ logFilEimeriaSums+logTotalSums, sdtb)
-Blm0 <- lm(logGC ~ logFilEimeriaSums, sdtb)
-summary(Blm)
-anova(Blm, Blm0)
+b.c <- cor.test(sdtb$logGC, sdtb$logFilEimeriaSums, method="pearson")
+print(b.c)
+
+coul <- c("#F6E8C3","#DFC27D","#BF812D","#F1B6DA", "#C51B7D", "#DE77AE","#01665E", "#35978F", "#80CDC1","#C7EAE5")
 
 # plotting with abundance and prevalence filter correlation
-
 b <- ggplot(sdtb, aes(y=logGC, x=logFilEimeriaSums))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    geom_smooth(method = "lm", se=TRUE, colour="black") +
-    scale_fill_brewer(palette="Spectral")+
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
-    ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria ASV counts(log)")+
+    scale_fill_manual(values=coul)+
+    ylab("Eimeria genome copies (log)")+
+    xlab("Eimeria ASV abundance (log)")+
     ggtitle("No normalization")+
-    labs(tag= "a)")+
-#    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+    annotate(geom="text", x=min(sdtb$logFilEimeriaSums), y=max(sdtb$logGC), hjust=0.05, label=paste("Spearman rho=", round(b.c$estimate, 2), ", p<0.001", sep=""))+
+    theme_bw(base_size=10)+
+    theme(legend.position= "none")
 
 ################################################################
 #### using relative abundance
@@ -228,32 +186,22 @@ sdt$logTSS_Eim <- log(sdt$TSS_Eim)
 sdtc <- sdt[sdt$TSS_Eim>0,]
 #sdtc <- sdtc[sdtc$Genome_copies_gFaeces>0,]
 sdtc <- sdtc[sdtc$Genome_copies_ngDNA>0,]
+sdtc <- sdtc[!is.na(sdtc$Genome_copies_ngDNA),]
 
-print(cor.test(sdtc$logGC, sdtc$logTSS_Eim, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logTSS_Eim, method="pearson"))
-# Linear models
-Clm <- lm(logGC ~ logTSS_Eim, sdtc)
-
-summary(Clm)
+c.c <- cor.test(sdtc$logGC, sdtc$logTSS_Eim, method="pearson")
+print(c.c)
 
 # plotting TSS correlation
 c <-ggplot(sdtc, aes(x=logTSS_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002),
                 size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    scale_fill_brewer(palette="Spectral")+
-    geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
-    ylab("Genome copies/ngDNA (log)")+
+    scale_fill_manual(values=coul)+
+    ylab("Eimeria genome copies (log)")+
     xlab("Eimeria relative abundance (log)")+
-    ggtitle("Total sum scaling normalization")+
-        labs(tag= "b)")+
-#        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+    ggtitle("Total sum scaling")+
+    annotate(geom="text", x=min(sdtc$logTSS_Eim), y=max(sdtc$logGC), hjust=0.05, label=paste("Spearman rho=", round(c.c$estimate, 2), ", p<0.001", sep=""))+
+    theme_bw(base_size=10)+
+    theme(legend.position= "none")
 
 ###############################################################
 #### using Relative log expression
@@ -275,29 +223,22 @@ sdt <- merge(df, sdt, by="labels", all=TRUE)
 sdtd <- sdt[sdt$FilEimeriaSums>0,]
 sdtd <- sdtd[sdtd$Genome_copies_gFaeces>0,]
 sdtd <- sdtd[sdtd$Genome_copies_ngDNA>0,]
-#print(cor.test(sdt$logGC, sdt$logREL_Eim, method="pearson"))
-print(cor.test(sdtd$logGC, sdtd$REL_Eim, method="pearson"))
+sdtd <- sdtd[!is.na(sdtd$Genome_copies_ngDNA),]
 
-# Linear models
-Dlm <- lm(logGC ~ REL_Eim, sdtd)
-summary(Dlm)
+d.c <- cor.test(sdtd$logGC, sdtd$REL_Eim, method="pearson")
+
+print(d.c)
 
 # plotting REL correlation
 d <-ggplot(sdtd, aes(x=REL_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    scale_fill_brewer(palette="Spectral")+
-    geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
-    ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria ASV counts")+
-    ggtitle("Relative log expression normalization")+
-        labs(tag= "c)")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+    scale_fill_manual(values=coul)+
+    ylab("Eimeria genome copies (log)")+
+    xlab("Eimeria ASV abundance")+
+    annotate(geom="text", x=max(sdtd$REL_Eim), y=max(sdtd$logGC), hjust=0.9, label=paste("Spearman rho=", round(d.c$estimate, 2), ", p<0.001", sep="")) +
+    ggtitle("Relative log expression")+
+    theme_bw(base_size=10)+
+    theme(legend.position= "none")
 
 ########### centered log ratio
 PSclr = microbiome::transform(ppPS, transform="clr")
@@ -309,35 +250,25 @@ names(df) <- c("clr_Eim", "labels")
 
 #merge
 sdt <- merge(df, sdt, by="labels", all=TRUE) 
-
-sdte <- sdt[sdt$TSS_Eim>0,] #removing zeros, this is correct
+sdte <- sdt[sdt$TSS_Eim>0,] #removing zeros, this is correc
 sdte <- sdte[sdte$Genome_copies_gFaeces>0,]
+sdte <- sdte[!is.na(sdte$Genome_copies_gFaeces),]
 
 #correlation tests
-print(cor.test(sdte$logGC, sdte$clr_Eim, method="pearson"))
-# Linear models
-Elm <- lm(logGC ~ clr_Eim, sdte)
-
-summary(Elm)
+e.c <- (cor.test(sdte$logGC, sdte$clr_Eim, method="pearson"))
+print(e.c)
 
 # plotting CLR correlation
 e <-ggplot(sdte, aes(x=clr_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.002),
                 size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    scale_fill_brewer(palette="Spectral")+
-    geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, colour="black") +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
-    ylab("Genome copies gFaeces (log)")+
-    xlab("Eimeria ASV counts")+
-    ggtitle("Centered log-ratio normalization")+
-        labs(tag= "d)")+
-#        annotate(geom="text", x=13, y=0.5, label="Spearman rho=0.94, p<0.001")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+    scale_fill_manual(values=coul)+
+    ylab("Eimeria genome copies (log)")+
+    xlab("Eimeria ASV abundance")+
+    ggtitle("Centered log-ratio")+
+    annotate(geom="text", x=min(sdte$clr_Eim), y=max(sdte$logGC), hjust=0.05, label=paste("Spearman rho=", round(e.c$estimate, 2), ", p<0.001", sep=""))+
+    theme_bw(base_size=10)+
+    theme(legend.position= "none")
 
 #### experimental quantification
 #ABsolute Count Scaling: scaled to DNA/g/faeces
@@ -349,34 +280,25 @@ sdt$logACS_Eim <- log(sdt$ACS_Eim)
 sdtf <- sdt[sdt$ACS_Eim>0,]
 sdtf <- sdtf[sdtf$Genome_copies_gFaeces>0,]
 sdtf <- sdtf[sdtf$Genome_copies_ngDNA>0,]
+sdtf <- sdtf[!is.na(sdtf$Genome_copies_ngDNA),]
 
 #correlation tests
-print(cor.test(sdtf$logGC, sdtf$logACS_Eim, method="pearson"))
-
-# Linear models
-Flm <- lm(logGC ~ logACS_Eim, sdtf)
-summary(Flm)
+f.c <- (cor.test(sdtf$logGC, sdtf$logACS_Eim, method="pearson"))
+print(f.c)
 
 # plotting ACS correlation
-f <-ggplot(sdt, aes(x=logACS_Eim, y=logGC))+
+f <-ggplot(sdtf, aes(x=logACS_Eim, y=logGC))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    scale_fill_brewer(palette="Spectral")+
-    geom_smooth(method = "lm", se=TRUE, na.rm=TRUE, color="black") +
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), parse = TRUE) +  
-    ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria ASV counts/ngDNA(log)")+
-    ggtitle("Absolute count scaling normalization")+
-        labs(tag= "e)")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
-
+    scale_fill_manual(values=coul)+
+    ylab("Eimeria genome copies (log)")+
+    xlab("Eimeria ASV abundance (log)")+
+    annotate(geom="text", x=min(sdtf$logACS_Eim), y=max(sdte$logGC), hjust=0.05, label=paste("Spearman rho=", round(f.c$estimate, 2), ", p<0.001", sep=""))+
+    ggtitle("Sample DNA concentration scaling")+
+    theme_bw(base_size=10)+
+    theme(legend.position= "none")
 
 ############### rarefaction
-    set.seed(1234)
-    rare <- rarefy_even_depth(ppPS)
+rare <- rarefy_even_depth(ppPS, rngseed=1234)
 gPSeimf <- subset_taxa(rare, Genus%in%"g__Eimeria")
 
 #create total sums and Eimeria sums data frame
@@ -391,44 +313,45 @@ sdt <- merge(gdf,sdt, by="labels", all=TRUE)
 sdt$logEim_rare <- log(sdt$Eim_rare)
 
 sdtg <- sdt[sdt$Eim_rare>0,]
-#sdtb <- sdtb[sdtb$Genome_copies_gFaeces>0,]
 sdtg <- sdtg[sdtg$Genome_copies_ngDNA>0,]
+sdtg <- sdtg[!is.na(sdtg$Genome_copies_ngDNA),]
+g.c <- (cor.test(sdtg$logGC, sdtg$logEim_rare, method="pearson"))
+print(g.c)
 
-print(cor.test(sdtg$logGC, sdtg$logEim_rare, method="pearson"))
-#print(cor.test(sdt$logOPG, sdt$logFilEimeriaSums, method="pearson"))
-
-# Linear models
-Glm <- lm(logGC ~ logEim_rare, sdtg)
-summary(Glm)
-
-# plotting with abundance and prevalence filter correlation
-
+# plotting with rarefied abundance
 g <- ggplot(sdtg, aes(y=logGC, x=logEim_rare))+
     geom_jitter(shape=21, position=position_jitter(0.2), size=4, aes(fill= dpi), color= "black", alpha=0.7)+
-    geom_smooth(method = "lm", se=TRUE, colour="black") +
-    scale_fill_brewer(palette="Spectral")+
-    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
-                                          parse = TRUE) +  
-    ylab("Genome copies/ngDNA (log)")+
-    xlab("Eimeria ASV counts(log)")+
+#    geom_smooth(method = "lm", se=TRUE, colour="black") +
+    scale_fill_manual(values=coul)+
+#    stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),parse = TRUE) +  
+    ylab("Eimeria genome copies (log)")+
+    xlab("Eimeria ASV abundance (log)")+
     ggtitle("Rarefaction")+
-    labs(tag= "f)")+
-#    annotate(geom="text", x=12, y=7, label="Spearman rho=0.93, p<0.001")+
-    theme_bw()+
-    theme(text = element_text(size=12),
-#          axis.title.x = element_blank(),
-          legend.position= "bottom")+
-    guides(fill=guide_legend(nrow=2, byrow=TRUE))
+#    labs(tag= "f)")+
+    annotate(geom="text", x=min(sdtg$logEim_rare), y=max(sdtg$logGC), hjust=0.05, label=paste("Spearman rho=", round(g.c$estimate, 2), ", p<0.001", sep=""))+
+    theme_bw(base_size=10)+
+theme(legend.position= "none")
 
+g
     
 # save plots of what we have so far
-plot_grid(b,c,d,e,f,g) -> fCor
+fCor <-plot_grid(b, c, f, d, e, g, 
+              align="vh",
+              labels="auto",
+              nrow=3)
 
-ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor, width = 12, height = 10, dpi = 600)
+legend <- get_legend(g+
+          guides(fill=guide_legend(nrow=1, byrow=TRUE))+
+          theme(legend.position="top"))
 
-ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor, width = 12, height = 10, dpi = 600)
+fCor.l <- plot_grid(legend,fCor, nrow=2, rel_heights=c(0.1, 1))
 
-ggplot2::ggsave(file=paste(dir, name, "ACS_COR.png", sep=""), e, width = 5, height = 5, dpi = 600)
+fCor.l  <<- fCor.l
+    
+ggplot2::ggsave(file=paste(dir, name, "COR.pdf", sep=""), fCor.l, width = 8, height = 12, dpi = 600)
+ggplot2::ggsave(file=paste(dir, name, "COR.png", sep=""), fCor.l, width = 8, height = 12, dpi = 600)
+
+ggplot2::ggsave(file=paste(dir, name, "SCS_COR.png", sep=""), f, width = 5, height = 5, dpi = 600)
 
 ### terrible coding here now...
 names(sdt)
@@ -463,11 +386,11 @@ cor.df6 <- cor.df6[!is.infinite(cor.df6$logGC),]
 print(cocor(~logGC + logFilEimeriaSums | logGC + logEim_rare, data = cor.df6,
             test = c("hittner2003", "zou2007")))
 
-    
 #png(filename=paste(dir, name, "COR.png", sep=""),
 #    width =14, height = 14, units = "in", res= 300)
 #fCor
 #dev.off()
+
 }
 
 

@@ -36,8 +36,6 @@ sin.PS <- readRDS("tmp/PhyloSeqData18S.Rds")
 sin.PS.slv <- readRDS("tmp/PhyloSeqData18S_SILVA.Rds")
 
 
-
-
 # let's filter
 f.sin18 <- fil(sin.PS18S)
 f.sin18.slv <- fil(sin.PS18S.slv)
@@ -184,7 +182,7 @@ subset_taxa(f.sin18.slv, Genus=="g__Eimeria")
 #Eim <- subset_taxa(T.all, genus%in%"Eimeria")
 
 Eim2 <- subset_taxa(T.sin18.slv, Genus%in%"g__Eimeria")
-Eim <- subset_taxa(T.all.slv, Genus%in%"g__Eimeria")
+Eim_T.all <- subset_taxa(T.all.slv, Genus%in%"g__Eimeria")
 
 Eim.TSSw <- subset_taxa(TSS.wang, Genus%in%"g__Eimeria")
-Eim.Tw <- subset_taxa(T.wang, Genus%in%"g__Eimeria")
+Eim <- subset_taxa(T.wang, Genus%in%"g__Eimeria")
