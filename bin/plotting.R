@@ -25,18 +25,17 @@ library(forcats)
 source("bin/4_MA_SA_filtering.R")
 
 allTSS
-
 sin18TSS
 
 T.all
+T.sin18
 
 ## going to plot with ACS
 tall <- psmelt(T.all)
 
 head(tall)
-f.all.lp
 
-phyTSS <- aggregate_top_taxa2(allTSS, level="phylum", 11)
+phyTSS <- aggregate_top_taxa2(T.all, level="phylum", 11)
                                         #genTSS <- aggregate_top_taxa2(allTSS, level="genus", 11)
 
 sin18TSS@tax_table[1,6]

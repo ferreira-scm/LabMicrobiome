@@ -1,10 +1,6 @@
 #!/usr/bin/Rscript
 
-library(ggplot2)
-library(dada2)
-#library(MultiAmplicon, lib.loc="/usr/local/lib/R/site-library/")
-library(reshape)
-library(phyloseq)
+#library(reshape)
 library(DECIPHER)
 library(phangorn)
 library(ShortRead)
@@ -23,7 +19,6 @@ source("bin/4_MA_SA_filtering.R")
 # Do ASV match beween MA and SA?
 #unfiltered
 rownames(Eim2@tax_table) %in% rownames(Eim@tax_table)
-rownames(Eim2_nf@tax_table) %in% rownames(Eim_nf_wang@tax_table)
 #filtered
 colnames(Eim@otu_table)[1] == colnames(Eim2@otu_table)[1]
 colnames(Eim@otu_table)[2] == colnames(Eim2@otu_table)[2]
@@ -80,8 +75,6 @@ MA.e.g0 <- MA.e.g[MA.e.g$Genome_copies_ngDNA>0,]
 MA.e.g0 <- MA.e.g0[MA.e.g0$Abundance>0,]
 MA.e.g0 <- MA.e.g0[!is.na(MA.e.g0$Genome_copies_ngDNA),]
 
-
-
 # sanity test here
 cor.test(log(SA.e.g0$Abundance), log(SA.e.g0$Genome_copies_ngDNA))
 cor.test(log(MA.e.g0$Abundance), log(MA.e.g0$Genome_copies_ngDNA))
@@ -102,16 +95,11 @@ SA.e40 <- SA.e4[SA.e4$Genome_copies_ngDNA>0,]
 SA.e40 <- SA.e40[!is.na(SA.e40$Genome_copies_ngDNA),]
 SA.e40 <- SA.e40[SA.e40$Abundance>0,]
 
-SA.e50 <- SA.e5[SA.e5$Genome_copies_ngDNA>0,]
-SA.e50 <- SA.e50[!is.na(SA.e50$Genome_copies_ngDNA),]
-SA.e50 <- SA.e50[SA.e50$Abundance>0,]
-
 ### they are correlate pretty well, ASV1 being the best
 cor.test(log(SA.e10$Genome_copies_ngDNA), log(SA.e10$Abundance))
 cor.test(log(SA.e20$Genome_copies_ngDNA), log(SA.e20$Abundance))
 cor.test(log(SA.e30$Genome_copies_ngDNA), log(SA.e30$Abundance))
 cor.test(log(SA.e40$Genome_copies_ngDNA), log(SA.e40$Abundance))
-#cor.test(log(SA.e50$Genome_copies_ngDNA), log(SA.e50$Abundance))
 
 ### now same for MA
 MA.e10 <- MA.e1[MA.e1$Genome_copies_ngDNA>0,]
@@ -122,50 +110,98 @@ MA.e20 <- MA.e2[MA.e2$Genome_copies_ngDNA>0,]
 MA.e20 <- MA.e20[!is.na(MA.e10$Genome_copies_ngDNA),]
 MA.e20 <- MA.e20[MA.e20$Abundance>0,]
 
-#MA.e30 <- MA.e3[MA.e3$Genome_copies_ngDNA>0,]
-#MA.e30 <- MA.e30[!is.na(MA.e30$Genome_copies_ngDNA),]
-#MA.e30 <- MA.e30[MA.e30$Abundance>0,]
-
 ## ASV1 is also best for MA
 cor.test(log(MA.e10$Genome_copies_ngDNA), log(MA.e10$Abundance))
 cor.test(log(MA.e20$Genome_copies_ngDNA), log(MA.e20$Abundance))
-#cor.test(log(MA.e30$Genome_copies_ngDNA), log(MA.e30$Abundance))
 
 ####
 ## Let's do the correlations first
 SA.opg <- SA.e.g[SA.e.g$OPG>0,]
-#SA.e.g0 <- SA.e.g0[SA.e.g0$Abundance>0,]
-#SA.e.g0 <- SA.e.g0[!is.na(SA.e.g0$Genome_copies_ngDNA),]
-
-#MA.e.g0 <- MA.e.g[MA.e.g$Genome_copies_ngDNA>0,]
-#MA.e.g0 <- MA.e.g0[MA.e.g0$Abundance>0,]
-#MA.e.g0 <- MA.e.g0[!is.na(MA.e.g0$Genome_copies_ngDNA),]
+SA.opg <- SA.opg[SA.opg$Abundance>0,]
 
 ### OPG correlation
 cor.test(log(SA.opg$OPG), log(SA.opg$Abundance))
-col7 <- c("#F1B6DA", "#C51B7D", "#DE77AE","#01665E", "#35978F", "#80CDC1","#C7EAE5")
 
+col7 <- c("#F1B6DA", "#C51B7D", "#DE77AE","#01665E", "#35978F", "#80CDC1","#C7EAE5")
 
 OPG_Abundance <- ggplot(SA.opg, aes(y=log(OPG), x=log(Abundance), fill=dpi))+
     geom_point(shape=21, size=4, alpha=0.8)+
     scale_fill_manual(values=col7)+
-#    geom_smooth(method=lm, colour="black", aes(colour="ASV"))+
-    ylab("Oocysts/g faeces, log()")+
+    ylab("Oocysts/g faeces (log)")+
 #    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
-    xlab("Eimeria ASV Abundance, log()")+
-    annotate(geom="text", x=-5, y=14, label="Pearson rho=0.67, p<0.001", size=3)+
-    theme_bw(base_size=12)+
-    guides(fill = guide_legend(nrow = 1))+
+    xlab("Eimeria ASV abundance (log)")+
+    annotate(geom="text", x=min(log(SA.opg$Abundance)), y=max(log(SA.opg$OPG)), hjust=0.05, label="Pearson rho=0.67, p<0.001", size=3)+
+    theme_bw(base_size=10)+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-          legend.position = "top",
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
-OPG_Abundance
+## now same but for MA
+MA.opg <- MA.e.g[MA.e.g$OPG>0,]
+MA.opg <- MA.opg[MA.opg$Abundance>0,]
+### OPG correlation
+cor.test(log(MA.opg$OPG), log(MA.opg$Abundance))
 
-ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.pdf", OPG_Abundance, width = 4, height = 4, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.png", OPG_Abundance, width = 4, height = 4, dpi = 300)
+OPG_Abundance_MA <- ggplot(MA.opg, aes(y=log(OPG), x=log(Abundance), fill=dpi))+
+    geom_point(shape=21, size=4, alpha=0.8)+
+    scale_fill_manual(values=col7)+
+    ylab("Oocysts/g faeces (log)")+
+#    guides(fill=guide_legend(ncol=3, byrow=TRUE))+
+    xlab("Eimeria ASV abundance (log)")+
+    annotate(geom="text", x=min(log(MA.opg$Abundance)), y=max(log(MA.opg$OPG)), hjust=0.05, label="Pearson rho=0.59, p<0.001", size=3)+
+    theme_bw(base_size=10)+
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+           legend.position = "none",
+          axis.line = element_line(colour = "black"))
+
+OPG_Abundance_MA
+
+legend <- get_legend(OPG_Abundance_MA+
+          guides(fill=guide_legend(nrow=1, byrow=TRUE))+
+          theme(legend.position="top"))
+
+OPG_ab <- plot_grid(OPG_Abundance, OPG_Abundance_MA, labels="auto")
+
+OPG_ab_panel <- plot_grid(legend, OPG_ab,  nrow=2, rel_heights=c(0.1, 0.8))
+
+
+
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.pdf", OPG_ab_panel, width = 8, height = 6, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_ASV_OPG.png", OPG_ab_panel, width = 8, height = 6, dpi = 300)
+
+# saving object so that we can plot them together with wild
+saveRDS(OPG_Abundance, "tmp/OPG_Abundance.R")
+# saving object so that we can plot them together with wild
+saveRDS(OPG_Abundance_MA, "tmp/OPG_Abundance_MA.R")
+saveRDS(OPG_ab_panel, "tmp/OPG_Abundance_MA_panel.R")
+
+
+#### Checking specificity
+
+mean(SA.e.g$Abundance[SA.e.g$Genome_copies_ngDNA==0], na.rm=TRUE)
+
+SA.e.g$Abundance[SA.e.g$Genome_copies_ngDNA==0]
+
+sd(SA.e.g$Abundance[SA.e.g$Genome_copies_ngDNA==0], na.rm=TRUE)
+
+MA.e$Abundance[MA.e$Genome_copies_ngDNA==0]
+
+mean(MA.e.g$Abundance[MA.e.g$Genome_copies_ngDNA==0], na.rm=TRUE)
+
+sd(MA.e.g$Abundance[MA.e.g$Genome_copies_ngDNA==0], na.rm=TRUE)
+
+mean(SA.e.g$Abundance)
+sd(SA.e.g$Abundance)
+
+length(SA.e.g$Abundance)
+
+mean(MA.e.g$Abundance)
+
+sd(MA.e.g$Abundance)
+length(MA.e.g$Abundance)
+
 
 ############### Which ASV explains Eimeria genome copies?
 ################ preparing dataset for regressions
@@ -295,17 +331,17 @@ plot_SA_1 <- ggplot(SA.e10, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), co
     geom_point(aes(fill=dpi), shape=21, colour="black", position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_color_manual(values=coul2)+
     scale_fill_manual(values=coul1)+
-    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV1 abundance/ng DNA (log)")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV1 abundance (log)")+
     ggtitle("Eimeria ASV1")+
     geom_smooth(method=lm, se=FALSE)+
-        coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
+    coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
     guides(colour="none")+
-    theme_bw()+
+    theme_bw(base_size=10)+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 plot_SA_1
@@ -315,7 +351,7 @@ plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), co
     geom_point(aes(fill=dpi), shape=21, colour="black", position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_color_manual(values=coul1)+
     scale_fill_manual(values=coul)+
-    labs(y="Eimeria Genome copies/ngDNA (log)", x="Eimeria ASV2 abundance (log)")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV2 abundance (log)")+
     ggtitle("Eimeria ASV2")+
     geom_smooth(method=lm, se=FALSE)+
     guides(colour="none")+
@@ -324,8 +360,8 @@ plot_SA_2 <- ggplot(SA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), co
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 
@@ -337,65 +373,65 @@ cor.test(log(MA.e.g0$Abundance), log(MA.e.g0$Genome_copies_ngDNA))
 plot_SA_all <- ggplot(SA.e.g0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA)))+
     geom_point(aes(fill=dpi), shape=21, position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_fill_manual(values=coul)+
-    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV abundance/ng DNA (log)")+
-    ggtitle("Single-amplicon Eimeria ASV abundance")+
-        coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
-    theme_bw()+
-    annotate("text", x=-6, y=11, label="rho=0.93, p<0.001")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV abundance (log)")+
+    ggtitle("Single-amplicon")+
+    coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
+    theme_bw(base_size=10)+
+    annotate("text", x=min(log(SA.e.g0$Abundance)), y=max(log(SA.e.g0$Genome_copies_ngDNA)), hjust=0.05, label="rho=0.93, p<0.001")+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 plot_MA_all <- ggplot(MA.e.g0, aes(x=log(Abundance), y=log(Genome_copies_ngDNA)))+
     geom_point(aes(fill=dpi), shape=21, position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_fill_manual(values=coul1)+
-    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV abundance/ng DNA (log)")+
-    ggtitle("Multi-amplicon Eimeria ASV abundance")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV abundance (log)")+
+    ggtitle("Multi-amplicon")+
     coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
-    theme_bw()+
-    annotate("text", x=-6, y=11, label="rho=0.89, p<0.001")+
+    theme_bw(base_size=10)+
+    annotate("text", x=min(log(MA.e.g0$Abundance)), y=max(log(MA.e.g0$Genome_copies_ngDNA)), hjust=0.05, label="rho=0.91, p<0.001")+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 plot_MA_1 <- ggplot(MA.e10, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), colour=dpi))+
     geom_point(aes(fill=dpi), shape=21, colour="black", position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_color_manual(values=coul2)+
     scale_fill_manual(values=coul2)+
-    labs(y="Eimeria Genome copies/ng DNA (log)", x="Eimeria ASV1 abundance/ng DNA (log)")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV1 abundance (log)")+
     ggtitle("Eimeria ASV1")+
     geom_smooth(method=lm, se=FALSE)+
-        coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
+    coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
     guides(colour="none")+
-    theme_bw()+
+    theme_bw(base_size=10)+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 plot_MA_2 <-ggplot(MA.e20, aes(x=log(Abundance), y=log(Genome_copies_ngDNA), colour=dpi))+
     geom_point(aes(fill=dpi), shape=21, colour="black", position=position_jitter(0.2), size=4, alpha=0.8)+
     scale_color_manual(values=coul2)+
     scale_fill_manual(values=coul1)+
-    labs(y="Eimeria Genome copies/ngDNA (log)", x="Eimeria ASV2 abundance (log)")+
+    labs(y="Eimeria genome copies (log)", x="Eimeria ASV2 abundance (log)")+
     ggtitle("Eimeria ASV2")+
     geom_smooth(method=lm, se=FALSE)+
     guides(colour="none")+
     coord_cartesian(xlim=c(-8.5, 2), ylim=c(-0.5, 12.1))+
-    theme_bw()+
+    theme_bw(base_size=10)+
     theme(plot.title=element_text(hjust=0.5, face="bold"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          text=element_text(size=12),
-#          legend.position = "none",
+          text=element_text(size=10),
+          legend.position = "none",
           axis.line = element_line(colour = "black"))
 
 plot_SA_ASV <- plot_grid(plot_SA_all,plot_SA_1, plot_SA_2, nrow=3, labels="auto") +
@@ -409,13 +445,20 @@ plot_MA_ASV <- plot_grid(plot_MA_all, plot_MA_1, plot_MA_2, nrow=3, labels=c("d"
 
 plot_MA_SA_ASV <- plot_grid(plot_SA_ASV, plot_MA_ASV, nrow=1)
 
-ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.pdf", plot_MA_SA_ASV, width = 11, height = 15, dpi = 300)
-ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.png", plot_MA_SA_ASV, width = 11, height = 15, dpi = 350)
+legend <- get_legend(plot_SA_all+
+          guides(fill=guide_legend(nrow=1, byrow=TRUE))+
+          theme(legend.position="top"))
 
-forPrese <- plot_grid(plot_SA_all, plot_MA_all, nrow=1)
+plot_MA_SA_ASV.l <- plot_grid(legend,plot_MA_SA_ASV, nrow=2, rel_heights=c(0.1, 1))
 
-ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.png", forPrese, width = 10, height = 4, dpi = 300)
-ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.pdf", forPrese, width = 10, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.pdf", plot_MA_SA_ASV.l, width = 6, height = 10, dpi = 300)
+ggplot2::ggsave(file="fig/Eimeria_SA_MA_GC_ASVs_dpi.png", plot_MA_SA_ASV.l, width = 6, height = 10, dpi = 350)
+
+forPrese <-plot_grid(plot_SA_all, plot_MA_all, nrow=1)
+forPrese.l <-plot_grid(legend, forPrese, nrow=2, rel_heights=c(0.1, 1))
+    
+ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.png", forPrese.l, width = 10, height = 4, dpi = 300)
+ggplot2::ggsave(file="fig/FOR_PRESENT.Eimeria_SA_MA_GC_ASVs_dpi.pdf", forPrese.l, width = 10, height = 4, dpi = 300)
 
 ### make glm qPCR~ASV1+ASV2+...
 ## ASV5+ASV5 useful?
